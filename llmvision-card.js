@@ -12,12 +12,12 @@ class LLMVisionCard extends HTMLElement {
         this.config = config;
         this.calendar_entity = config.calendar_entity || 'calendar.llm_vision_events';
         this.number_of_events = config.number_of_events || 5;
-        this.refresh_interval = config.refresh_interval || 60000; // Default to 60 seconds
+        this.refresh_interval = config.refresh_interval || 1;
     }
 
     set hass(hass) {
         const now = new Date().getTime();
-        if (this.lastUpdateTime && (now - this.lastUpdateTime < this.refresh_interval)) {
+        if (this.lastUpdateTime && (now - this.lastUpdateTime < this.refresh_interval * 60000)) {
             return;
         }
         this.lastUpdateTime = now;
@@ -130,6 +130,16 @@ class LLMVisionCard extends HTMLElement {
             `;
         }
     }
+
+    static getStubConfig() {
+        return { calendar_entity: 'calendar.llm_vision_events', number_of_events: 5, refresh_interval: 1 };
+    }
 }
 
 customElements.define('llmvision-card', LLMVisionCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "llmvision-card",
+    name: "LLM Vision Card",
+    description: "Display LLM Vision events on your dashboard",
+});
