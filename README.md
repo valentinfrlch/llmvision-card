@@ -44,7 +44,8 @@
 
 ## Configuration
 
-| Parameter         | Default                     |
-|-------------------|-----------------------------|
-| number_of_events  | 5                           |
-| calendar_entity   | calendar.llm_vision_calendar|
+| Parameter         | Description                             | Default                      |
+|-------------------|-----------------------------------------|------------------------------|
+| number_of_events  | How many events to show                 | 5                            |
+| calendar_entity   | Which LLM Vision Calendar Entity to use | calendar.llm_vision_calendar |
+| refresh_interval  | Refresh Interval (in minutes)           | 1                            |
