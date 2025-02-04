@@ -1,5 +1,32 @@
-# LLM Vision Card
-Home Assistant Cards to display LLM Vision's Event Calendar.
+<p align="center">
+<img src="https://github.com/user-attachments/assets/bebd92b8-765e-4d63-bb3d-47e1bb8b51ad" width=500px>
+</p>
+<h1 align=center>Dashboard Card</h1>
+<p align=center>
+<img src=https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badg>
+<img src=https://img.shields.io/badge/version-alpha-blue>
+<a href="https://github.com/valentinfrlch/llmvision-card/issues">
+<img src="https://img.shields.io/maintenance/yes/2025.svg">
+<img alt="Issues" src="https://img.shields.io/github/issues/valentinfrlch/llmvision-card?color=0088ff"/>
+    </a>
+    <p align=center style="font-weight:bold">
+      Home Assistant Card to display LLM Vision's Event Calendar
+    </p>
+</p>
+
+  <p align="center">
+    <a href="#prerequisites">🌟 Prerequisites </a>
+    ·
+    <a href="#installation">⬇️ Installation</a>
+    ·
+    <a href="#setup">🚧 Setup</a>
+    ·
+    <a href="#configuration">☕ Configuration</a>    
+  </p>
+<p align="center">
+  <a href="https://llmvision.org"> Visit Website →</a>
+    </p>
+
 
 ## Prerequisites
 1. LLM Vision and at least one AI provider set up
