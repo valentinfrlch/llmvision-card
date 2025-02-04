@@ -9,7 +9,7 @@ Home Assistant Cards to display LLM Vision's Event Calendar.
 ## Installation
 Install the card via HACS by adding the repository URL:
 ```
-https://github.com...
+https://github.com/valentinfrlch/llmvision-card
 ```
 
 ## Setup
