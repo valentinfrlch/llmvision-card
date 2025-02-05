@@ -7,6 +7,8 @@ export function getIcon(title) {
         'woman': 'mdi:walk',
         'man': 'mdi:walk',
         'human': 'mdi:walk',
+        'courier': 'mdi:truck-delivery',
+        'mailman': 'mdi:truck-delivery',
         // Vehicles
         'bike': 'mdi:bike',
         'bicycle': 'mdi:bike',

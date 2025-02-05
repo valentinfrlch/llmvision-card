@@ -51,31 +51,53 @@ class LLMVisionCard extends HTMLElement {
                     }
 
                     .event-container h3 {
+                        font-weight: 500;
+                        font-size: 14px;
+                        letter-spacing: 0.1px;
                         margin: 0;
                         flex-grow: 1;
                         color: var(--primary-text-color);
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
 
                     .event-container p {
+                        font-weight: 400;
+                        font-size: 12px;
+                        letter-spacing: 0.4px;
                         margin: 0;
                         flex-grow: 1;
-                        color: var(--secondary-text-color);
+                        color: var(--primary-text-color);
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .date-header h2 {
+                        font-weight: 600;
+                        font-size: 16px;
+                        line-height: 24px;
+                        letter-spacing: 0.1px;
+                        margin: 0;
+                        color: var(--primary-text-color);
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
 
                     .icon-container {
-                        width: 40px;
-                        height: 40px;
+                        width: 36px;
+                        height: 36px;
                         border-radius: 50%;
-                        background-color: rgba(95, 252, 234, 0.2);
+                        background-color: rgba(3, 169, 244, 0.2);
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        margin-right: 15px;
+                        margin-right: 10px;
                         position: relative;
+                        transition: transform 180ms ease-in-out;
                     }
 
                     .icon-container ha-icon {
-                        color: #5ffcea;
+                        color: rgb(3, 169, 244);
                     }
                 </style>
             `;
@@ -169,16 +191,22 @@ class LLMVisionCard extends HTMLElement {
 
     showPopup(event, summary, startTime, keyFrame, cameraName) {
         const date = new Date(startTime);
+        const options = { month: 'short', day: 'numeric' };
+        const formattedDate = date.toLocaleDateString('en-US', options);
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
-        const formattedTime = `${hours}:${minutes}`;
+        const formattedTime = `${formattedDate}, ${hours}:${minutes}`;
         const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
         const eventDetails = `
             <div>
-                <h2 style="margin-bottom:0">${event}</h2>
-                <p><span style="font-weight: bold; color: var(--secondary-text-color);">${secondaryText}</span></p>
-                <p>${summary}</p>
-                <img src="${keyFrame}" alt="Key frame" style="width: 100%; height: auto; border-radius: 12px;">
+                <div class="title-container">
+                    <ha-icon icon="${getIcon(event)}"></ha-icon>
+                    <h2>${event}</h2>
+                    <button class="close-popup" style="font-size:30">&times;</button>
+                </div>
+                <img src="${keyFrame}" alt="Event Snapshot">
+                <p class="secondary"><span>${secondaryText}</span></p>
+                <p class="summary">${summary}</p>
             </div>
         `;
 
@@ -186,7 +214,6 @@ class LLMVisionCard extends HTMLElement {
         popup.innerHTML = `
             <div class="popup-overlay">
                 <div class="popup-content">
-                    <button class="close-popup">&times;</button>
                     ${eventDetails}
                 </div>
             </div>
@@ -208,14 +235,41 @@ class LLMVisionCard extends HTMLElement {
                     background: var(--ha-card-background, var(--card-background-color, black));
                     color: var(--primary-text-color);
                     padding: 20px;
-                    border-radius: var(--border-radius, 15px);
+                    border-radius: var(--border-radius, 12px);
                     max-width: 500px;
                     width: 100%;
                 }
+                .title-container {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 5px;
+                }
+                .title-container ha-icon {
+                    margin-right: 10px;
+                }
+                .title-container h2 {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    flex-grow: 1;
+                }
+                .popup-content img {
+                    width: 100%;
+                    height: auto;
+                    border-radius: 12px;
+                    margin-top: 10px;
+                }
+                .popup-content .secondary {
+                    font-weight: bold;
+                    color: var(--secondary-text-color);
+                }
+                .popup-content .summary {
+                    color: var(--primary-text-color);
+                    font-size: 16px;
+                    line-height: 22px;
+                    letter-spacing: 0.2px;
+                }
                 .close-popup {
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
                     background: none;
                     border: none;
                     font-size: 30px;
@@ -229,6 +283,12 @@ class LLMVisionCard extends HTMLElement {
 
         popup.querySelector('.close-popup').addEventListener('click', () => {
             document.body.removeChild(popup);
+        });
+
+        popup.querySelector('.popup-overlay').addEventListener('click', (event) => {
+            if (event.target === popup.querySelector('.popup-overlay')) {
+                document.body.removeChild(popup);
+            }
         });
     }
 
