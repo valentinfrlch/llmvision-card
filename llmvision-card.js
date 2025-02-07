@@ -139,7 +139,7 @@ class LLMVisionCard extends HTMLElement {
             const cameraName = cameraNames[i] || '';
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
-            keyFrame = keyFrame.replace('/config/www/', '/local/') + ".jpg";
+            keyFrame = keyFrame.replace('/config/www/', '/local/');
 
             // Determine the date label
             const today = new Date();
@@ -204,7 +204,7 @@ class LLMVisionCard extends HTMLElement {
                     <h2>${event}</h2>
                     <button class="close-popup" style="font-size:30">&times;</button>
                 </div>
-                <img src="${keyFrame}" alt="Event Snapshot">
+                <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
                 <p class="secondary"><span>${secondaryText}</span></p>
                 <p class="summary">${summary}</p>
             </div>
