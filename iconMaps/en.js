@@ -1,0 +1,31 @@
+export const en = {
+    "objects": {
+        "person": "mdi:walk",
+        "people": "mdi:walk",
+        "child": "mdi:walk",
+        "woman": "mdi:walk",
+        "man": "mdi:walk",
+        "human": "mdi:walk",
+        "courier": "mdi:truck-delivery",
+        "mailman": "mdi:truck-delivery",
+        "bike": "mdi:bike",
+        "bicycle": "mdi:bike",
+        "motorcycle": "mdi:motorbike",
+        "motorbike": "mdi:motorbike",
+        "bus": "mdi:bus",
+        "car": "mdi:car",
+        "van": "mdi:car",
+        "suv": "mdi:car",
+        "vehicle": "mdi:car",
+        "truck": "mdi:truck",
+        "box": "mdi:package-variant-closed",
+        "package": "mdi:package-variant-closed",
+        "parcel": "mdi:package-variant-closed",
+        "letter": "mdi:email",
+        "garden": "mdi:flower",
+        "plant": "mdi:flower",
+        "flower": "mdi:flower",
+        "tree": "mdi:tree"
+    },
+    "regex": ""
+};

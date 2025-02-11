@@ -12,6 +12,7 @@ class LLMVisionCard extends HTMLElement {
         this.calendar_entity = config.calendar_entity || 'calendar.llm_vision_events';
         this.number_of_events = config.number_of_events || 5;
         this.refresh_interval = config.refresh_interval || 1;
+        this.language = config.language || 'en';
     }
 
     set hass(hass) {
@@ -130,14 +131,16 @@ class LLMVisionCard extends HTMLElement {
             const startTime = startTimes[i];
             const date = new Date(startTime);
             const options = { month: 'short', day: 'numeric' };
-            const formattedDate = date.toLocaleDateString('en-US', options);
+            const formattedDate = date.toLocaleDateString('en', options);
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
-            const icon = getIcon(event);
+            const icon = getIcon(event, this.language);
             let keyFrame = keyFrames[i] || '';
             const cameraName = cameraNames[i] || '';
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
+
+            console.log('icon:', icon);
 
             keyFrame = keyFrame.replace('/config/www/', '/local/');
 
@@ -177,19 +180,19 @@ class LLMVisionCard extends HTMLElement {
                 <img src="${keyFrame}" alt="Key frame ${i + 1}" onerror="this.style.display='none'">
             `;
 
-            console.log(`Attaching click event for event: ${event}, dateLabel: ${dateLabel}`);
+            // console.log(`Attaching click event for event: ${event}, dateLabel: ${dateLabel}`);
 
 
             eventContainer.addEventListener('click', () => {
                 console.log(`Event clicked: ${event}, dateLabel: ${dateLabel}`);
-                this.showPopup(event, summary, startTime, keyFrame, cameraName);
+                this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
             });
 
             this.content.appendChild(eventContainer);
         }
     }
 
-    showPopup(event, summary, startTime, keyFrame, cameraName) {
+    showPopup(event, summary, startTime, keyFrame, cameraName, icon) {
         const date = new Date(startTime);
         const options = { month: 'short', day: 'numeric' };
         const formattedDate = date.toLocaleDateString('en-US', options);
@@ -200,7 +203,7 @@ class LLMVisionCard extends HTMLElement {
         const eventDetails = `
             <div>
                 <div class="title-container">
-                    <ha-icon icon="${getIcon(event)}"></ha-icon>
+                    <ha-icon icon="${icon}"></ha-icon>
                     <h2>${event}</h2>
                     <button class="close-popup" style="font-size:30">&times;</button>
                 </div>
