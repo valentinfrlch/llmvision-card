@@ -4,35 +4,34 @@ import { en } from './iconMaps/en.js';
 import { es } from './iconMaps/es.js';
 
 export function getIcon(title, lang = 'en') {
-    let iconMap, regex_string;
+    let categories;
 
     try {
         // Use the imported JSON data based on the language
         if (lang === 'de') {
-            iconMap = de.objects;
-            regex_string = de.regex;
+            categories = de.categories;
         } else if (lang === 'en') {
-            iconMap = en.objects;
-            regex_string = en.regex;
+            categories = en.categories;
         } else if (lang === 'fr') {
-            iconMap = fr.objects;
-            regex_string = fr.regex;
+            categories = fr.categories;
         } else if (lang === 'es') {
-            iconMap = es.objects;
-            regex_string = es.regex;
+            categories = es.categories;
         } else {
             throw new Error(`Unsupported language: ${lang}`);
         }
 
-        for (const [key, icon] of Object.entries(iconMap)) {
-            const regex = new RegExp(`\\b${key}s?\\b`, 'i');
-            if (regex.test(title)) {
-                return icon;
+        for (const category of Object.values(categories)) {
+            const { colors, objects } = category;
+            for (const [key, icon] of Object.entries(objects)) {
+                const regex = new RegExp(`\\b${key}s?\\b`, 'i');
+                if (regex.test(title)) {
+                    return { icon, backgroundColor: colors.background, iconColor: colors.icon };
+                }
             }
         }
     } catch (error) {
         console.error('Error getting icon:', error);
     }
 
-    return 'mdi:cube-scan'; // Default icon if no keyword is found
+    return { icon: 'mdi:cube-scan', backgroundColor: 'gray', iconColor: 'gray' }; // Default icon and colors if no keyword is found
 }

@@ -88,17 +88,12 @@ class LLMVisionCard extends HTMLElement {
                         width: 36px;
                         height: 36px;
                         border-radius: 50%;
-                        background-color: rgba(3, 169, 244, 0.2);
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         margin-right: 10px;
                         position: relative;
                         transition: transform 180ms ease-in-out;
-                    }
-
-                    .icon-container ha-icon {
-                        color: rgb(3, 169, 244);
                     }
                 </style>
             `;
@@ -135,12 +130,10 @@ class LLMVisionCard extends HTMLElement {
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
-            const icon = getIcon(event, this.language);
+            const { icon, backgroundColor, iconColor } = getIcon(event, this.language);
             let keyFrame = keyFrames[i] || '';
             const cameraName = cameraNames[i] || '';
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
-
-            console.log('icon:', icon);
 
             keyFrame = keyFrame.replace('/config/www/', '/local/');
 
@@ -170,8 +163,8 @@ class LLMVisionCard extends HTMLElement {
             const eventContainer = document.createElement('div');
             eventContainer.classList.add('event-container');
             eventContainer.innerHTML = `
-                <div class="icon-container">
-                    <ha-icon icon="${icon}"></ha-icon>
+                <div class="icon-container" style="background-color: ${backgroundColor};">
+                    <ha-icon icon="${icon}" style="color: ${iconColor};"></ha-icon>
                 </div>
                 <div class="event-details">
                     <h3>${event}</h3>
@@ -179,9 +172,6 @@ class LLMVisionCard extends HTMLElement {
                 </div>
                 <img src="${keyFrame}" alt="Key frame ${i + 1}" onerror="this.style.display='none'">
             `;
-
-            // console.log(`Attaching click event for event: ${event}, dateLabel: ${dateLabel}`);
-
 
             eventContainer.addEventListener('click', () => {
                 console.log(`Event clicked: ${event}, dateLabel: ${dateLabel}`);
