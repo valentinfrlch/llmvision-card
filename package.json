@@ -1,15 +1,4 @@
 {
     "name": "llmvision-card",
-    "version": "1.0.0",
-    "description": "Lovelace boilerplate-card",
-    "keywords": [
-        "homeassistant",
-        "llmvision",
-        "dashboard",
-        "custom-card"
-    ],
-    "module": "boilerplate-card.js",
-    "repository": "github.com/valentinfrlch/llmvision-card",
-    "author": "valentinfrlch",
-    "license": "Apache-2.0"
+    "version": "1.0.0"
 }
