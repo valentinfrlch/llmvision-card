@@ -33,24 +33,24 @@ class LLMVisionCard extends HTMLElement {
                         display: flex;
                         align-items: center;
                         justify-content: flex-start;
-                        height: auto;
+                        height: 75px;
                         z-index: 2;
                         margin-bottom: 10px;
                         cursor: pointer;
                     }
-
+                
                     .event-container:last-child {
                         margin-bottom: 0;
                     }
-
+                
                     .event-container img {
-                        width: 100px;
-                        height: 100px;
+                        height: 100%;
+                        width: auto;
                         margin-left: auto;
                         border-radius: 12px;
                         object-fit: cover;
                     }
-
+                
                     .event-container h3 {
                         font-weight: 500;
                         font-size: 14px;
@@ -58,10 +58,11 @@ class LLMVisionCard extends HTMLElement {
                         margin: 0;
                         flex-grow: 1;
                         color: var(--primary-text-color);
-                        overflow: hidden;
-                        text-overflow: ellipsis;
+                        white-space: nowrap; /* Prevent text from wrapping */
+                        overflow: hidden; /* Hide overflowed text */
+                        text-overflow: ellipsis; /* Add ellipsis (...) */
                     }
-
+                
                     .event-container p {
                         font-weight: 400;
                         font-size: 12px;
@@ -69,10 +70,11 @@ class LLMVisionCard extends HTMLElement {
                         margin: 0;
                         flex-grow: 1;
                         color: var(--primary-text-color);
+                        white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
                     }
-
+                
                     .date-header h2 {
                         font-weight: 600;
                         font-size: 16px;
@@ -83,7 +85,7 @@ class LLMVisionCard extends HTMLElement {
                         overflow: hidden;
                         text-overflow: ellipsis;
                     }
-
+                
                     .icon-container {
                         width: 36px;
                         height: 36px;
@@ -94,6 +96,12 @@ class LLMVisionCard extends HTMLElement {
                         margin-right: 10px;
                         position: relative;
                         transition: transform 180ms ease-in-out;
+                        flex-shrink: 0; /* Prevent shrinking */
+                    }
+                
+                    .event-details {
+                        flex-grow: 1;
+                        min-width: 0; /* Allow text to overflow properly */
                     }
                 </style>
             `;
