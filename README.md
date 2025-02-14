@@ -27,6 +27,8 @@
   <a href="https://llmvision.org"> Visit Website →</a>
     </p>
 
+<img src="https://github.com/user-attachments/assets/97f6e608-bdf3-44d1-89f1-fd89cda7b764" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="50%" height="auto" />
+
 
 ## Prerequisites
 1. LLM Vision and at least one AI provider set up
