@@ -45,7 +45,7 @@ class LLMVisionCard extends HTMLElement {
                 
                     .event-container img {
                         height: 100%;
-                        width: auto;
+                        aspect-ratio: 1 / 1;
                         margin-left: auto;
                         border-radius: 12px;
                         object-fit: cover;
@@ -116,11 +116,22 @@ class LLMVisionCard extends HTMLElement {
             return;
         }
 
-        const events = (calendarEntity.attributes.events || []).slice().reverse();
-        const summaries = (calendarEntity.attributes.summaries || []).slice().reverse();
-        const keyFrames = (calendarEntity.attributes.key_frames || []).slice().reverse();
-        const cameraNames = (calendarEntity.attributes.camera_names || []).slice().reverse();
-        const startTimes = (calendarEntity.attributes.starts || []).slice().reverse();
+        const events = (calendarEntity.attributes.events || []).slice()
+        const summaries = (calendarEntity.attributes.summaries || []).slice()
+        const keyFrames = (calendarEntity.attributes.key_frames || []).slice()
+        const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
+        const startTimes = (calendarEntity.attributes.starts || []).slice()
+
+        const eventDetails = events.map((event, index) => ({
+            event,
+            summary: summaries[index],
+            keyFrame: keyFrames[index] || '',
+            cameraName: cameraNames[index] || '',
+            startTime: startTimes[index]
+        }));
+
+        // Sort event details by start time
+        eventDetails.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
 
         // Clear previous content
         this.content.innerHTML = '';
@@ -129,9 +140,8 @@ class LLMVisionCard extends HTMLElement {
         let lastDate = '';
 
         for (let i = 0; i < Math.min(numberOfEvents, events.length); i++) {
-            const event = events[i];
-            const summary = summaries[i];
-            const startTime = startTimes[i];
+            const { event, summary, startTime, cameraName } = eventDetails[i];
+            let keyFrame = eventDetails[i].keyFrame;
             const date = new Date(startTime);
             const options = { month: 'short', day: 'numeric' };
             const formattedDate = date.toLocaleDateString('en', options);
@@ -139,8 +149,6 @@ class LLMVisionCard extends HTMLElement {
             const minutes = date.getMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
             const { icon, backgroundColor, iconColor } = getIcon(event, this.language);
-            let keyFrame = keyFrames[i] || '';
-            const cameraName = cameraNames[i] || '';
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
             keyFrame = keyFrame.replace('/config/www/', '/local/');
@@ -230,6 +238,11 @@ class LLMVisionCard extends HTMLElement {
                     align-items: center;
                     justify-content: center;
                     z-index: 1000;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                }
+                .popup-overlay.show {
+                    opacity: 1;
                 }
                 .popup-content {
                     position: relative;
@@ -239,6 +252,13 @@ class LLMVisionCard extends HTMLElement {
                     border-radius: var(--border-radius, 12px);
                     max-width: 500px;
                     width: 100%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    transform: scale(0.9);
+                    transition: transform 0.2s ease;
+                }
+                .popup-overlay.show .popup-content {
+                    transform: scale(1);
                 }
                 .title-container {
                     display: flex;
@@ -277,20 +297,43 @@ class LLMVisionCard extends HTMLElement {
                     cursor: pointer;
                     color: var(--primary-text-color);
                 }
+            
+                /* Mobile Layout */
+                @media (max-width: 768px) {
+                    .popup-content {
+                        max-width: 100%;
+                        max-height: 100%;
+                        border-radius: 0;
+                        height: 100%;
+                    }
+                }
             </style>
         `;
 
         document.body.appendChild(popup);
 
+        // Add the show class to trigger the animation
+        requestAnimationFrame(() => {
+            popup.querySelector('.popup-overlay').classList.add('show');
+        });
+
         popup.querySelector('.close-popup').addEventListener('click', () => {
-            document.body.removeChild(popup);
+            this.closePopup(popup);
         });
 
         popup.querySelector('.popup-overlay').addEventListener('click', (event) => {
             if (event.target === popup.querySelector('.popup-overlay')) {
-                document.body.removeChild(popup);
+                this.closePopup(popup);
             }
         });
+    }
+
+    closePopup(popup) {
+        // Remove the show class to trigger the closing animation
+        popup.querySelector('.popup-overlay').classList.remove('show');
+        popup.querySelector('.popup-overlay').addEventListener('transitionend', () => {
+            document.body.removeChild(popup);
+        }, { once: true });
     }
 
     static getStubConfig() {
