@@ -32,12 +32,14 @@
 
 ## Prerequisites
 1. LLM Vision and at least one AI provider set up
-2. Event Calendar enabled in LLM Vision
+2. Timeline provider set up in LLM Vision
 3. Blueprint or Automation to update the calendar entity
 
 ## Installation
 Add the repository to HACS and install the LLM Vision card using this link:
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=valentinfrlch&repository=llmvision-card&category=Dashboard)
+
+Alternatively you can add the url of this repository to the custom respositories list in HACS.
 
 ## Setup
 1. Install the card through HACS
@@ -46,9 +48,9 @@ Add the repository to HACS and install the LLM Vision card using this link:
 
 ## Configuration
 
-| Parameter         | Description                             | Default                      |
-|-------------------|-----------------------------------------|------------------------------|
-| number_of_events  | How many events to show                 | 5                            |
-| calendar_entity   | Which LLM Vision Calendar Entity to use | calendar.llm_vision_calendar |
-| refresh_interval  | Refresh Interval (in minutes)           | 1                            |
-| lang              | Language used to generate icons         | en                           |
+| Parameter         | Description                                                                              | Default                      |
+|-------------------|------------------------------------------------------------------------------------------|------------------------------|
+| number_of_events  | How many events to show                                                                  | 5                            |
+| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)             | calendar.llm_vision_timeline |
+| refresh_interval  | Refresh Interval (in minutes)                                                            | 1                            |
+| lang              | Language used to generate icons                                                          | en                           |
