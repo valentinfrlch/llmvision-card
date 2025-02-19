@@ -32,7 +32,7 @@
 
 ## Prerequisites
 1. LLM Vision and at least one AI provider set up
-2. Event Calendar enabled in LLM Vision
+2. Timeline provider set up in LLM Vision
 3. Blueprint or Automation to update the calendar entity
 
 ## Installation
