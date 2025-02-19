@@ -4,7 +4,7 @@
 <h1 align=center>Dashboard Card</h1>
 <p align=center>
 <img src=https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badg>
-<img src=https://img.shields.io/badge/version-alpha-blue>
+<img src=https://img.shields.io/badge/version-beta-blue>
 <a href="https://github.com/valentinfrlch/llmvision-card/issues">
 <img src="https://img.shields.io/maintenance/yes/2025.svg">
 <img alt="Issues" src="https://img.shields.io/github/issues/valentinfrlch/llmvision-card?color=0088ff"/>
