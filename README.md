@@ -46,9 +46,9 @@ Add the repository to HACS and install the LLM Vision card using this link:
 
 ## Configuration
 
-| Parameter         | Description                             | Default                      |
-|-------------------|-----------------------------------------|------------------------------|
-| number_of_events  | How many events to show                 | 5                            |
-| calendar_entity   | Which LLM Vision Calendar Entity to use | calendar.llm_vision_calendar |
-| refresh_interval  | Refresh Interval (in minutes)           | 1                            |
-| lang              | Language used to generate icons         | en                           |
+| Parameter         | Description                                                                              | Default                      |
+|-------------------|------------------------------------------------------------------------------------------|------------------------------|
+| number_of_events  | How many events to show                                                                  | 5                            |
+| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)             | calendar.llm_vision_timeline |
+| refresh_interval  | Refresh Interval (in minutes)                                                            | 1                            |
+| lang              | Language used to generate icons                                                          | en                           |
