@@ -9,7 +9,7 @@ class LLMVisionCard extends HTMLElement {
     // required
     setConfig(config) {
         this.config = config;
-        this.calendar_entity = config.calendar_entity || 'calendar.llm_vision_events';
+        this.calendar_entity = config.calendar_entity || 'calendar.llm_vision_timeline';
         this.number_of_events = config.number_of_events || 5;
         this.refresh_interval = config.refresh_interval || 1;
         this.language = config.language || 'en';
@@ -294,7 +294,7 @@ class LLMVisionCard extends HTMLElement {
     }
 
     static getStubConfig() {
-        return { calendar_entity: 'calendar.llm_vision_events', number_of_events: 5, refresh_interval: 1 };
+        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_events: 5, refresh_interval: 1 };
     }
 }
 
@@ -302,6 +302,6 @@ customElements.define('llmvision-card', LLMVisionCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
     type: "llmvision-card",
-    name: "LLM Vision Card",
-    description: "Display LLM Vision events on your dashboard",
+    name: "LLM Vision Timeline Card",
+    description: "Display the LLM Vision Timeline on your dashboard",
 });
