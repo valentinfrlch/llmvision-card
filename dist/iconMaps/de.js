@@ -1,7 +1,6 @@
 export const de = {
     "categories": {
         "people": {
-            "colors": { "background": "#FFAD42", "icon": "#FFDAA9" }, // Orange, lightorange
             "objects": {
                 "person": "mdi:walk",
                 "menschen": "mdi:walk",
@@ -12,7 +11,6 @@ export const de = {
             }
         },
         "vehicles": {
-            "colors": { "background": "#415D7A", "icon": "#F3F8FB" }, // Black, white
             "objects": {
                 "briefträger": "mdi:truck-delivery",
                 "postbote": "mdi:truck-delivery",
@@ -27,7 +25,6 @@ export const de = {
             }
         },
         "animals": {
-            "colors": { "background": "#D6946D", "icon": "#EBDBD7" }, // Orange, yellow
             "objects": {
                 "hund": "mdi:dog",
                 "katze": "mdi:cat",
@@ -37,7 +34,6 @@ export const de = {
             }
         },
         "packages": {
-            "colors": { "background": "#853816", "icon": "#F2C79F" }, // Brown, beige
             "objects": {
                 "box": "mdi:package-variant-closed",
                 "packet": "mdi:package-variant-closed",
@@ -45,7 +41,6 @@ export const de = {
             }
         },
         "nature": {
-            "colors": { "background": "#00952F", "icon": "#42FF75" }, // Green, lightgreen
             "objects": {
                 "garten": "mdi:flower",
                 "pflanze": "mdi:flower",
