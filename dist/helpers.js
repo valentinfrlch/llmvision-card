@@ -1,7 +1,7 @@
-import { fr } from './iconMaps/fr.js';
-import { de } from './iconMaps/de.js';
-import { en } from './iconMaps/en.js';
-import { es } from './iconMaps/es.js';
+import { fr } from './fr.js';
+import { de } from './de.js';
+import { en } from './en.js';
+import { es } from './es.js';
 
 export function getIcon(title, lang = 'en') {
     let categories;
