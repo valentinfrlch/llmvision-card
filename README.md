@@ -29,11 +29,13 @@
 
 <img src="https://github.com/user-attachments/assets/97f6e608-bdf3-44d1-89f1-fd89cda7b764" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="50%" height="auto" />
 
-
 ## Prerequisites
 1. LLM Vision and at least one AI provider set up
 2. Timeline provider set up in LLM Vision
 3. Blueprint or Automation to update the calendar entity
+
+## Documentation
+<a href="https://llm-vision.gitbook.io/getting-started/setup/timeline-card-beta"><img src="https://img.shields.io/badge/Documentation-blue?style=for-the-badge&logo=gitbook&logoColor=white&color=18bcf2"/> </a>
 
 ## Installation
 Add the repository to HACS and install the LLM Vision card using this link:
