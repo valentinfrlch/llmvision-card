@@ -10,7 +10,7 @@
 <img alt="Issues" src="https://img.shields.io/github/issues/valentinfrlch/llmvision-card?color=0088ff"/>
     </a>
     <p align=center style="font-weight:bold">
-      Home Assistant Card to display LLM Vision's Event Calendar
+      Home Assistant Card to display LLM Vision's Timeline
     </p>
 </p>
 
@@ -52,5 +52,5 @@ Alternatively you can add the url of this repository to the custom respositories
 |-------------------|------------------------------------------------------------------------------------------|------------------------------|
 | number_of_events  | How many events to show                                                                  | 5                            |
 | calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)             | calendar.llm_vision_timeline |
-| refresh_interval  | Refresh Interval (in minutes)                                                            | 1                            |
-| lang              | Language used to generate icons                                                          | en                           |
+| refresh_interval  | Refresh Interval (in seconds)                                                            | 10                           |
+| language          | Language used to generate icons                                                          | en                           |
