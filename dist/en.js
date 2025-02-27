@@ -55,7 +55,8 @@ export const en = {
                 "porch": "mdi:door",
                 "door": "mdi:door",
                 "window": "mdi:window-closed"
-            },
+            }
+        },
         "nature": {
             "objects": {
                 "garden": "mdi:flower",
@@ -66,4 +67,4 @@ export const en = {
         }
     },
     "regex": ""
-};
+}
