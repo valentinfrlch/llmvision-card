@@ -45,16 +45,16 @@ export const en = {
         },
         "objects": {
             "objects": {
-                "camera": "mdi:camera",
-                "sensor": "mdi:radar",
+                "camera": "mdi:cctv",
+                "sensor": "mdi:access-point",
                 "light": "mdi:lightbulb",
                 "key": "mdi:key",
                 "lock": "mdi:lock",
-                "alarm": "mdi:alarm",
+                "alarm": "mdi:siren",
                 "house": "mdi:home",
-                "porch": "mdi:door",
-                "door": "mdi:door",
-                "window": "mdi:window-closed"
+                "porch": "mdi:door_closed",
+                "door": "mdi:door_closed",
+                "window": "mdi:window-closed-variant"
             }
         },
         "nature": {

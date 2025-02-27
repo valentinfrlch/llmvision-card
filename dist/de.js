@@ -40,6 +40,20 @@ export const de = {
                 "brief": "mdi:email"
             }
         },
+        "objects": {
+            "objects": {
+                "kamera": "mdi:cctv",
+                "sensor": "mdi:access-point",
+                "licht": "mdi:lightbulb",
+                "schlüssel": "mdi:key",
+                "schloss": "mdi:lock",
+                "alarm": "mdi:siren",
+                "haus": "mdi:home",
+                "eingang": "mdi:door_closed",
+                "tür": "mdi:door_closed",
+                "fenster": "mdi:window-closed-variant"
+            }
+        },
         "nature": {
             "objects": {
                 "garten": "mdi:flower",

@@ -40,6 +40,20 @@ export const es = {
                 "carta": "mdi:email"
             }
         },
+        "objects": {
+            "objects": {
+                "cámara": "mdi:cctv",
+                "sensor": "mdi:access-point",
+                "luz": "mdi:lightbulb",
+                "llave": "mdi:key",
+                "cerradura": "mdi:lock",
+                "alarma": "mdi:siren",
+                "casa": "mdi:home",
+                "entrada": "mdi:door-closed",
+                "puerta": "mdi:door-closed",
+                "ventana": "mdi:window-closed-variant"
+            }
+        },
         "nature": {
             "objects": {
                 "jardín": "mdi:flower",

@@ -13,7 +13,7 @@ export const colors = {
             "colors": { "background": "#D6946D", "icon": "#EBDBD7" } // Orange, yellow
         },
         "objects": {
-            "colors": { "background": "#122C34", "icon": "#224870" } // dark blue, blue
+            "colors": { "background": "#1c6795", "icon": "#7fcfff" } // dark blue, blue
         },
         "nature": {
             "colors": { "background": "#00952F", "icon": "#42FF75" } // Green, lightgreen
