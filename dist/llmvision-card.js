@@ -125,7 +125,6 @@ class LLMVisionCard extends HTMLElement {
         const eventDetails = events.map((event, index) => {
             const cameraEntity = hass.states[cameraNames[index]];
             const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
-            console.log(`Event: ${event}, Summary: ${summaries[index]}, Key Frame: ${keyFrames[index]}, Camera: ${cameraFriendlyName}, Start Time: ${startTimes[index]}`);
             return {
                 event,
                 summary: summaries[index],

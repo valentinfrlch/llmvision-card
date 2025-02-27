@@ -43,6 +43,19 @@ export const en = {
                 "letter": "mdi:email"
             }
         },
+        "objects": {
+            "objects": {
+                "camera": "mdi:camera",
+                "sensor": "mdi:radar",
+                "light": "mdi:lightbulb",
+                "key": "mdi:key",
+                "lock": "mdi:lock",
+                "alarm": "mdi:alarm",
+                "house": "mdi:home",
+                "porch": "mdi:door",
+                "door": "mdi:door",
+                "window": "mdi:window-closed"
+            },
         "nature": {
             "objects": {
                 "garden": "mdi:flower",
