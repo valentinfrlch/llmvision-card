@@ -194,7 +194,6 @@ class LLMVisionCard extends HTMLElement {
             `;
 
             eventContainer.addEventListener('click', () => {
-                console.log(`Event clicked: ${event}, dateLabel: ${dateLabel}`);
                 this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
             });
 
