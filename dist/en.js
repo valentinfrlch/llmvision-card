@@ -50,10 +50,10 @@ export const en = {
                 "light": "mdi:lightbulb",
                 "key": "mdi:key",
                 "lock": "mdi:lock",
-                "alarm": "mdi:siren",
+                "alarm": "mdi:alarm-light",
                 "house": "mdi:home",
-                "porch": "mdi:door_closed",
-                "door": "mdi:door_closed",
+                "porch": "mdi:door-closed",
+                "door": "mdi:door-closed",
                 "window": "mdi:window-closed-variant"
             }
         },

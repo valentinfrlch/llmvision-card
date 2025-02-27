@@ -47,10 +47,10 @@ export const de = {
                 "licht": "mdi:lightbulb",
                 "schlüssel": "mdi:key",
                 "schloss": "mdi:lock",
-                "alarm": "mdi:siren",
+                "alarm": "mdi:alarm-light",
                 "haus": "mdi:home",
-                "eingang": "mdi:door_closed",
-                "tür": "mdi:door_closed",
+                "eingang": "mdi:door-closed",
+                "tür": "mdi:door-closed",
                 "fenster": "mdi:window-closed-variant"
             }
         },

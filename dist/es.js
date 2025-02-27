@@ -47,7 +47,7 @@ export const es = {
                 "luz": "mdi:lightbulb",
                 "llave": "mdi:key",
                 "cerradura": "mdi:lock",
-                "alarma": "mdi:siren",
+                "alarma": "mdi:alarm-light",
                 "casa": "mdi:home",
                 "entrada": "mdi:door-closed",
                 "puerta": "mdi:door-closed",
