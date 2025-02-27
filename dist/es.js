@@ -40,7 +40,7 @@ export const es = {
                 "carta": "mdi:email"
             }
         },
-        "objects": {
+        "entities": {
             "objects": {
                 "cámara": "mdi:cctv",
                 "sensor": "mdi:access-point",

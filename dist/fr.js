@@ -40,7 +40,7 @@ export const fr = {
                 "lettre": "mdi:email"
             }
         },
-        "objects": {
+        "entities": {
             "objects": {
                 "caméra": "mdi:cctv",
                 "capteur": "mdi:access-point",
