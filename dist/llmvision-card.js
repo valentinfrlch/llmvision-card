@@ -122,13 +122,18 @@ class LLMVisionCard extends HTMLElement {
         const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
         const startTimes = (calendarEntity.attributes.starts || []).slice()
 
-        const eventDetails = events.map((event, index) => ({
-            event,
-            summary: summaries[index],
-            keyFrame: keyFrames[index] || '',
-            cameraName: cameraNames[index] || '',
-            startTime: startTimes[index]
-        }));
+        const eventDetails = events.map((event, index) => {
+            const cameraEntity = hass.states[cameraNames[index]];
+            const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
+            console.log(`Event: ${event}, Summary: ${summaries[index]}, Key Frame: ${keyFrames[index]}, Camera: ${cameraFriendlyName}, Start Time: ${startTimes[index]}`);
+            return {
+                event,
+                summary: summaries[index],
+                keyFrame: keyFrames[index] || '',
+                cameraName: cameraFriendlyName,
+                startTime: startTimes[index]
+            };
+        });
 
         // Sort event details by start time
         eventDetails.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
