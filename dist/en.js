@@ -1,8 +1,15 @@
 export const en = {
+    "text": {
+        "noEvents": "No events",
+        "today": "Today",
+        "yesterday": "Yesterday"
+    },
     "categories": {
         "people": {
             "objects": {
                 "person": "mdi:walk",
+                "individual": "mdi:walk",
+                "figure": "mdi:walk",
                 "people": "mdi:walk",
                 "child": "mdi:walk",
                 "woman": "mdi:walk",

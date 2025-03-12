@@ -1,4 +1,4 @@
-import { getIcon } from './helpers.js';
+import { getIcon, translate } from './helpers.js';
 
 class LLMVisionCard extends HTMLElement {
 
@@ -140,6 +140,17 @@ class LLMVisionCard extends HTMLElement {
         // Clear previous content
         this.content.innerHTML = '';
 
+        // Handle empty events (when calendar is fetching events)
+        if (events.length === 0) {
+            const loadingContainer = document.createElement('div');
+            loadingContainer.innerHTML = `
+                <div class="event-container">
+                    <h3>${translate('noEvents', this.language)}</h3>
+                </div>
+            `;
+            this.content.appendChild(loadingContainer);
+        }
+
         // Add events and key frames for the specified number of events
         let lastDate = '';
 
@@ -164,9 +175,9 @@ class LLMVisionCard extends HTMLElement {
 
             let dateLabel;
             if (date.toDateString() === today.toDateString()) {
-                dateLabel = 'Today';
+                dateLabel = translate('today', this.language);
             } else if (date.toDateString() === yesterday.toDateString()) {
-                dateLabel = 'Yesterday';
+                dateLabel = translate('yesterday', this.language);
             } else {
                 dateLabel = formattedDate;
             }
@@ -329,6 +340,24 @@ class LLMVisionCard extends HTMLElement {
                 this.closePopup(popup);
             }
         });
+
+        // Add event listener for Escape key
+        const escKeyHandler = (event) => {
+            if (event.key === 'Escape') {
+                closePopupHandler();
+            }
+        };
+        document.addEventListener('keydown', escKeyHandler);
+
+        // Add event listener for Android back button
+        const popStateHandler = () => {
+            closePopupHandler();
+        };
+        window.addEventListener('popstate', popStateHandler);
+
+        // Store handlers to remove them later
+        popup._escKeyHandler = escKeyHandler;
+        popup._popStateHandler = popStateHandler;
     }
 
     closePopup(popup) {

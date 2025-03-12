@@ -1,4 +1,9 @@
 export const es = {
+    "text": {
+        "noEvents": "No hay eventos",
+        "today": "Hoy",
+        "yesterday": "Ayer"
+    },
     "categories": {
         "people": {
             "objects": {

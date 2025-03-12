@@ -1,4 +1,9 @@
 export const fr = {
+    "text": {
+        "noEvents": "Aucun événement",
+        "today": "Aujourd'hui",
+        "yesterday": "Hier"
+    },
     "categories": {
         "people": {
             "objects": {
