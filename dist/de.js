@@ -26,7 +26,9 @@ export const de = {
                 "van": "mdi:car",
                 "suv": "mdi:car",
                 "fahrzeug": "mdi:car",
-                "lastwagen": "mdi:truck"
+                "lastwagen": "mdi:truck",
+                "strasse": "mdi:road-variant",
+                "einfahrt": "mdi:road-variant"
             }
         },
         "animals": {

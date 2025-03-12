@@ -29,7 +29,9 @@ export const nl = {
                 "bestelwagen": "mdi:car",
                 "suv": "mdi:car",
                 "voertuig": "mdi:car",
-                "vrachtwagen": "mdi:truck"
+                "vrachtwagen": "mdi:truck",
+                "straat": "mdi:road-variant",
+                "oprit": "mdi:road-variant"
             }
         },
         "animals": {

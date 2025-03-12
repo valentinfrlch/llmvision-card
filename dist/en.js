@@ -30,7 +30,9 @@ export const en = {
                 "van": "mdi:car",
                 "suv": "mdi:car",
                 "vehicle": "mdi:car",
-                "truck": "mdi:truck"
+                "truck": "mdi:truck",
+                "street": "mdi:road-variant",
+                "driveway": "mdi:road-variant"
             }
         },
         "animals": {

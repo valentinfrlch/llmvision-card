@@ -342,22 +342,16 @@ class LLMVisionCard extends HTMLElement {
         });
 
         // Add event listener for Escape key
-        const escKeyHandler = (event) => {
+        document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                closePopupHandler();
+                this.closePopup(popup);
             }
-        };
-        document.addEventListener('keydown', escKeyHandler);
+        });
 
-        // Add event listener for Android back button
-        const popStateHandler = () => {
-            closePopupHandler();
-        };
-        window.addEventListener('popstate', popStateHandler);
-
-        // Store handlers to remove them later
-        popup._escKeyHandler = escKeyHandler;
-        popup._popStateHandler = popStateHandler;
+        // add event listener for 'back' button on android
+        window.addEventListener('popstate', () => {
+            this.closePopup(popup);
+        });
     }
 
     closePopup(popup) {
