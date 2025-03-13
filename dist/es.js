@@ -1,4 +1,9 @@
 export const es = {
+    "text": {
+        "noEvents": "No hay eventos",
+        "today": "Hoy",
+        "yesterday": "Ayer"
+    },
     "categories": {
         "people": {
             "objects": {
@@ -21,7 +26,9 @@ export const es = {
                 "furgoneta": "mdi:car",
                 "suv": "mdi:car",
                 "vehículo": "mdi:car",
-                "camión": "mdi:truck"
+                "camión": "mdi:truck",
+                "calle": "mdi:road-variant",
+                "calzada": "mdi:road-variant"
             }
         },
         "animals": {

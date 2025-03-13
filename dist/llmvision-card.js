@@ -1,4 +1,4 @@
-import { getIcon } from './helpers.js';
+import { getIcon, translate } from './helpers.js';
 
 class LLMVisionCard extends HTMLElement {
 
@@ -140,6 +140,17 @@ class LLMVisionCard extends HTMLElement {
         // Clear previous content
         this.content.innerHTML = '';
 
+        // Handle empty events (when calendar is fetching events)
+        if (events.length === 0) {
+            const loadingContainer = document.createElement('div');
+            loadingContainer.innerHTML = `
+                <div class="event-container">
+                    <h3>${translate('noEvents', this.language)}</h3>
+                </div>
+            `;
+            this.content.appendChild(loadingContainer);
+        }
+
         // Add events and key frames for the specified number of events
         let lastDate = '';
 
@@ -164,9 +175,9 @@ class LLMVisionCard extends HTMLElement {
 
             let dateLabel;
             if (date.toDateString() === today.toDateString()) {
-                dateLabel = 'Today';
+                dateLabel = translate('today', this.language);
             } else if (date.toDateString() === yesterday.toDateString()) {
-                dateLabel = 'Yesterday';
+                dateLabel = translate('yesterday', this.language);
             } else {
                 dateLabel = formattedDate;
             }
@@ -328,6 +339,18 @@ class LLMVisionCard extends HTMLElement {
             if (event.target === popup.querySelector('.popup-overlay')) {
                 this.closePopup(popup);
             }
+        });
+
+        // Add event listener for Escape key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                this.closePopup(popup);
+            }
+        });
+
+        // add event listener for 'back' button on android
+        window.addEventListener('popstate', () => {
+            this.closePopup(popup);
         });
     }
 

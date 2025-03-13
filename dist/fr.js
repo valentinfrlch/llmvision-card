@@ -1,4 +1,9 @@
 export const fr = {
+    "text": {
+        "noEvents": "Aucun événement",
+        "today": "Aujourd'hui",
+        "yesterday": "Hier"
+    },
     "categories": {
         "people": {
             "objects": {
@@ -21,7 +26,9 @@ export const fr = {
                 "fourgon": "mdi:car",
                 "suv": "mdi:car",
                 "véhicule": "mdi:car",
-                "camion": "mdi:truck"
+                "camion": "mdi:truck",
+                "rue": "mdi:road-variant",
+                "voie": "mdi:road-variant"
             }
         },
         "animals": {

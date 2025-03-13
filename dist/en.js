@@ -1,8 +1,15 @@
 export const en = {
+    "text": {
+        "noEvents": "No events",
+        "today": "Today",
+        "yesterday": "Yesterday"
+    },
     "categories": {
         "people": {
             "objects": {
                 "person": "mdi:walk",
+                "individual": "mdi:walk",
+                "figure": "mdi:walk",
                 "people": "mdi:walk",
                 "child": "mdi:walk",
                 "woman": "mdi:walk",
@@ -23,7 +30,9 @@ export const en = {
                 "van": "mdi:car",
                 "suv": "mdi:car",
                 "vehicle": "mdi:car",
-                "truck": "mdi:truck"
+                "truck": "mdi:truck",
+                "street": "mdi:road-variant",
+                "driveway": "mdi:road-variant"
             }
         },
         "animals": {
