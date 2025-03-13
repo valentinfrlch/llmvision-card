@@ -144,7 +144,7 @@ class LLMVisionCard extends HTMLElement {
         if (events.length === 0) {
             const loadingContainer = document.createElement('div');
             loadingContainer.innerHTML = `
-                <div class="event-container">
+                <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
                     <h3>${translate('noEvents', this.language)}</h3>
                 </div>
             `;
