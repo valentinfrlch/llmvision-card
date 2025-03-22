@@ -1,8 +1,8 @@
 export const pl = {
   text: {
-    noEvents: "Brak aktywnosci",
-    today: "Dzis",
-    yesterday: "Wczoraj",
+    "noEvents": "Brak aktywnosci",
+    "today": "Dzis",
+    "yesterday": "Wczoraj"
   },
   categories: {
     people: {
@@ -66,6 +66,7 @@ export const pl = {
         okno: "mdi:window-closed-variant",
         brama: "mdi:gate",
         bramy: "mdi:gate",
+        "Brak aktywnosci": "mdi:alpha-x"
       },
     },
     nature: {
