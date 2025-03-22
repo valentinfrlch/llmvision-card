@@ -1,8 +1,8 @@
 export const pl = {
   text: {
-    noEvents: "No events",
-    today: "Today",
-    yesterday: "Yesterday",
+    noEvents: "Brak aktywnosci",
+    today: "Dzis",
+    yesterday: "Wczoraj",
   },
   categories: {
     people: {
@@ -38,8 +38,9 @@ export const pl = {
       objects: {
         pies: "mdi:dog",
         kot: "mdi:cat",
+        kotek: "mdi:cat",
+        piesek: "mdi:dog",
         ptak: "mdi:duck",
-        "zwierze domowe": "mdi:dog",
         zwierze: "mdi:dog",
       },
     },
@@ -63,6 +64,8 @@ export const pl = {
         weranda: "mdi:door-closed",
         drzwi: "mdi:door-closed",
         okno: "mdi:window-closed-variant",
+        brama: "mdi:gate",
+        bramy: "mdi:gate",
       },
     },
     nature: {
