@@ -58,7 +58,7 @@ const translations = {
   fr: fr.text,
   es: es.text,
   pt: pt.text,
-  pt: pl.text,
+  pl: pl.text,
 };
 
 export function translate(key, language) {
