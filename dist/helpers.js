@@ -5,7 +5,7 @@ import { nl } from './nl.js';
 import { en } from './en.js';
 import { es } from './es.js';
 import { pt } from './pt.js';
-import { it } from './pt.js';
+import { it } from './it.js';
 
 export function getIcon(title, lang = 'en') {
     let categories;
