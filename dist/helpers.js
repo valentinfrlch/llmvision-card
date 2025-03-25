@@ -5,6 +5,7 @@ import { nl } from './nl.js';
 import { en } from './en.js';
 import { es } from './es.js';
 import { pt } from './pt.js';
+import { pl } from './pl.js';
 
 export function getIcon(title, lang = 'en') {
     let categories;
@@ -22,6 +23,8 @@ export function getIcon(title, lang = 'en') {
             categories = es.categories;
         } else if (lang === 'pt') {
             categories = pt.categories;
+        } else if (lang === 'pl') {
+            categories = pl.categories;
         } else {
             throw new Error(`Unsupported language: ${lang}`);
         }
@@ -51,6 +54,7 @@ const translations = {
     fr: fr.text,
     es: es.text,
     pt: pt.text,
+    pl: pl.text,
 };
 
 export function translate(key, language) {
