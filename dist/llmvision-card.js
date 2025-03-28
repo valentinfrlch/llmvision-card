@@ -324,44 +324,59 @@ class LLMVisionCard extends HTMLElement {
             </style>
         `;
 
+        // Push a new history state
+        if (!history.state || !history.state.popupOpen) {
+            history.pushState({ popupOpen: true }, '');
+        }
+
+        // Define the popstate handler
+        const popstateHandler = () => {
+            this.closePopup(popup, popstateHandler);
+        };
+
+        // Add the popstate event listener
+        window.addEventListener('popstate', popstateHandler);
+
+        // Add other event listeners for closing the popup
+        popup.querySelector('.close-popup').addEventListener('click', () => {
+            this.closePopup(popup, popstateHandler);
+        });
+
+        popup.querySelector('.popup-overlay').addEventListener('click', (event) => {
+            if (event.target === popup.querySelector('.popup-overlay')) {
+                this.closePopup(popup, popstateHandler);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                this.closePopup(popup, popstateHandler);
+            }
+        });
+
+        // Add the popup to the DOM
         document.body.appendChild(popup);
-        history.pushState({ popupOpen: true }, '');
 
         // Add the show class to trigger the animation
         requestAnimationFrame(() => {
             popup.querySelector('.popup-overlay').classList.add('show');
         });
-
-        popup.querySelector('.close-popup').addEventListener('click', () => {
-            this.closePopup(popup);
-        });
-
-        popup.querySelector('.popup-overlay').addEventListener('click', (event) => {
-            if (event.target === popup.querySelector('.popup-overlay')) {
-                this.closePopup(popup);
-            }
-        });
-
-        // Add event listener for Escape key
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                this.closePopup(popup);
-            }
-        });
-
-        // add event listener for 'back' button on android
-        window.addEventListener('popstate', () => {
-            this.closePopup(popup);
-        });
     }
 
-    closePopup(popup) {
+    closePopup(popup, popstateHandler) {
         // Remove the show class to trigger the closing animation
         popup.querySelector('.popup-overlay').classList.remove('show');
         popup.querySelector('.popup-overlay').addEventListener('transitionend', () => {
             document.body.removeChild(popup);
         }, { once: true });
-        history.back();
+
+        // Clean up the history state
+        if (history.state && history.state.popupOpen) {
+            history.replaceState(null, ''); // Replace the current state to avoid navigating back
+        }
+
+        // Remove the popstate event listener
+        window.removeEventListener('popstate', popstateHandler);
     }
 
     static getStubConfig() {
