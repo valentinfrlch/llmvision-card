@@ -325,6 +325,7 @@ class LLMVisionCard extends HTMLElement {
         `;
 
         document.body.appendChild(popup);
+        history.pushState({ popupOpen: true }, '');
 
         // Add the show class to trigger the animation
         requestAnimationFrame(() => {
@@ -360,6 +361,7 @@ class LLMVisionCard extends HTMLElement {
         popup.querySelector('.popup-overlay').addEventListener('transitionend', () => {
             document.body.removeChild(popup);
         }, { once: true });
+        history.back();
     }
 
     static getStubConfig() {
