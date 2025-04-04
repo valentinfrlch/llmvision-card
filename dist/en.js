@@ -14,7 +14,8 @@ export const en = {
                 "child": "mdi:walk",
                 "woman": "mdi:walk",
                 "man": "mdi:walk",
-                "human": "mdi:walk"
+                "human": "mdi:walk",
+                "cyclist": "mdi:bike",
             }
         },
         "vehicles": {
@@ -32,6 +33,7 @@ export const en = {
                 "vehicle": "mdi:car",
                 "truck": "mdi:truck",
                 "street": "mdi:road-variant",
+                "path": "mdi:road-variant",
                 "driveway": "mdi:road-variant"
             }
         },

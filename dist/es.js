@@ -12,7 +12,8 @@ export const es = {
                 "niño": "mdi:walk",
                 "mujer": "mdi:walk",
                 "hombre": "mdi:walk",
-                "humano": "mdi:walk"
+                "humano": "mdi:walk",
+                "ciclista": "mdi:bike"
             }
         },
         "vehicles": {
@@ -28,6 +29,7 @@ export const es = {
                 "vehículo": "mdi:car",
                 "camión": "mdi:truck",
                 "calle": "mdi:road-variant",
+                "carretera": "mdi:road-variant",
                 "calzada": "mdi:road-variant"
             }
         },
