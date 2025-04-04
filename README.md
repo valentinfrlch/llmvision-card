@@ -54,8 +54,7 @@ Alternatively you can add the url of this repository to the custom respositories
 | number_of_events  | How many events to show. Maximum is 10.                                                         | 5                            |
 | calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                    |`calendar.llm_vision_timeline`|
 | refresh_interval  | Refresh Interval (in seconds)                                                                   | 10                           |
-| language          | Language used for UI and generate icons (supports: `en`, `de`, `nl`, `fr`, `es`, `pt`, `pl`, `sv`)    | `en`                         |
-
+| language          | Language used for UI and generate icons (supports: `en`, `de`, `nl`, `fr`, `es`, `pt`, `pl`, `sv`, `it`)    | `en`                         |
 
 ## Support
 You can support this project by starring this GitHub repository. If you want, you can also buy me a coffee here:  

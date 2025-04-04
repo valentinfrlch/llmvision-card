@@ -7,6 +7,7 @@ import { es } from './es.js';
 import { pt } from './pt.js';
 import { sv } from './sv.js';
 import { pl } from './pl.js';
+import { it } from './it.js';
 
 export function getIcon(title, lang = 'en') {
     let categories;
@@ -26,6 +27,8 @@ export function getIcon(title, lang = 'en') {
             categories = pt.categories;
         } else if (lang === 'sv') {
             categories = sv.categories;
+        } else if (lang === 'it') {
+            categories = it.categories;
         } else if (lang === 'pl') {
             categories = pl.categories;
         } else {
@@ -59,6 +62,7 @@ const translations = {
     pt: pt.text,
     sv: sv.text,
     pl: pl.text,
+    it: it.text,
 };
 
 export function translate(key, language) {
