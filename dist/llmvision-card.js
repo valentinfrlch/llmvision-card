@@ -9,11 +9,11 @@ class LLMVisionCard extends HTMLElement {
     // required
     setConfig(config) {
         this.config = config;
-        this.calendar_entity = config.calendar_entity || 'calendar.llm_vision_timeline';
-        this.number_of_events = config.number_of_events || 5;
+        this.calendar_entity = config.calendar_entity;
+        this.number_of_events = config.number_of_events;
         this.number_of_hours = config.number_of_hours;
-        this.refresh_interval = config.refresh_interval || 10;
-        this.language = config.language || 'en';
+        this.refresh_interval = config.refresh_interval;
+        this.language = config.language;
 
         if (!this.calendar_entity) {
             throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
@@ -402,7 +402,7 @@ class LLMVisionCard extends HTMLElement {
     }
 
     static getStubConfig() {
-        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_events: 5, refresh_interval: 10 };
+        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_events: 5, refresh_interval: 10, language: 'en' };
     }
 }
 
