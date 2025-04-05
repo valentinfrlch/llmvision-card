@@ -11,8 +11,22 @@ class LLMVisionCard extends HTMLElement {
         this.config = config;
         this.calendar_entity = config.calendar_entity || 'calendar.llm_vision_timeline';
         this.number_of_events = config.number_of_events || 5;
+        this.number_of_hours = config.number_of_hours;
         this.refresh_interval = config.refresh_interval || 10;
         this.language = config.language || 'en';
+
+        if (!this.calendar_entity) {
+            throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
+        }
+        if (!this.number_of_events && !this.number_of_hours) {
+            throw new Error('Either number_of_events or number_of_hours needs to be set.');
+        }
+        if (this.number_of_events && this.number_of_hours) {
+            throw new Error('You can only set either number_of_events or number_of_hours, not both.');
+        }
+        if (this.number_of_events < 1) {
+            throw new Error('number_of_events must be greater than 0.');
+        }
     }
 
     set hass(hass) {
@@ -110,6 +124,7 @@ class LLMVisionCard extends HTMLElement {
 
         const calendarEntity = hass.states[this.calendar_entity];
         const numberOfEvents = this.number_of_events;
+        const numberOfHours = this.number_of_hours;
 
         if (!calendarEntity) {
             console.error('Calendar entity not found:', this.calendar_entity);
@@ -134,6 +149,12 @@ class LLMVisionCard extends HTMLElement {
             };
         });
 
+        // Filter events based on numberOfHours if set
+        if (numberOfHours) {
+            const cutoffTime = new Date().getTime() - numberOfHours * 60 * 60 * 1000;
+            eventDetails = eventDetails.filter(detail => new Date(detail.startTime).getTime() >= cutoffTime);
+        }
+
         // Sort event details by start time
         eventDetails.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
 
@@ -154,7 +175,7 @@ class LLMVisionCard extends HTMLElement {
         // Add events and key frames for the specified number of events
         let lastDate = '';
 
-        for (let i = 0; i < Math.min(numberOfEvents, events.length); i++) {
+        for (let i = 0; i < (numberOfHours ? eventDetails.length : Math.min(numberOfEvents, eventDetails.length)); i++) {
             const { event, summary, startTime, cameraName } = eventDetails[i];
             let keyFrame = eventDetails[i].keyFrame;
             const date = new Date(startTime);
@@ -166,6 +187,7 @@ class LLMVisionCard extends HTMLElement {
             const { icon, backgroundColor, iconColor } = getIcon(event, this.language);
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
+            // TODO: Get config dir path from Home Assistant
             keyFrame = keyFrame.replace('/config/www/', '/local/');
 
             // Determine the date label

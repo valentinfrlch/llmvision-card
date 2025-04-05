@@ -26,7 +26,7 @@
   <a href="https://llmvision.org"> Visit Website →</a>
     </p>
 
-<img src="https://github.com/user-attachments/assets/97f6e608-bdf3-44d1-89f1-fd89cda7b764" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="50%" height="auto" />
+<img src="https://github.com/user-attachments/assets/97f6e608-bdf3-44d1-89f1-fd89cda7b764" width="50%" height="auto" />
 
 ## Prerequisites
 1. [LLM Vision](https://github.com/valentinfrlch/ha-llmvision) set up in Home Assistant
@@ -49,11 +49,12 @@ Alternatively you can add the url of this repository to the custom respositories
 
 ## Configuration
 
-| Parameter         | Description                                                                                     | Default                      |
-|-------------------|-------------------------------------------------------------------------------------------------|------------------------------|
-| number_of_events  | How many events to show. Maximum is 10.                                                         | 5                            |
-| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                    |`calendar.llm_vision_timeline`|
-| refresh_interval  | Refresh Interval (in seconds)                                                                   | 10                           |
+| Parameter         | Description                                                                                                 | Default                      |
+|-------------------|-------------------------------------------------------------------------------------------------------------|------------------------------|
+| number_of_events  | How many events to show. Maximum is 10.                                                                     | 5                            |
+| number_of_hours   | Show events that occurred within the past specified number of hours.                                        | 10                           |
+| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
+| refresh_interval  | Refresh Interval (in seconds)                                                                               | 10                           |
 | language          | Language used for UI and generate icons (supports: `en`, `de`, `nl`, `fr`, `es`, `pt`, `pl`, `sv`, `it`)    | `en`                         |
 
 ## Support
