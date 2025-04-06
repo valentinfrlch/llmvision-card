@@ -21,9 +21,6 @@ class LLMVisionCard extends HTMLElement {
         if (!this.number_of_events && !this.number_of_hours) {
             throw new Error('Either number_of_events or number_of_hours needs to be set.');
         }
-        if (this.number_of_events && this.number_of_hours) {
-            throw new Warning('Both number_of_events and number_of_hours are set. Card will show only events that match both filters.');
-        }
         if (this.number_of_events < 1) {
             throw new Error('number_of_events must be greater than 0.');
         }
