@@ -150,6 +150,10 @@ class LLMVisionCard extends HTMLElement {
         if (numberOfHours) {
             const cutoffTime = new Date().getTime() - numberOfHours * 60 * 60 * 1000;
             eventDetails = eventDetails.filter(detail => new Date(detail.startTime).getTime() >= cutoffTime);
+            if (numberOfEvents) {
+                // Limit the number of events to display if numberOfEvents is set
+                eventDetails = eventDetails.slice(0, numberOfEvents);
+            }
         }
 
         // Sort event details by start time
