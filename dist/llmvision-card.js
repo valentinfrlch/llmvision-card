@@ -172,6 +172,18 @@ class LLMVisionCard extends HTMLElement {
             this.content.appendChild(loadingContainer);
         }
 
+        if (numberOfHours && eventDetails.length === 0) {
+            const noEventsContainer = document.createElement('div');
+            const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
+            noEventsContainer.innerHTML = `
+                <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <h3>${noEventsMessage}</h3>
+                </div>
+            `;
+            this.content.appendChild(noEventsContainer);
+            return;
+        }
+
         // Add events and key frames for the specified number of events
         let lastDate = '';
 

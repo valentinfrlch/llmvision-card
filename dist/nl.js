@@ -1,6 +1,7 @@
 export const nl = {
     "text": {
         "noEvents": "Geen evenementen",
+        "noEventsHours": "Geen evenementen in de afgelopen {hours} uur",
         "today": "Vandaag",
         "yesterday": "Gisteren"
     },

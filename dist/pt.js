@@ -1,6 +1,7 @@
 export const pt = {
     "text": {
         "noEvents": "Nenhum Evento",
+        "noEventsHours": "Nenhum Evento nas últimas {hours} horas",
         "today": "Hoje",
         "yesterday": "Ontem"
     },

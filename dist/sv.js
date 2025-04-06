@@ -1,6 +1,7 @@
 export const sv = {
     "text": {
         "noEvents": "Inga händelser",
+        "noEventsHours": "Inga händelser de senaste {hours} timmarna",
         "today": "Idag",
         "yesterday": "Igår"
     },

@@ -1,6 +1,7 @@
 export const en = {
     "text": {
         "noEvents": "No events",
+        "noEventsHours": "No events in the last {hours} hours",
         "today": "Today",
         "yesterday": "Yesterday"
     },
