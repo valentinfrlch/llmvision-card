@@ -1,6 +1,7 @@
 export const es = {
     "text": {
         "noEvents": "No hay eventos",
+        "noEventsHours": "No hay eventos en las últimas {hours} horas",
         "today": "Hoy",
         "yesterday": "Ayer"
     },
@@ -12,7 +13,8 @@ export const es = {
                 "niño": "mdi:walk",
                 "mujer": "mdi:walk",
                 "hombre": "mdi:walk",
-                "humano": "mdi:walk"
+                "humano": "mdi:walk",
+                "ciclista": "mdi:bike"
             }
         },
         "vehicles": {
@@ -28,6 +30,7 @@ export const es = {
                 "vehículo": "mdi:car",
                 "camión": "mdi:truck",
                 "calle": "mdi:road-variant",
+                "carretera": "mdi:road-variant",
                 "calzada": "mdi:road-variant"
             }
         },

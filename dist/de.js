@@ -1,6 +1,7 @@
 export const de = {
     "text": {
         "noEvents": "Keine Ereignisse",
+        "noEventsHours": "Keine Ereignisse in den letzten {hours} Stunden",
         "today": "Heute",
         "yesterday": "Gestern"
     },
@@ -12,7 +13,9 @@ export const de = {
                 "kind": "mdi:walk",
                 "frau": "mdi:walk",
                 "mann": "mdi:walk",
-                "mensch": "mdi:walk"
+                "mensch": "mdi:walk",
+                "radfahrer": "mdi:bike",
+                "fahrradfahrer": "mdi:bike"
             }
         },
         "vehicles": {
@@ -28,6 +31,7 @@ export const de = {
                 "fahrzeug": "mdi:car",
                 "lastwagen": "mdi:truck",
                 "strasse": "mdi:road-variant",
+                "weg": "mdi:road-variant",
                 "einfahrt": "mdi:road-variant"
             }
         },

@@ -9,10 +9,21 @@ class LLMVisionCard extends HTMLElement {
     // required
     setConfig(config) {
         this.config = config;
-        this.calendar_entity = config.calendar_entity || 'calendar.llm_vision_timeline';
-        this.number_of_events = config.number_of_events || 5;
-        this.refresh_interval = config.refresh_interval || 10;
-        this.language = config.language || 'en';
+        this.calendar_entity = config.calendar_entity;
+        this.number_of_events = config.number_of_events;
+        this.number_of_hours = config.number_of_hours;
+        this.refresh_interval = config.refresh_interval;
+        this.language = config.language;
+
+        if (!this.calendar_entity) {
+            throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
+        }
+        if (!this.number_of_events && !this.number_of_hours) {
+            throw new Error('Either number_of_events or number_of_hours needs to be set.');
+        }
+        if (this.number_of_events < 1) {
+            throw new Error('number_of_events must be greater than 0.');
+        }
     }
 
     set hass(hass) {
@@ -110,6 +121,7 @@ class LLMVisionCard extends HTMLElement {
 
         const calendarEntity = hass.states[this.calendar_entity];
         const numberOfEvents = this.number_of_events;
+        const numberOfHours = this.number_of_hours;
 
         if (!calendarEntity) {
             console.error('Calendar entity not found:', this.calendar_entity);
@@ -122,7 +134,7 @@ class LLMVisionCard extends HTMLElement {
         const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
         const startTimes = (calendarEntity.attributes.starts || []).slice()
 
-        const eventDetails = events.map((event, index) => {
+        let eventDetails = events.map((event, index) => {
             const cameraEntity = hass.states[cameraNames[index]];
             const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
             return {
@@ -133,6 +145,16 @@ class LLMVisionCard extends HTMLElement {
                 startTime: startTimes[index]
             };
         });
+
+        // Filter events based on numberOfHours if set
+        if (numberOfHours) {
+            const cutoffTime = new Date().getTime() - numberOfHours * 60 * 60 * 1000;
+            eventDetails = eventDetails.filter(detail => new Date(detail.startTime).getTime() >= cutoffTime);
+            if (numberOfEvents) {
+                // Limit the number of events to display if numberOfEvents is set
+                eventDetails = eventDetails.slice(0, numberOfEvents);
+            }
+        }
 
         // Sort event details by start time
         eventDetails.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
@@ -151,10 +173,22 @@ class LLMVisionCard extends HTMLElement {
             this.content.appendChild(loadingContainer);
         }
 
+        if (numberOfHours && eventDetails.length === 0) {
+            const noEventsContainer = document.createElement('div');
+            const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
+            noEventsContainer.innerHTML = `
+                <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <h3>${noEventsMessage}</h3>
+                </div>
+            `;
+            this.content.appendChild(noEventsContainer);
+            return;
+        }
+
         // Add events and key frames for the specified number of events
         let lastDate = '';
 
-        for (let i = 0; i < Math.min(numberOfEvents, events.length); i++) {
+        for (let i = 0; i < (numberOfHours ? eventDetails.length : Math.min(numberOfEvents, eventDetails.length)); i++) {
             const { event, summary, startTime, cameraName } = eventDetails[i];
             let keyFrame = eventDetails[i].keyFrame;
             const date = new Date(startTime);
@@ -324,46 +358,63 @@ class LLMVisionCard extends HTMLElement {
             </style>
         `;
 
+        // Push a new history state
+        if (!history.state || !history.state.popupOpen) {
+            history.pushState({ popupOpen: true }, '');
+        }
+
+        // Define the popstate handler
+        const popstateHandler = () => {
+            this.closePopup(popup, popstateHandler);
+        };
+
+        // Add the popstate event listener
+        window.addEventListener('popstate', popstateHandler);
+
+        // Add other event listeners for closing the popup
+        popup.querySelector('.close-popup').addEventListener('click', () => {
+            this.closePopup(popup, popstateHandler);
+        });
+
+        popup.querySelector('.popup-overlay').addEventListener('click', (event) => {
+            if (event.target === popup.querySelector('.popup-overlay')) {
+                this.closePopup(popup, popstateHandler);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                this.closePopup(popup, popstateHandler);
+            }
+        });
+
+        // Add the popup to the DOM
         document.body.appendChild(popup);
 
         // Add the show class to trigger the animation
         requestAnimationFrame(() => {
             popup.querySelector('.popup-overlay').classList.add('show');
         });
-
-        popup.querySelector('.close-popup').addEventListener('click', () => {
-            this.closePopup(popup);
-        });
-
-        popup.querySelector('.popup-overlay').addEventListener('click', (event) => {
-            if (event.target === popup.querySelector('.popup-overlay')) {
-                this.closePopup(popup);
-            }
-        });
-
-        // Add event listener for Escape key
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                this.closePopup(popup);
-            }
-        });
-
-        // add event listener for 'back' button on android
-        window.addEventListener('popstate', () => {
-            this.closePopup(popup);
-        });
     }
 
-    closePopup(popup) {
+    closePopup(popup, popstateHandler) {
         // Remove the show class to trigger the closing animation
         popup.querySelector('.popup-overlay').classList.remove('show');
         popup.querySelector('.popup-overlay').addEventListener('transitionend', () => {
             document.body.removeChild(popup);
         }, { once: true });
+
+        // Clean up the history state
+        if (history.state && history.state.popupOpen) {
+            history.replaceState(null, ''); // Replace the current state to avoid navigating back
+        }
+
+        // Remove the popstate event listener
+        window.removeEventListener('popstate', popstateHandler);
     }
 
     static getStubConfig() {
-        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_events: 5, refresh_interval: 10 };
+        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_events: 5, refresh_interval: 10, language: 'en' };
     }
 }
 

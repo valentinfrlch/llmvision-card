@@ -4,7 +4,7 @@
 <h1 align=center>Timeline Card</h1>
 <p align=center>
 <img src=https://img.shields.io/badge/HACS-Custom-orange.svg>
-<img src=https://img.shields.io/badge/version-1.4.0-blue>
+<img src=https://img.shields.io/badge/version-1.4.2-blue>
 <img src="https://img.shields.io/maintenance/yes/2025.svg">
 <img alt="Issues" src="https://img.shields.io/github/issues/valentinfrlch/llmvision-card?color=0088ff"/>
 <img alt="Static Badge" src="https://img.shields.io/badge/support-buymeacoffee?logo=buymeacoffee&logoColor=black&color=%23FFDD00&link=https%3A%2F%2Fbuymeacoffee.com%2Fvalentinfrlch">
@@ -26,7 +26,7 @@
   <a href="https://llmvision.org"> Visit Website →</a>
     </p>
 
-<img src="https://github.com/user-attachments/assets/97f6e608-bdf3-44d1-89f1-fd89cda7b764" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="50%" height="auto" />
+<img src="https://github.com/user-attachments/assets/97f6e608-bdf3-44d1-89f1-fd89cda7b764" width="50%" height="auto" />
 
 ## Prerequisites
 1. [LLM Vision](https://github.com/valentinfrlch/ha-llmvision) set up in Home Assistant
@@ -48,13 +48,17 @@ Alternatively you can add the url of this repository to the custom respositories
 3. Add the card to your dashboard
 
 ## Configuration
+>[!TIP]
+>If both `number_of_events` and `number_of_hours` are set, the card will show events that occurred within the past specified number of hours, up to the specified number of events.
 
-| Parameter         | Description                                                                              | Default                      |
-|-------------------|------------------------------------------------------------------------------------------|------------------------------|
-| number_of_events  | How many events to show                                                                  | 5                            |
-| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)             | calendar.llm_vision_timeline |
-| refresh_interval  | Refresh Interval (in seconds)                                                            | 10                           |
-| language          | Language used for UI and generate icons (supports: `en`, `de`, `nl`, `fr`, `es`, `pt`)         | `en`                         |
+
+| Parameter         | Description                                                                                                 | Default                      |
+|-------------------|-------------------------------------------------------------------------------------------------------------|------------------------------|
+| number_of_events  | How many events to show. Maximum is 10.                                                                     | 5                            |
+| number_of_hours   | Show events that occurred within the past specified number of hours.                                        | 10                           |
+| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
+| refresh_interval  | Refresh Interval (in seconds)                                                                               | 10                           |
+| language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`)    | `en`                         |
 
 ## Support
 You can support this project by starring this GitHub repository. If you want, you can also buy me a coffee here:  

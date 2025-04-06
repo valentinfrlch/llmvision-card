@@ -1,6 +1,7 @@
 export const nl = {
     "text": {
         "noEvents": "Geen evenementen",
+        "noEventsHours": "Geen evenementen in de afgelopen {hours} uur",
         "today": "Vandaag",
         "yesterday": "Gisteren"
     },
@@ -14,7 +15,8 @@ export const nl = {
                 "kind": "mdi:walk",
                 "vrouw": "mdi:walk",
                 "man": "mdi:walk",
-                "mens": "mdi:walk"
+                "mens": "mdi:walk",
+                "fietser": "mdi:bike"
             }
         },
         "vehicles": {
@@ -31,6 +33,7 @@ export const nl = {
                 "voertuig": "mdi:car",
                 "vrachtwagen": "mdi:truck",
                 "straat": "mdi:road-variant",
+                "weg": "mdi:road-variant",
                 "oprit": "mdi:road-variant"
             }
         },
