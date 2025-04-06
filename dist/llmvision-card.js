@@ -137,7 +137,7 @@ class LLMVisionCard extends HTMLElement {
         const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
         const startTimes = (calendarEntity.attributes.starts || []).slice()
 
-        const eventDetails = events.map((event, index) => {
+        let eventDetails = events.map((event, index) => {
             const cameraEntity = hass.states[cameraNames[index]];
             const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
             return {
@@ -187,7 +187,6 @@ class LLMVisionCard extends HTMLElement {
             const { icon, backgroundColor, iconColor } = getIcon(event, this.language);
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
-            // TODO: Get config dir path from Home Assistant
             keyFrame = keyFrame.replace('/config/www/', '/local/');
 
             // Determine the date label
