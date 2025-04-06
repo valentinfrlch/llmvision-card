@@ -48,6 +48,9 @@ Alternatively you can add the url of this repository to the custom respositories
 3. Add the card to your dashboard
 
 ## Configuration
+>[!TIP]
+>If both `number_of_events` and `number_of_hours` are set, the card will show events that occurred within the past specified number of hours, up to the specified number of events.
+
 
 | Parameter         | Description                                                                                                 | Default                      |
 |-------------------|-------------------------------------------------------------------------------------------------------------|------------------------------|
@@ -55,7 +58,7 @@ Alternatively you can add the url of this repository to the custom respositories
 | number_of_hours   | Show events that occurred within the past specified number of hours.                                        | 10                           |
 | calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
 | refresh_interval  | Refresh Interval (in seconds)                                                                               | 10                           |
-| language          | Language used for UI and generate icons (supports: `en`, `de`, `nl`, `fr`, `es`, `pt`, `pl`, `sv`, `it`)    | `en`                         |
+| language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`)    | `en`                         |
 
 ## Support
 You can support this project by starring this GitHub repository. If you want, you can also buy me a coffee here:  
