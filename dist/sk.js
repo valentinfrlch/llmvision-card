@@ -1,12 +1,13 @@
-export const en = {
+export const sk = {
     "text": {
-        "noEvents": "No events",
-        "noEventsHours": "No events in the last {hours} hours",
-        "today": "Today",
-        "yesterday": "Yesterday"
+        "noEvents": "Žiadne udalosti",
+        "noEventsHours": "Žiadne udalosti za posledných {hours} hodín",
+        "today": "Dnes",
+        "yesterday": "Včera"
     },
     "categories": {
         "people": {
+            "name": "Ľudia",
             "objects": {
                 "person": "mdi:walk",
                 "individual": "mdi:walk",
@@ -20,6 +21,7 @@ export const en = {
             }
         },
         "vehicles": {
+            "name": "Vozidlá",
             "objects": {
                 "courier": "mdi:truck-delivery",
                 "mailman": "mdi:truck-delivery",
@@ -39,6 +41,7 @@ export const en = {
             }
         },
         "animals": {
+            "name": "Zvieratá",
             "objects": {
                 "dog": "mdi:dog",
                 "cat": "mdi:cat",
@@ -48,6 +51,7 @@ export const en = {
             }
         },
         "packages": {
+            "name": "Balíčky",
             "objects": {
                 "box": "mdi:package-variant-closed",
                 "package": "mdi:package-variant-closed",
@@ -56,6 +60,7 @@ export const en = {
             }
         },
         "entities": {
+            "name": "Entity",
             "objects": {
                 "camera": "mdi:cctv",
                 "sensor": "mdi:access-point",
@@ -70,6 +75,7 @@ export const en = {
             }
         },
         "nature": {
+            "name": "Príroda",
             "objects": {
                 "garden": "mdi:flower",
                 "plant": "mdi:flower",
