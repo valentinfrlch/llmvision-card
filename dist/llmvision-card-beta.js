@@ -1,6 +1,110 @@
 import { getIcon, translate } from './helpers.js';
+import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
-class LLMVisionCard extends HTMLElement {
+class TimelineCardEditor extends LitElement {
+    static get properties() {
+        return {
+            _config: { type: Object },
+        };
+    }
+
+    setConfig(config) {
+        this._config = config || {};
+    }
+
+    render() {
+        if (!this._config) {
+            return html`<div>Please configure the card.</div>`;
+        }
+
+        return html`
+            <ha-card>
+                <div class="card-content">
+                    <ha-form
+                        .data=${this._config}
+                        .schema=${this._getSchema()}
+                        .computeLabel=${this._computeLabel}
+                        @value-changed=${this._valueChanged}
+                    ></ha-form>
+                </div>
+            </ha-card>
+        `;
+    }
+
+    _getSchema() {
+        return [
+            {
+                name: "calendar_entity", selector: {
+                    select: {
+                        mode: "dropdown",
+                        options: [
+                            // get calendar entities from this.hass.states
+                            ...Object.keys(this.hass.states)
+                                .filter(entity => entity.startsWith('calendar.'))
+                                .map(entity => ({
+                                    value: entity,
+                                    label: this.hass.states[entity].attributes.friendly_name || entity
+                                }))
+                        ]
+                    }
+                }
+            },
+            { name: "number_of_events", selector: { number: { min: 1, max: 10, step: 1 } } },
+            { name: "number_of_hours", selector: { number: { min: 1, max: 168, step: 1 } } },
+            { name: "refresh_interval", selector: { number: { min: 1, max: 360, step: 1 } } },
+            {
+                name: "language",
+                selector: {
+                    select: {
+                        options: [
+                            { value: "de", label: "German" },
+                            { value: "en", label: "English" },
+                            { value: "es", label: "Spanish" },
+                            { value: "fr", label: "French" },
+                            { value: "it", label: "Italian" },
+                            { value: "nl", label: "Dutch" },
+                            { value: "pl", label: "Polish" },
+                            { value: "pt", label: "Portuguese" },
+                            { value: "sv", label: "Swedish" }
+                        ]
+                    }
+                }
+            },];
+    }
+
+    _computeLabel(schema) {
+        const labels = {
+            calendar_entity: "Calendar Entity",
+            number_of_events: "Number of Events",
+            number_of_hours: "Number of Hours",
+            refresh_interval: "Refresh Interval (seconds)",
+            language: "Language",
+        };
+        return labels[schema.name] || schema.name;
+    }
+
+    _valueChanged(event) {
+        const newConfig = event.detail.value;
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+    }
+
+    static get styles() {
+        return css`
+            ha-card {
+                padding: 16px;
+            }
+            .card-content {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+        `;
+    }
+}
+
+customElements.define("timeline-card-editor", TimelineCardEditor);
+
+class LLMVisionCardBeta extends HTMLElement {
 
     config;
     content;
@@ -24,6 +128,14 @@ class LLMVisionCard extends HTMLElement {
         if (this.number_of_events < 1) {
             throw new Error('number_of_events must be greater than 0.');
         }
+    }
+
+    static getConfigElement() {
+        return document.createElement('timeline-card-editor');
+    }
+
+    static getStubConfig() {
+        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, refresh_interval: 10, language: 'en' };
     }
 
     set hass(hass) {
@@ -414,14 +526,17 @@ class LLMVisionCard extends HTMLElement {
     }
 
     static getStubConfig() {
-        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_events: 5, refresh_interval: 10, language: 'en' };
+        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, refresh_interval: 10, language: 'en' };
     }
 }
 
-customElements.define('llmvision-card', LLMVisionCard);
+customElements.define('llmvision-card-beta', LLMVisionCardBeta);
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "llmvision-card",
-    name: "LLM Vision Timeline Card",
+    type: "llmvision-card-beta",
+    name: "LLM Vision Timeline Card (Beta)",
     description: "Display the LLM Vision Timeline on your dashboard",
+    preview: true,
+    getConfigElement: LLMVisionCardBeta.getConfigElement,
+    getConfigElementStub: LLMVisionCardBeta.getConfigElementStub,
 });
