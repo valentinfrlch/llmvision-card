@@ -104,7 +104,7 @@ class TimelineCardEditor extends LitElement {
 
 customElements.define("timeline-card-editor", TimelineCardEditor);
 
-class LLMVisionCardBeta extends HTMLElement {
+class LLMVisionCard extends HTMLElement {
 
     config;
     content;
@@ -530,13 +530,13 @@ class LLMVisionCardBeta extends HTMLElement {
     }
 }
 
-customElements.define('llmvision-card-beta', LLMVisionCardBeta);
+customElements.define('llmvision-card', LLMVisionCard);
 window.customCards = window.customCards || [];
 window.customCards.push({
-    type: "llmvision-card-beta",
-    name: "LLM Vision Timeline Card (Beta)",
+    type: "llmvision-card",
+    name: "LLM Vision Timeline Card",
     description: "Display the LLM Vision Timeline on your dashboard",
     preview: true,
-    getConfigElement: LLMVisionCardBeta.getConfigElement,
-    getConfigElementStub: LLMVisionCardBeta.getConfigElementStub,
+    getConfigElement: LLMVisionCard.getConfigElement,
+    getConfigElementStub: LLMVisionCard.getConfigElementStub,
 });
