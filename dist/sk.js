@@ -7,80 +7,74 @@ export const sk = {
     },
     "categories": {
         "people": {
-            "name": "Ľudia",
             "objects": {
-                "person": "mdi:walk",
-                "individual": "mdi:walk",
-                "figure": "mdi:walk",
-                "people": "mdi:walk",
-                "child": "mdi:walk",
-                "woman": "mdi:walk",
-                "man": "mdi:walk",
-                "human": "mdi:walk",
-                "cyclist": "mdi:bike",
+                "osoba": "mdi:walk",
+                "jednotlivec": "mdi:walk",
+                "postava": "mdi:walk",
+                "ľudia": "mdi:walk",
+                "dieťa": "mdi:walk",
+                "žena": "mdi:walk",
+                "muž": "mdi:walk",
+                "človek": "mdi:walk",
+                "cyklista": "mdi:bike",
             }
         },
         "vehicles": {
-            "name": "Vozidlá",
             "objects": {
-                "courier": "mdi:truck-delivery",
-                "mailman": "mdi:truck-delivery",
-                "bike": "mdi:bike",
-                "bicycle": "mdi:bike",
-                "motorcycle": "mdi:motorbike",
-                "motorbike": "mdi:motorbike",
-                "bus": "mdi:bus",
-                "car": "mdi:car",
-                "van": "mdi:car",
+                "kuriér": "mdi:truck-delivery",
+                "poštár": "mdi:truck-delivery",
+                "bicykel": "mdi:bike",
+                "bicykel": "mdi:bike",
+                "motocykel": "mdi:motorbike",
+                "motorka": "mdi:motorbike",
+                "autobus": "mdi:bus",
+                "auto": "mdi:car",
+                "dodávka": "mdi:car",
                 "suv": "mdi:car",
-                "vehicle": "mdi:car",
-                "truck": "mdi:truck",
-                "street": "mdi:road-variant",
-                "path": "mdi:road-variant",
-                "driveway": "mdi:road-variant"
+                "vozidlo": "mdi:car",
+                "nákladné auto": "mdi:truck",
+                "ulica": "mdi:road-variant",
+                "chodník": "mdi:road-variant",
+                "príjazdová cesta": "mdi:road-variant"
             }
         },
         "animals": {
-            "name": "Zvieratá",
             "objects": {
-                "dog": "mdi:dog",
-                "cat": "mdi:cat",
-                "bird": "mdi:duck",
-                "pet": "mdi:dog",
-                "animal": "mdi:dog"
+                "pes": "mdi:dog",
+                "mačka": "mdi:cat",
+                "vták": "mdi:duck",
+                "domáce zviera": "mdi:dog",
+                "zviera": "mdi:dog"
             }
         },
         "packages": {
-            "name": "Balíčky",
             "objects": {
-                "box": "mdi:package-variant-closed",
-                "package": "mdi:package-variant-closed",
-                "parcel": "mdi:package-variant-closed",
-                "letter": "mdi:email"
+                "krabica": "mdi:package-variant-closed",
+                "balík": "mdi:package-variant-closed",
+                "zásielka": "mdi:package-variant-closed",
+                "list": "mdi:email"
             }
         },
         "entities": {
-            "name": "Entity",
             "objects": {
-                "camera": "mdi:cctv",
-                "sensor": "mdi:access-point",
-                "light": "mdi:lightbulb",
-                "key": "mdi:key",
-                "lock": "mdi:lock",
+                "kamera": "mdi:cctv",
+                "senzor": "mdi:access-point",
+                "svetlo": "mdi:lightbulb",
+                "kľúč": "mdi:key",
+                "zámok": "mdi:lock",
                 "alarm": "mdi:alarm-light",
-                "house": "mdi:home",
-                "porch": "mdi:door-closed",
-                "door": "mdi:door-closed",
-                "window": "mdi:window-closed-variant"
+                "dom": "mdi:home",
+                "veranda": "mdi:door-closed",
+                "dvere": "mdi:door-closed",
+                "okno": "mdi:window-closed-variant"
             }
         },
         "nature": {
-            "name": "Príroda",
             "objects": {
-                "garden": "mdi:flower",
-                "plant": "mdi:flower",
-                "flower": "mdi:flower",
-                "tree": "mdi:tree"
+                "záhrada": "mdi:flower",
+                "rastlina": "mdi:flower",
+                "kvet": "mdi:flower",
+                "strom": "mdi:tree"
             }
         }
     },
