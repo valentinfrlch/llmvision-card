@@ -9,6 +9,18 @@ import { sv } from './sv.js';
 import { pl } from './pl.js';
 import { it } from './it.js';
 
+export function hexToRgba(hex, alpha = 1) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) {
+        c = c.split('').map(x => x + x).join('');
+    }
+    const num = parseInt(c, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export function getIcon(title, lang = 'en') {
     let categories;
 
@@ -37,12 +49,12 @@ export function getIcon(title, lang = 'en') {
 
         for (const categoryName of Object.keys(categories)) {
             const category = categories[categoryName];
-            const categoryColors = colors.categories[categoryName].colors;
+            const categoryColor = colors.categories[categoryName].color;
             const { objects } = category;
             for (const [key, icon] of Object.entries(objects)) {
                 const regex = new RegExp(`\\b${key}s?\\b`, 'i');
                 if (regex.test(title)) {
-                    return { icon, backgroundColor: categoryColors.background, iconColor: categoryColors.icon };
+                    return { icon, color: categoryColor, category: categoryName };
                 }
             }
         }
@@ -50,7 +62,7 @@ export function getIcon(title, lang = 'en') {
         console.error('Error getting icon:', error);
     }
 
-    return { icon: 'mdi:cube-scan', backgroundColor: 'gray', iconColor: 'white' }; // Default icon and colors if no keyword is found
+    return { icon: 'mdi:cube-scan', color: '#929292' }; // Default icon and colors if no keyword is found
 }
 
 const translations = {
