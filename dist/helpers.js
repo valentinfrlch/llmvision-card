@@ -1,4 +1,4 @@
-import { colors } from './colors.js';
+import { colors } from './colors.js?v=1.4.3';
 import { fr } from './fr.js';
 import { de } from './de.js';
 import { nl } from './nl.js';
