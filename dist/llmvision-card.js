@@ -1,5 +1,5 @@
-import { getIcon, translate, hexToRgba } from './helpers.js';
-import { colors } from './colors.js';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3';
+import { colors } from './colors.js?v=1.4.3';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 class TimelineCardEditor extends LitElement {
@@ -20,9 +20,9 @@ class TimelineCardEditor extends LitElement {
 
         // Split schema into two sections for demonstration
         const generalSchema = this._getSchema().slice(0, 2);
-        const filterSchema = this._getSchema().slice(2, 4);
-        const languageSchema = this._getSchema().slice(4, 5);
-        const colorSchema = this._getSchema().slice(5);
+        const filterSchema = this._getSchema().slice(2, 5);
+        const languageSchema = this._getSchema().slice(5, 6);
+        const colorSchema = this._getSchema().slice(6);
 
 
         return html`
@@ -132,7 +132,7 @@ class TimelineCardEditor extends LitElement {
     }
 
     _getSchema() {
-        const baseSchema = [
+        const generalSchema = [
             {
                 name: "calendar_entity",
                 description: "Select the LLM Vision timeline entity to display.",
@@ -154,7 +154,9 @@ class TimelineCardEditor extends LitElement {
             {
                 name: "refresh_interval", description: "How often to refresh the card (in seconds).",
                 selector: { number: { min: 1, max: 360, step: 1 } }
-            },
+            }
+        ];
+        const filterSchema = [
             {
                 name: "number_of_events",
                 description: "Number of most recent events to display. A maximum of 10 events can be displayed.",
@@ -165,6 +167,21 @@ class TimelineCardEditor extends LitElement {
                 description: "Number of hours to look back for events. Useful for filtering older events.",
                 selector: { number: { min: 1, max: 168, step: 1 } }
             },
+            {
+                name: "category_filters",
+                description: "Filter events by category (title). Only events matching selected categories will be shown.",
+                selector: {
+                    select: {
+                        multiple: true,
+                        options: Object.keys(colors.categories).map(category => ({
+                            value: category,
+                            label: category.charAt(0).toUpperCase() + category.slice(1)
+                        }))
+                    }
+                }
+            }
+        ];
+        const languageSchema = [
             {
                 name: "language",
                 description: "Language for the card. This will be used to generate icons and translations.",
@@ -183,7 +200,8 @@ class TimelineCardEditor extends LitElement {
                         ]
                     }
                 }
-            },];
+            }
+        ];
 
         const colorSchema = Object.keys(colors.categories).map(category => ({
             name: `custom_colors.${category}`,
@@ -192,7 +210,9 @@ class TimelineCardEditor extends LitElement {
         }));
 
         return [
-            ...baseSchema,
+            ...generalSchema,
+            ...filterSchema,
+            ...languageSchema,
             ...colorSchema
         ];
     }
@@ -203,6 +223,8 @@ class TimelineCardEditor extends LitElement {
             refresh_interval: "Refresh Interval (seconds)",
             number_of_events: "Number of Events",
             number_of_hours: "Number of Hours",
+            category_filters: "Category Filters",
+            custom_colors: "Custom Colors",
             language: "Language",
         };
         return labels[schema.name] || schema.name;
@@ -213,7 +235,6 @@ class TimelineCardEditor extends LitElement {
     _valueChanged(event) {
         let newConfig = event.detail.value;
 
-        // Merge new custom_colors with existing ones
         let customColors = { ...(this._config.custom_colors || {}) };
         for (const key of Object.keys(newConfig)) {
             if (key.startsWith('custom_colors.')) {
@@ -255,9 +276,10 @@ class LLMVisionCard extends HTMLElement {
     setConfig(config) {
         this.config = config;
         this.calendar_entity = config.calendar_entity;
+        this.refresh_interval = config.refresh_interval;
         this.number_of_events = config.number_of_events;
         this.number_of_hours = config.number_of_hours;
-        this.refresh_interval = config.refresh_interval;
+        this.category_filters = config.category_filters || [];
         this.language = config.language;
         this.custom_colors = config.custom_colors || {};
 
@@ -427,6 +449,7 @@ class LLMVisionCard extends HTMLElement {
             this.content.appendChild(loadingContainer);
         }
 
+        // Filter based on number of hours and number of events
         if (numberOfHours && eventDetails.length === 0) {
             const noEventsContainer = document.createElement('div');
             const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
@@ -437,6 +460,15 @@ class LLMVisionCard extends HTMLElement {
             `;
             this.content.appendChild(noEventsContainer);
             return;
+        }
+
+        // Filter events based on category filters
+        if (this.category_filters && this.category_filters.length > 0) {
+            eventDetails = eventDetails.filter(detail => {
+                const { event } = detail;
+                const { category } = getIcon(event, this.language);
+                return this.category_filters.includes(category);
+            });
         }
 
         // Add events and key frames for the specified number of events
