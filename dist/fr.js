@@ -2,6 +2,8 @@ export const fr = {
     "text": {
         "noEvents": "Aucun événement",
         "noEventsHours": "Aucun événement dans les dernières {hours} heures",
+        "noEventsCamera": "Aucun événement trouvé pour la(les) caméra(s) sélectionnée(s).",
+        "noEventsCategory": "Aucun événement trouvé pour la(les) catégorie(s) sélectionnée(s).",
         "today": "Aujourd'hui",
         "yesterday": "Hier"
     },

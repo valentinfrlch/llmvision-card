@@ -2,6 +2,8 @@ export const pl = {
     "text": {
         "noEvents": "Brak aktywnosci",
         "noEventsHours": "Brak aktywnosci w ostatnich {hours} godzinach",
+        "noEventsCamera": "Nie znaleziono aktywnosci dla wybranej kamery.",
+        "noEventsCategory": "Nie znaleziono aktywnosci dla wybranej kategorii.",
         "today": "Dzis",
         "yesterday": "Wczoraj"
     },

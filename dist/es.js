@@ -2,6 +2,8 @@ export const es = {
     "text": {
         "noEvents": "No hay eventos",
         "noEventsHours": "No hay eventos en las últimas {hours} horas",
+        "noEventsCamera": "No se encontraron eventos para la(s) cámara(s) seleccionada(s).",
+        "noEventsCategory": "No se encontraron eventos para la(s) categoría(s) seleccionada(s).",
         "today": "Hoy",
         "yesterday": "Ayer"
     },
