@@ -1,13 +1,14 @@
-import { colors } from './colors.js';
-import { fr } from './fr.js';
-import { de } from './de.js';
-import { nl } from './nl.js';
-import { en } from './en.js';
-import { es } from './es.js';
-import { pt } from './pt.js';
-import { sv } from './sv.js';
-import { pl } from './pl.js';
-import { it } from './it.js';
+import { colors } from './colors.js?v=1.4.3';
+import { de } from './de.js?v=1.4.3';
+import { en } from './en.js?v=1.4.3';
+import { es } from './es.js?v=1.4.3';
+import { fr } from './fr.js?v=1.4.3';
+import { it } from './it.js?v=1.4.3';
+import { nl } from './nl.js?v=1.4.3';
+import { pl } from './pl.js?v=1.4.3';
+import { pt } from './pt.js?v=1.4.3';
+import { sk } from './sk.js?v=1.4.3';
+import { sv } from './sv.js?v=1.4.3';
 
 export function hexToRgba(hex, alpha = 1) {
     let c = hex.replace('#', '');
@@ -27,22 +28,24 @@ export function getIcon(title, lang = 'en') {
     try {
         if (lang === 'de') {
             categories = de.categories;
-        } else if (lang === 'nl') {
-            categories = nl.categories;
         } else if (lang === 'en') {
             categories = en.categories;
-        } else if (lang === 'fr') {
-            categories = fr.categories;
         } else if (lang === 'es') {
             categories = es.categories;
-        } else if (lang === 'pt') {
-            categories = pt.categories;
-        } else if (lang === 'sv') {
-            categories = sv.categories;
+        } else if (lang === 'fr') {
+            categories = fr.categories;
         } else if (lang === 'it') {
             categories = it.categories;
+        } else if (lang === 'nl') {
+            categories = nl.categories;
         } else if (lang === 'pl') {
             categories = pl.categories;
+        } else if (lang === 'pt') {
+            categories = pt.categories;
+        } else if (lang === 'sk') {
+            categories = sk.categories;
+        } else if (lang === 'sv') {
+            categories = sv.categories;
         } else {
             throw new Error(`Unsupported language: ${lang}`);
         }
@@ -66,15 +69,16 @@ export function getIcon(title, lang = 'en') {
 }
 
 const translations = {
-    en: en.text,
     de: de.text,
-    nl: nl.text,
-    fr: fr.text,
+    en: en.text,
     es: es.text,
-    pt: pt.text,
-    sv: sv.text,
-    pl: pl.text,
+    fr: fr.text,
     it: it.text,
+    nl: nl.text,
+    pl: pl.text,
+    pt: pt.text,
+    sk: sk.text,
+    sv: sv.text,
 };
 
 export function translate(key, language) {

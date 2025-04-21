@@ -2,6 +2,8 @@ export const sv = {
     "text": {
         "noEvents": "Inga händelser",
         "noEventsHours": "Inga händelser de senaste {hours} timmarna",
+        "noEventsCamera": "Inga händelser hittades för den valda kameran/erna.",
+        "noEventsCategory": "Inga händelser hittades för den valda kategorin.",
         "today": "Idag",
         "yesterday": "Igår"
     },
