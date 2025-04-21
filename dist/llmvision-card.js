@@ -18,7 +18,6 @@ class TimelineCardEditor extends LitElement {
             return html`<div>Please configure the card.</div>`;
         }
 
-        // Split schema into two sections for demonstration
         const generalSchema = this._getSchema().slice(0, 3);
         const filterSchema = this._getSchema().slice(3, 7);
         const languageSchema = this._getSchema().slice(7, 8);
