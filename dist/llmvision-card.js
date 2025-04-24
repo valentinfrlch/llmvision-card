@@ -1,5 +1,5 @@
-import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3';
-import { colors } from './colors.js?v=1.4.3';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3-beta.1';
+import { colors } from './colors.js?v=1.4.3-beta.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 class TimelineCardEditor extends LitElement {
@@ -476,6 +476,7 @@ class LLMVisionCard extends HTMLElement {
 
         // Filter based on number of hours and number of events
         if (numberOfHours && eventDetails.length === 0) {
+            this.content.innerHTML = '';
             const noEventsContainer = document.createElement('div');
             const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
             noEventsContainer.innerHTML = `
@@ -496,6 +497,7 @@ class LLMVisionCard extends HTMLElement {
             });
             // Show message if no events match the category filter
             if (eventDetails.length === 0) {
+                this.content.innerHTML = '';
                 const noEventsContainer = document.createElement('div');
                 const noEventsMessage = translate('noEventsCategory', this.language) || "No events found for the selected category(s).";
                 noEventsContainer.innerHTML = `
@@ -517,6 +519,7 @@ class LLMVisionCard extends HTMLElement {
             });
             // Show message if no events match the camera filter
             if (eventDetails.length === 0) {
+                this.content.innerHTML = '';
                 const noEventsContainer = document.createElement('div');
                 const noEventsMessage = translate('noEventsCamera', this.language) || "No events found for the selected camera(s).";
                 noEventsContainer.innerHTML = `
