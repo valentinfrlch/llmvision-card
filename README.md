@@ -54,8 +54,7 @@ Alternatively you can add the url of this repository to the custom respositories
 
 | Parameter         | Description                                                                                                 | Default                      |
 |-------------------|-------------------------------------------------------------------------------------------------------------|------------------------------|
-| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
-| refresh_interval  | Refresh Interval (in seconds)                                                                               | 10                           |
+| entity            | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
 | number_of_hours   | Show events that occurred within the past specified number of hours.                                        | 24                           |
 | number_of_events  | How many events to show. Maximum is 10.                                                                     | 5                            |
 | category_filters  | Only show events matching one of the specified categories.                                                  | `[]`                         |
@@ -65,10 +64,9 @@ Alternatively you can add the url of this repository to the custom respositories
 ### Example Configuration
 ```yaml
 type: custom:llmvision-card
-calendar_entity: calendar.llm_vision_timeline
+entity: calendar.llm_vision_timeline
 number_of_hours: 24
 number_of_events: 5
-refresh_interval: 10
 language: en
 category_filters:
   - people
@@ -83,10 +81,6 @@ custom_colors:
     - 143
     - 143
     - 143
-  animals:
-    - 46
-    - 192
-    - 255
 ```
 
 ## Support
