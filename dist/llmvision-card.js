@@ -1,5 +1,5 @@
-import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3-beta.1';
-import { colors } from './colors.js?v=1.4.3-beta.1';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3-beta.2';
+import { colors } from './colors.js?v=1.4.3-beta.2';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 class TimelineCardEditor extends LitElement {
@@ -18,10 +18,10 @@ class TimelineCardEditor extends LitElement {
             return html`<div>Please configure the card.</div>`;
         }
 
-        const generalSchema = this._getSchema().slice(0, 3);
-        const filterSchema = this._getSchema().slice(3, 7);
-        const languageSchema = this._getSchema().slice(7, 8);
-        const colorSchema = this._getSchema().slice(8);
+        const generalSchema = this._getSchema().slice(0, 2);
+        const filterSchema = this._getSchema().slice(2, 7);
+        const languageSchema = this._getSchema().slice(7, 7);
+        const colorSchema = this._getSchema().slice(7);
 
 
         return html`
@@ -138,7 +138,7 @@ class TimelineCardEditor extends LitElement {
                 selector: { text: {} }
             },
             {
-                name: "calendar_entity",
+                name: "entity",
                 description: "Select the LLM Vision timeline entity to display.",
                 selector: {
                     select: {
@@ -154,10 +154,6 @@ class TimelineCardEditor extends LitElement {
                         ]
                     }
                 }
-            },
-            {
-                name: "refresh_interval", description: "How often to refresh the card (in seconds).",
-                selector: { number: { min: 1, max: 360, step: 1 } }
             }
         ];
         const filterSchema = [
@@ -240,8 +236,7 @@ class TimelineCardEditor extends LitElement {
     _computeLabel(schema) {
         const labels = {
             header: "Header",
-            calendar_entity: "Calendar Entity",
-            refresh_interval: "Refresh Interval (seconds)",
+            entity: "Calendar Entity",
             number_of_events: "Number of Events",
             number_of_hours: "Number of Hours",
             category_filters: "Category Filters",
@@ -292,14 +287,12 @@ class LLMVisionCard extends HTMLElement {
 
     config;
     content;
-    lastUpdateTime;
 
     // required
     setConfig(config) {
         this.config = config;
         this.header = config.header || '';
-        this.calendar_entity = config.calendar_entity;
-        this.refresh_interval = config.refresh_interval;
+        this.entity = config.entity;
         this.number_of_events = config.number_of_events;
         this.number_of_hours = config.number_of_hours;
         this.category_filters = config.category_filters || [];
@@ -307,7 +300,7 @@ class LLMVisionCard extends HTMLElement {
         this.language = config.language;
         this.custom_colors = config.custom_colors || {};
 
-        if (!this.calendar_entity) {
+        if (!this.entity) {
             throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
         }
         if (!this.number_of_events && !this.number_of_hours) {
@@ -323,17 +316,10 @@ class LLMVisionCard extends HTMLElement {
     }
 
     static getStubConfig() {
-        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, refresh_interval: 10, language: 'en' };
+        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' };
     }
 
     set hass(hass) {
-        const now = new Date().getTime();
-        if (this.lastUpdateTime && (now - this.lastUpdateTime < this.refresh_interval * 1000)) {
-            return;
-        }
-        this.lastUpdateTime = now;
-
-        // done once
         if (!this.content) {
             this.innerHTML = `
                 <ha-card>
@@ -374,9 +360,9 @@ class LLMVisionCard extends HTMLElement {
                         margin: 0;
                         flex-grow: 1;
                         color: var(--primary-text-color);
-                        white-space: nowrap; /* Prevent text from wrapping */
-                        overflow: hidden; /* Hide overflowed text */
-                        text-overflow: ellipsis; /* Add ellipsis (...) */
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
                 
                     .event-container p {
@@ -412,12 +398,12 @@ class LLMVisionCard extends HTMLElement {
                         margin-right: 10px;
                         position: relative;
                         transition: transform 180ms ease-in-out;
-                        flex-shrink: 0; /* Prevent shrinking */
+                        flex-shrink: 0;
                     }
                 
                     .event-details {
                         flex-grow: 1;
-                        min-width: 0; /* Allow text to overflow properly */
+                        min-width: 0;
                     }
                 </style>
             `;
@@ -435,12 +421,12 @@ class LLMVisionCard extends HTMLElement {
             }
         }
 
-        const calendarEntity = hass.states[this.calendar_entity];
+        const calendarEntity = hass.states[this.entity];
         const numberOfEvents = this.number_of_events;
         const numberOfHours = this.number_of_hours;
 
         if (!calendarEntity) {
-            console.error('Calendar entity not found:', this.calendar_entity);
+            console.error('Calendar entity not found:', this.entity);
             return;
         }
 
@@ -783,7 +769,7 @@ class LLMVisionCard extends HTMLElement {
     }
 
     static getStubConfig() {
-        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, refresh_interval: 10, language: 'en' };
+        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, language: 'en' };
     }
 }
 
