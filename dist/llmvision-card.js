@@ -1,5 +1,5 @@
-import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3-beta.2';
-import { colors } from './colors.js?v=1.4.3-beta.2';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3';
+import { colors } from './colors.js?v=1.4.3';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 class TimelineCardEditor extends LitElement {
