@@ -1,21 +1,306 @@
-import { getIcon, translate } from './helpers.js';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.4.3-beta.2';
+import { colors } from './colors.js?v=1.4.3-beta.2';
+import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
+
+class TimelineCardEditor extends LitElement {
+    static get properties() {
+        return {
+            _config: { type: Object },
+        };
+    }
+
+    setConfig(config) {
+        this._config = config || {};
+    }
+
+    render() {
+        if (!this._config) {
+            return html`<div>Please configure the card.</div>`;
+        }
+
+        const generalSchema = this._getSchema().slice(0, 2);
+        const filterSchema = this._getSchema().slice(2, 7);
+        const languageSchema = this._getSchema().slice(7, 7);
+        const colorSchema = this._getSchema().slice(7);
+
+
+        return html`
+            <style>
+                .card-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                }
+                details {
+                    border: 1px solid var(--divider-color, #e0e0e0);
+                    border-radius: var(--border-radius, 12px);
+                    background: var(--card-background-color, #fff);
+                    margin-bottom: 0;
+                    overflow: hidden;
+                }
+                summary {
+                    font-weight: 500;
+                    font-size: 1rem;
+                    padding: 12px 16px;
+                    cursor: pointer;
+                    outline: none;
+                    user-select: none;
+                    display: flex;
+                    align-items: center;
+                }
+                summary::-webkit-details-marker {
+                    display: none;
+                }
+                summary:before {
+                    content: '';
+                    display: inline-block;
+                    margin-right: 8px;
+                    border-style: solid;
+                    border-width: 0.35em 0.35em 0 0.35em;
+                    border-color: var(--primary-text-color) transparent transparent transparent;
+                    vertical-align: middle;
+                    transition: transform 0.2s;
+                    transform: rotate(-90deg);
+                }
+                details[open] summary:before {
+                    transform: rotate(0deg);
+                }
+                .section-content {
+                    padding: 16px;
+                }
+                .section-icon {
+                    margin-right: 8px;
+                    color: var(--primary-text-color);
+                    font-size: 20px;
+                    vertical-align: middle;
+                }
+            </style>
+            <ha-card>
+                <div class="card-content">
+                    <details open>
+                        <summary><ha-icon class="section-icon" icon="mdi:cog"></ha-icon>General</summary>
+                        <div class="section-content">
+                            <ha-form
+                                .data=${this._config}
+                                .schema=${generalSchema}
+                                .computeLabel=${this._computeLabel}
+                                .computeHelper=${this._computeHelper}
+                                @value-changed=${this._valueChanged}
+                            ></ha-form>
+                        </div>
+                    </details>
+                    <details>
+                        <summary><ha-icon class="section-icon" icon="mdi:filter-variant"></ha-icon>Filters</summary>
+                        <div class="section-content">
+                            <ha-form
+                                .data=${this._config}
+                                .schema=${filterSchema}
+                                .computeLabel=${this._computeLabel}
+                                .computeHelper=${this._computeHelper}
+                                @value-changed=${this._valueChanged}
+                            ></ha-form>
+                        </div>
+                    </details>
+                    <details>
+                        <summary><ha-icon class="section-icon" icon="mdi:translate"></ha-icon>Language</summary>
+                        <div class="section-content">
+                            <ha-form
+                                .data=${this._config}
+                                .schema=${languageSchema}
+                                .computeLabel=${this._computeLabel}
+                                .computeHelper=${this._computeHelper}
+                                @value-changed=${this._valueChanged}
+                            ></ha-form>
+                        </div>
+                    </details>
+                    <details>
+                    <summary><ha-icon class="section-icon" icon="mdi:palette"></ha-icon>Category Colors</summary>
+                    <div class="section-content">
+                        <ha-form
+                            .data=${this._config}
+                            .schema=${colorSchema}
+                            .computeLabel=${this._computeLabel}
+                            .computeHelper=${this._computeHelper}
+                            @value-changed=${this._valueChanged}
+                        ></ha-form>
+                    </div>
+                </details>
+                </div>
+            </ha-card>
+        `;
+    }
+
+    _getSchema() {
+        const generalSchema = [
+            {
+                name: "header",
+                description: "Header text for the card.",
+                selector: { text: {} }
+            },
+            {
+                name: "entity",
+                description: "Select the LLM Vision timeline entity to display.",
+                selector: {
+                    select: {
+                        mode: "dropdown",
+                        options: [
+                            // get calendar entities from this.hass.states
+                            ...Object.keys(this.hass.states)
+                                .filter(entity => entity.startsWith('calendar.'))
+                                .map(entity => ({
+                                    value: entity,
+                                    label: this.hass.states[entity].attributes.friendly_name || entity
+                                }))
+                        ]
+                    }
+                }
+            }
+        ];
+        const filterSchema = [
+            {
+                name: "number_of_events",
+                description: "Number of most recent events to display. A maximum of 10 events can be displayed.",
+                selector: { number: { min: 1, max: 10, step: 1 } }
+            },
+            {
+                name: "number_of_hours",
+                description: "Number of hours to look back for events. Useful for filtering older events.",
+                selector: { number: { min: 1, max: 168, step: 1 } }
+            },
+            {
+                name: "category_filters",
+                description: "Filter events by category (title). Only events matching selected categories will be shown.",
+                selector: {
+                    select: {
+                        multiple: true,
+                        options: Object.keys(colors.categories).map(category => ({
+                            value: category,
+                            label: category.charAt(0).toUpperCase() + category.slice(1)
+                        }))
+                    }
+                }
+            },
+            {
+                name: "camera_filters",
+                description: "Filter events by camera entity. Only events from selected cameras will be shown.",
+                selector: {
+                    select: {
+                        multiple: true,
+                        options: Object.keys(this.hass.states)
+                            .filter(entity => entity.startsWith('camera.'))
+                            .map(entity => ({
+                                value: entity,
+                                label: this.hass.states[entity].attributes.friendly_name || entity
+                            }))
+                    }
+                }
+            }
+        ];
+        const languageSchema = [
+            {
+                name: "language",
+                description: "Language for the card. This will be used to generate icons and translations.",
+                selector: {
+                    select: {
+                        options: [
+                            { value: "de", label: "German" },
+                            { value: "en", label: "English" },
+                            { value: "es", label: "Spanish" },
+                            { value: "fr", label: "French" },
+                            { value: "it", label: "Italian" },
+                            { value: "nl", label: "Dutch" },
+                            { value: "pl", label: "Polish" },
+                            { value: "pt", label: "Portuguese" },
+                            { value: "sk", label: "Slovak" },
+                            { value: "sv", label: "Swedish" }
+                        ]
+                    }
+                }
+            }
+        ];
+
+        const colorSchema = Object.keys(colors.categories).map(category => ({
+            name: `custom_colors.${category}`,
+            description: `Color for ${category.charAt(0).toUpperCase() + category.slice(1)}`,
+            selector: { color_rgb: {} }
+        }));
+
+        return [
+            ...generalSchema,
+            ...filterSchema,
+            ...languageSchema,
+            ...colorSchema
+        ];
+    }
+
+    _computeLabel(schema) {
+        const labels = {
+            header: "Header",
+            entity: "Calendar Entity",
+            number_of_events: "Number of Events",
+            number_of_hours: "Number of Hours",
+            category_filters: "Category Filters",
+            camera_filters: "Camera Filters",
+            custom_colors: "Custom Colors",
+            language: "Language",
+        };
+        return labels[schema.name] || schema.name;
+    }
+
+    _computeHelper = (schema) => schema.description || "";
+
+    _valueChanged(event) {
+        let newConfig = event.detail.value;
+
+        let customColors = { ...(this._config.custom_colors || {}) };
+        for (const key of Object.keys(newConfig)) {
+            if (key.startsWith('custom_colors.')) {
+                const category = key.split('.')[1];
+                customColors[category] = newConfig[key];
+                delete newConfig[key];
+            }
+        }
+        if (Object.keys(customColors).length > 0) {
+            newConfig.custom_colors = customColors;
+        }
+
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+    }
+
+    static get styles() {
+        return css`
+            ha-card {
+                padding: 16px;
+            }
+            .card-content {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+        `;
+    }
+}
+
+customElements.define("timeline-card-editor", TimelineCardEditor);
 
 class LLMVisionCard extends HTMLElement {
 
     config;
     content;
-    lastUpdateTime;
 
     // required
     setConfig(config) {
         this.config = config;
-        this.calendar_entity = config.calendar_entity;
+        this.header = config.header || '';
+        this.entity = config.entity;
         this.number_of_events = config.number_of_events;
         this.number_of_hours = config.number_of_hours;
-        this.refresh_interval = config.refresh_interval;
+        this.category_filters = config.category_filters || [];
+        this.camera_filters = config.camera_filters || [];
         this.language = config.language;
+        this.custom_colors = config.custom_colors || {};
 
-        if (!this.calendar_entity) {
+        if (!this.entity) {
             throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
         }
         if (!this.number_of_events && !this.number_of_hours) {
@@ -26,17 +311,23 @@ class LLMVisionCard extends HTMLElement {
         }
     }
 
-    set hass(hass) {
-        const now = new Date().getTime();
-        if (this.lastUpdateTime && (now - this.lastUpdateTime < this.refresh_interval * 1000)) {
-            return;
-        }
-        this.lastUpdateTime = now;
+    static getConfigElement() {
+        return document.createElement('timeline-card-editor');
+    }
 
-        // done once
+    static getStubConfig() {
+        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' };
+    }
+
+    set hass(hass) {
         if (!this.content) {
             this.innerHTML = `
                 <ha-card>
+                    ${this.header !== "" ? `
+                    <div class="card-header" style="font-size: 1.3em; font-weight: 600; margin-bottom: 8px;">
+                        ${this.header || "LLM Vision Events"}
+                    </div>
+                    ` : ""}
                     <div class="card-content"></div>
                 </ha-card>
                 <style>
@@ -69,9 +360,9 @@ class LLMVisionCard extends HTMLElement {
                         margin: 0;
                         flex-grow: 1;
                         color: var(--primary-text-color);
-                        white-space: nowrap; /* Prevent text from wrapping */
-                        overflow: hidden; /* Hide overflowed text */
-                        text-overflow: ellipsis; /* Add ellipsis (...) */
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
                 
                     .event-container p {
@@ -107,24 +398,35 @@ class LLMVisionCard extends HTMLElement {
                         margin-right: 10px;
                         position: relative;
                         transition: transform 180ms ease-in-out;
-                        flex-shrink: 0; /* Prevent shrinking */
+                        flex-shrink: 0;
                     }
                 
                     .event-details {
                         flex-grow: 1;
-                        min-width: 0; /* Allow text to overflow properly */
+                        min-width: 0;
                     }
                 </style>
             `;
             this.content = this.querySelector('div.card-content');
+        } else {
+            // Update header if it changes dynamically
+            const headerDiv = this.querySelector('.card-header');
+            if (headerDiv) {
+                if (this.header === "") {
+                    headerDiv.style.display = "none";
+                } else {
+                    headerDiv.style.display = "";
+                    headerDiv.textContent = this.header;
+                }
+            }
         }
 
-        const calendarEntity = hass.states[this.calendar_entity];
+        const calendarEntity = hass.states[this.entity];
         const numberOfEvents = this.number_of_events;
         const numberOfHours = this.number_of_hours;
 
         if (!calendarEntity) {
-            console.error('Calendar entity not found:', this.calendar_entity);
+            console.error('Calendar entity not found:', this.entity);
             return;
         }
 
@@ -135,6 +437,7 @@ class LLMVisionCard extends HTMLElement {
         const startTimes = (calendarEntity.attributes.starts || []).slice()
 
         let eventDetails = events.map((event, index) => {
+            const cameraEntityId = cameraNames[index];
             const cameraEntity = hass.states[cameraNames[index]];
             const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
             return {
@@ -142,6 +445,7 @@ class LLMVisionCard extends HTMLElement {
                 summary: summaries[index],
                 keyFrame: keyFrames[index] || '',
                 cameraName: cameraFriendlyName,
+                cameraEntityId,
                 startTime: startTimes[index]
             };
         });
@@ -156,24 +460,9 @@ class LLMVisionCard extends HTMLElement {
             }
         }
 
-        // Sort event details by start time
-        eventDetails.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-
-        // Clear previous content
-        this.content.innerHTML = '';
-
-        // Handle empty events (when calendar is fetching events)
-        if (events.length === 0) {
-            const loadingContainer = document.createElement('div');
-            loadingContainer.innerHTML = `
-                <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                    <h3>${translate('noEvents', this.language)}</h3>
-                </div>
-            `;
-            this.content.appendChild(loadingContainer);
-        }
-
+        // Filter based on number of hours and number of events
         if (numberOfHours && eventDetails.length === 0) {
+            this.content.innerHTML = '';
             const noEventsContainer = document.createElement('div');
             const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
             noEventsContainer.innerHTML = `
@@ -184,6 +473,56 @@ class LLMVisionCard extends HTMLElement {
             this.content.appendChild(noEventsContainer);
             return;
         }
+
+        // Filter events based on category filters
+        if (this.category_filters && this.category_filters.length > 0) {
+            eventDetails = eventDetails.filter(detail => {
+                const { event } = detail;
+                const { category } = getIcon(event, this.language);
+                return this.category_filters.includes(category);
+            });
+            // Show message if no events match the category filter
+            if (eventDetails.length === 0) {
+                this.content.innerHTML = '';
+                const noEventsContainer = document.createElement('div');
+                const noEventsMessage = translate('noEventsCategory', this.language) || "No events found for the selected category(s).";
+                noEventsContainer.innerHTML = `
+                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                <h3>${noEventsMessage}</h3>
+                            </div>
+                        `;
+                this.content.appendChild(noEventsContainer);
+                return;
+            }
+        }
+
+        // --- Filter events based on camera filters ---
+        if (this.camera_filters && this.camera_filters.length > 0) {
+            eventDetails = eventDetails.filter(detail => {
+                // If no cameraEntityId always show event
+                if (!detail.cameraEntityId) return true;
+                return this.camera_filters.includes(detail.cameraEntityId);
+            });
+            // Show message if no events match the camera filter
+            if (eventDetails.length === 0) {
+                this.content.innerHTML = '';
+                const noEventsContainer = document.createElement('div');
+                const noEventsMessage = translate('noEventsCamera', this.language) || "No events found for the selected camera(s).";
+                noEventsContainer.innerHTML = `
+                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                <h3>${noEventsMessage}</h3>
+                            </div>
+                        `;
+                this.content.appendChild(noEventsContainer);
+                return;
+            }
+        }
+
+        // Sort event details by start time
+        eventDetails.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+        // Clear previous content
+        this.content.innerHTML = '';
 
         // Add events and key frames for the specified number of events
         let lastDate = '';
@@ -197,7 +536,23 @@ class LLMVisionCard extends HTMLElement {
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
-            const { icon, backgroundColor, iconColor } = getIcon(event, this.language);
+            const { icon, color: defaultColor, category } = getIcon(event, this.language);
+
+            // Use custom color if set, otherwise fallback to default
+            const customColors = this.config?.custom_colors || {};
+            let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
+
+            let bgColorRgba, iconColorRgba;
+            if (Array.isArray(color) && color.length === 3) {
+                // color is [r, g, b] from custom color picker
+                bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
+                iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
+            } else {
+                // color is hex string
+                bgColorRgba = hexToRgba(color, 0.2);
+                iconColorRgba = hexToRgba(color, 1);
+            }
+
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
             keyFrame = keyFrame.replace('/config/www/', '/local/');
@@ -228,8 +583,8 @@ class LLMVisionCard extends HTMLElement {
             const eventContainer = document.createElement('div');
             eventContainer.classList.add('event-container');
             eventContainer.innerHTML = `
-                <div class="icon-container" style="background-color: ${backgroundColor};">
-                    <ha-icon icon="${icon}" style="color: ${iconColor};"></ha-icon>
+                <div class="icon-container" style="background-color: ${bgColorRgba};">
+                    <ha-icon icon="${icon}" style="color: ${iconColorRgba};"></ha-icon>
                 </div>
                 <div class="event-details">
                     <h3>${event}</h3>
@@ -414,7 +769,7 @@ class LLMVisionCard extends HTMLElement {
     }
 
     static getStubConfig() {
-        return { calendar_entity: 'calendar.llm_vision_timeline', number_of_events: 5, refresh_interval: 10, language: 'en' };
+        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, language: 'en' };
     }
 }
 
@@ -424,4 +779,7 @@ window.customCards.push({
     type: "llmvision-card",
     name: "LLM Vision Timeline Card",
     description: "Display the LLM Vision Timeline on your dashboard",
+    preview: true,
+    getConfigElement: LLMVisionCard.getConfigElement,
+    getConfigElementStub: LLMVisionCard.getConfigElementStub,
 });

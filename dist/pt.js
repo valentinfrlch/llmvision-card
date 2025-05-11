@@ -2,6 +2,8 @@ export const pt = {
     "text": {
         "noEvents": "Nenhum Evento",
         "noEventsHours": "Nenhum Evento nas últimas {hours} horas",
+        "noEventsCamera": "Nenhum evento encontrado para a(s) câmera(s) selecionada(s).",
+        "noEventsCategory": "Nenhum evento encontrado para a(s) categoria(s) selecionada(s).",
         "today": "Hoje",
         "yesterday": "Ontem"
     },

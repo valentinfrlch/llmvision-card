@@ -4,7 +4,7 @@
 <h1 align=center>Timeline Card</h1>
 <p align=center>
 <img src=https://img.shields.io/badge/HACS-Custom-orange.svg>
-<img src=https://img.shields.io/badge/version-1.4.2-blue>
+<img src=https://img.shields.io/badge/version-1.4.3-blue>
 <img src="https://img.shields.io/maintenance/yes/2025.svg">
 <img alt="Issues" src="https://img.shields.io/github/issues/valentinfrlch/llmvision-card?color=0088ff"/>
 <img alt="Static Badge" src="https://img.shields.io/badge/support-buymeacoffee?logo=buymeacoffee&logoColor=black&color=%23FFDD00&link=https%3A%2F%2Fbuymeacoffee.com%2Fvalentinfrlch">
@@ -23,7 +23,7 @@
     <a href="#configuration">🔧 Configuration</a>    
   </p>
 <p align="center">
-  <a href="https://llmvision.org"> Visit Website →</a>
+  <a href="https://llmvision.org/card"> Visit Website →</a>
     </p>
 
 <img src="https://github.com/user-attachments/assets/97f6e608-bdf3-44d1-89f1-fd89cda7b764" width="50%" height="auto" />
@@ -54,11 +54,34 @@ Alternatively you can add the url of this repository to the custom respositories
 
 | Parameter         | Description                                                                                                 | Default                      |
 |-------------------|-------------------------------------------------------------------------------------------------------------|------------------------------|
-| number_of_events  | How many events to show. Maximum is 10.                                                                     | 5                            |
+| entity            | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
 | number_of_hours   | Show events that occurred within the past specified number of hours.                                        | 24                           |
-| calendar_entity   | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
-| refresh_interval  | Refresh Interval (in seconds)                                                                               | 10                           |
-| language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`)    | `en`                         |
+| number_of_events  | How many events to show. Maximum is 10.                                                                     | 5                            |
+| category_filters  | Only show events matching one of the specified categories.                                                  | `[]`                         |
+| custom_colors     | Custom colors for categories. Colors must be specified as a dictionary where keys are category names and values are lists of RGB values (e.g., `[255, 255, 0]`). See the example configuration below for details.    | `[]`                         |
+| language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`, `sk`)    | `en`                         |
+
+### Example Configuration
+```yaml
+type: custom:llmvision-card
+entity: calendar.llm_vision_timeline
+number_of_hours: 24
+number_of_events: 5
+language: en
+category_filters:
+  - people
+  - animals
+  - vehicles
+custom_colors:
+  people:
+    - 251
+    - 255
+    - 0
+  vehicles:
+    - 143
+    - 143
+    - 143
+```
 
 ## Support
 You can support this project by starring this GitHub repository. If you want, you can also buy me a coffee here:  

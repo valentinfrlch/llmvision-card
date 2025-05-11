@@ -1,22 +1,22 @@
 export const colors = {
     "categories": {
         "people": {
-            "colors": { "background": "#FFAD42", "icon": "#FFFBF5" } // Orange, lightorange
+            "color": "#FF9800" // Vibrant Orange
         },
         "vehicles": {
-            "colors": { "background": "#494949", "icon": "#E4E4E4" } // Gray, white
+            "color": "#2196F3" // Strong Blue
         },
         "packages": {
-            "colors": { "background": "#853816", "icon": "#F2C79F" } // Brown, beige
+            "color": "#8D6E63" // Medium Brown
         },
         "animals": {
-            "colors": { "background": "#D6946D", "icon": "#EBDBD7" } // Orange, yellow
+            "color": "#43A047" // Rich Green
         },
         "entities": {
-            "colors": { "background": "#1c6795", "icon": "#D1EFFF" } // dark blue, blue
+            "color": "#9C27B0" // Deep Purple
         },
         "nature": {
-            "colors": { "background": "#00952F", "icon": "#42FF75" } // Green, lightgreen
+            "color": "#4CAF50" // Fresh Green
         }
     }
 };
