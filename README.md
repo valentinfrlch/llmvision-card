@@ -58,7 +58,7 @@ Alternatively you can add the url of this repository to the custom respositories
 | number_of_hours   | Show events that occurred within the past specified number of hours.                                        | 24                           |
 | number_of_events  | How many events to show. Maximum is 10.                                                                     | 5                            |
 | category_filters  | Only show events matching one of the specified categories.                                                  | `[]`                         |
-| custom_colors     | Custom colors for categories. Colors must be specified as a list of RGB values. See example for details.    | `[]`                         |
+| custom_colors     | Custom colors for categories. Colors must be specified as a dictionary where keys are category names and values are lists of RGB values (e.g., `[255, 255, 0]`). See the example configuration below for details.    | `[]`                         |
 | language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`, `sk`)    | `en`                         |
 
 ### Example Configuration
