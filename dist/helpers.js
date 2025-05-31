@@ -1,4 +1,5 @@
 import { colors } from './colors.js?v=1.4.3';
+import { cs } from './cs.js?v=1.4.3';
 import { de } from './de.js?v=1.4.3';
 import { en } from './en.js?v=1.4.3';
 import { es } from './es.js?v=1.4.3';
@@ -26,7 +27,9 @@ export function getIcon(title, lang = 'en') {
     let categories;
 
     try {
-        if (lang === 'de') {
+        if (lang === 'cs') {
+            categories = cs.categories;
+        } else if (lang === 'de') {
             categories = de.categories;
         } else if (lang === 'en') {
             categories = en.categories;
@@ -69,6 +72,7 @@ export function getIcon(title, lang = 'en') {
 }
 
 const translations = {
+    cs: cs.text,
     de: de.text,
     en: en.text,
     es: es.text,
