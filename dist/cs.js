@@ -1,9 +1,9 @@
 export const cs = {
     "text": {
         "noEvents": "Žádné události",
-        "noEventsHours": "Žádné události za posledních {hours} hodín",
-        "noEventsCamera": "Žádné události nebyly nalezené pro vybranou kameru(y).",
-        "noEventsCategory": "Žádné události nebyly nalezené pro vybranou kategorii.",
+        "noEventsHours": "Žádné události za posledních {hours} hodin",
+        "noEventsCamera": "Žádné události nebyly nalezeny pro vybranou kameru(y).",
+        "noEventsCategory": "Žádné události nebyly nalezeny pro vybranou kategorii.",
         "today": "Dnes",
         "yesterday": "Včera"
     },
@@ -26,7 +26,7 @@ export const cs = {
                 "kurýr": "mdi:truck-delivery",
                 "pošťák": "mdi:truck-delivery",
                 "kolo": "mdi:bike",
-                "bicikl": "mdi:bike",
+                "bicykl": "mdi:bike",
                 "motocykl": "mdi:motorbike",
                 "motorka": "mdi:motorbike",
                 "autobus": "mdi:bus",
