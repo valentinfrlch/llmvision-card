@@ -2,9 +2,7 @@ import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.0-beta.1';
 import { colors } from './colors.js?v=1.5.0-beta.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
-import { TimelinePreviewCardEditor, LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.0-beta.1';
-
-class TimelineCardEditor extends LitElement {
+export class TimelinePreviewCardEditor extends LitElement {
     static get properties() {
         return {
             _config: { type: Object },
@@ -20,22 +18,21 @@ class TimelineCardEditor extends LitElement {
             return html`<div>Please configure the card.</div>`;
         }
 
-        const generalSchema = this._getSchema().slice(0, 2);
-        const filterSchema = this._getSchema().slice(2, 7);
-        const languageSchema = this._getSchema().slice(7, 7);
-        const colorSchema = this._getSchema().slice(7);
+        const generalSchema = this._getSchema().slice(0, 1);
+        const filterSchema = this._getSchema().slice(1, 3);
+        const languageSchema = this._getSchema().slice(3);
 
 
         return html`
             <style>
-                .card-content {
+                .preview-card-content {
                     display: flex;
                     flex-direction: column;
                     gap: 16px;
                 }
                 details {
                     border: 1px solid var(--divider-color, #e0e0e0);
-                    border-radius: var(--border-radius, 20px);
+                    border-radius: var(--border-radius, 12px);
                     background: var(--card-background-color, #fff);
                     margin-bottom: 0;
                     overflow: hidden;
@@ -78,7 +75,7 @@ class TimelineCardEditor extends LitElement {
                 }
             </style>
             <ha-card>
-                <div class="card-content">
+                <div class="preview-card-content">
                     <details open>
                         <summary><ha-icon class="section-icon" icon="mdi:cog"></ha-icon>General</summary>
                         <div class="section-content">
@@ -115,18 +112,6 @@ class TimelineCardEditor extends LitElement {
                             ></ha-form>
                         </div>
                     </details>
-                    <details>
-                    <summary><ha-icon class="section-icon" icon="mdi:palette"></ha-icon>Category Colors</summary>
-                    <div class="section-content">
-                        <ha-form
-                            .data=${this._config}
-                            .schema=${colorSchema}
-                            .computeLabel=${this._computeLabel}
-                            .computeHelper=${this._computeHelper}
-                            @value-changed=${this._valueChanged}
-                        ></ha-form>
-                    </div>
-                </details>
                 </div>
             </ha-card>
         `;
@@ -134,11 +119,6 @@ class TimelineCardEditor extends LitElement {
 
     _getSchema() {
         const generalSchema = [
-            {
-                name: "header",
-                description: "Header text for the card.",
-                selector: { text: {} }
-            },
             {
                 name: "entity",
                 description: "Select the LLM Vision timeline entity to display.",
@@ -159,16 +139,6 @@ class TimelineCardEditor extends LitElement {
             }
         ];
         const filterSchema = [
-            {
-                name: "number_of_events",
-                description: "Number of most recent events to display. A maximum of 10 events can be displayed.",
-                selector: { number: { min: 1, max: 10, step: 1 } }
-            },
-            {
-                name: "number_of_hours",
-                description: "Number of hours to look back for events. Useful for filtering older events.",
-                selector: { number: { min: 1, max: 168, step: 1 } }
-            },
             {
                 name: "category_filters",
                 description: "Filter events by category (title). Only events matching selected categories will be shown.",
@@ -221,29 +191,18 @@ class TimelineCardEditor extends LitElement {
             }
         ];
 
-        const colorSchema = Object.keys(colors.categories).map(category => ({
-            name: `custom_colors.${category}`,
-            description: `Color for ${category.charAt(0).toUpperCase() + category.slice(1)}`,
-            selector: { color_rgb: {} }
-        }));
-
         return [
             ...generalSchema,
             ...filterSchema,
             ...languageSchema,
-            ...colorSchema
         ];
     }
 
     _computeLabel(schema) {
         const labels = {
-            header: "Header",
             entity: "Calendar Entity",
-            number_of_events: "Number of Events",
-            number_of_hours: "Number of Hours",
             category_filters: "Category Filters",
             camera_filters: "Camera Filters",
-            custom_colors: "Custom Colors",
             language: "Language",
         };
         return labels[schema.name] || schema.name;
@@ -254,18 +213,6 @@ class TimelineCardEditor extends LitElement {
     _valueChanged(event) {
         let newConfig = event.detail.value;
 
-        let customColors = { ...(this._config.custom_colors || {}) };
-        for (const key of Object.keys(newConfig)) {
-            if (key.startsWith('custom_colors.')) {
-                const category = key.split('.')[1];
-                customColors[category] = newConfig[key];
-                delete newConfig[key];
-            }
-        }
-        if (Object.keys(customColors).length > 0) {
-            newConfig.custom_colors = customColors;
-        }
-
         this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
     }
 
@@ -274,7 +221,7 @@ class TimelineCardEditor extends LitElement {
             ha-card {
                 padding: 16px;
             }
-            .card-content {
+            .preview-card-content {
                 display: flex;
                 flex-direction: column;
                 gap: 16px;
@@ -283,9 +230,9 @@ class TimelineCardEditor extends LitElement {
     }
 }
 
-customElements.define("timeline-card-editor", TimelineCardEditor);
+customElements.define("timeline-preview-card-editor", TimelinePreviewCardEditor);
 
-class LLMVisionCard extends HTMLElement {
+export class LLMVisionPreviewCard extends HTMLElement {
 
     config;
     content;
@@ -293,139 +240,94 @@ class LLMVisionCard extends HTMLElement {
     // required
     setConfig(config) {
         this.config = config;
-        this.header = config.header || '';
         this.entity = config.entity;
-        this.number_of_events = config.number_of_events;
-        this.number_of_hours = config.number_of_hours;
         this.category_filters = config.category_filters || [];
         this.camera_filters = config.camera_filters || [];
         this.language = config.language;
-        this.custom_colors = config.custom_colors || {};
 
         if (!this.entity) {
             throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
         }
-        if (!this.number_of_events && !this.number_of_hours) {
-            throw new Error('Either number_of_events or number_of_hours needs to be set.');
-        }
-        if (this.number_of_events < 1) {
-            throw new Error('number_of_events must be greater than 0.');
-        }
     }
 
     static getConfigElement() {
-        return document.createElement('timeline-card-editor');
+        return document.createElement('timeline-preview-card-editor');
     }
 
     static getStubConfig() {
-        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' };
+        return { entity: 'calendar.llm_vision_timeline', language: 'en' };
     }
 
     set hass(hass) {
         if (!this.content) {
             this.innerHTML = `
                 <ha-card>
-                    ${this.header !== "" ? `
-                    <div class="card-header" style="font-size: 1.3em; font-weight: 600; margin-bottom: 8px;">
-                        ${this.header || "LLM Vision Events"}
-                    </div>
-                    ` : ""}
-                    <div class="card-content"></div>
+                    <div class="preview-card-content"></div>
                 </ha-card>
                 <style>
-                    .event-container {
-                        display: flex;
-                        align-items: center;
-                        justify-content: flex-start;
-                        height: 75px;
-                        z-index: 2;
-                        margin-bottom: 10px;
-                        cursor: pointer;
-                    }
-                
-                    .event-container:last-child {
-                        margin-bottom: 0;
-                    }
-                
-                    .event-container img {
-                        height: 100%;
-                        aspect-ratio: 1 / 1;
-                        margin-left: auto;
-                        border-radius: 12px;
-                        object-fit: cover;
-                    }
-                
-                    .event-container h3 {
-                        font-weight: 500;
-                        font-size: 14px;
-                        letter-spacing: 0.1px;
-                        margin: 0;
-                        flex-grow: 1;
-                        color: var(--primary-text-color);
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-                
-                    .event-container p {
-                        font-weight: 400;
-                        font-size: 12px;
-                        letter-spacing: 0.4px;
-                        margin: 0;
-                        flex-grow: 1;
-                        color: var(--primary-text-color);
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-                
-                    .date-header h2 {
-                        font-weight: 600;
-                        font-size: 16px;
-                        line-height: 24px;
-                        letter-spacing: 0.1px;
-                        margin: 0;
-                        color: var(--primary-text-color);
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-                
-                    .icon-container {
-                        width: 36px;
-                        height: 36px;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin-right: 10px;
-                        position: relative;
-                        transition: transform 180ms ease-in-out;
-                        flex-shrink: 0;
-                    }
-                
-                    .event-details {
-                        flex-grow: 1;
-                        min-width: 0;
-                    }
-                </style>
-            `;
-            this.content = this.querySelector('div.card-content');
-        } else {
-            // Update header if it changes dynamically
-            const headerDiv = this.querySelector('.card-header');
-            if (headerDiv) {
-                if (this.header === "") {
-                    headerDiv.style.display = "none";
-                } else {
-                    headerDiv.style.display = "";
-                    headerDiv.textContent = this.header;
+                .preview-event-container {
+                    position: relative;
+                    width: 100%;
+                    height: 300px; /* Or 100%, or set via config */
+                    overflow: hidden;
+                    border-radius: var(--border-radius, 20px);
+                    background: #000;
+                    cursor: pointer;
                 }
-            }
+                .preview-event-image {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                }
+                .preview-icon-container {
+                    position: absolute;
+                    bottom: 12px;
+                    left: 12px;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 2;
+                }
+                .preview-event-title {
+                    position: absolute;
+                    left: 57px;
+                    bottom: 16px;
+                    color: #fff;
+                    font-size: 1.2em;
+                    font-weight: 600;
+                    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+                    z-index: 2;
+                    max-width: 80%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                .preview-event-details {
+                    position: absolute;
+                    right: 16px;
+                    bottom: 16px;
+                    color: #fff;
+                    font-size: 1em;
+                    font-weight: 500;
+                    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+                    z-index: 2;
+                    max-width: 80%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+            </style>
+            `;
+            this.content = this.querySelector('div.preview-card-content');
         }
 
         const calendarEntity = hass.states[this.entity];
-        const numberOfEvents = this.number_of_events;
-        const numberOfHours = this.number_of_hours;
 
         if (!calendarEntity) {
             console.error('Calendar entity not found:', this.entity);
@@ -452,30 +354,6 @@ class LLMVisionCard extends HTMLElement {
             };
         });
 
-        // Filter events based on numberOfHours if set
-        if (numberOfHours) {
-            const cutoffTime = new Date().getTime() - numberOfHours * 60 * 60 * 1000;
-            eventDetails = eventDetails.filter(detail => new Date(detail.startTime).getTime() >= cutoffTime);
-            if (numberOfEvents) {
-                // Limit the number of events to display if numberOfEvents is set
-                eventDetails = eventDetails.slice(0, numberOfEvents);
-            }
-        }
-
-        // Filter based on number of hours and number of events
-        if (numberOfHours && eventDetails.length === 0) {
-            this.content.innerHTML = '';
-            const noEventsContainer = document.createElement('div');
-            const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
-            noEventsContainer.innerHTML = `
-                <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                    <h3>${noEventsMessage}</h3>
-                </div>
-            `;
-            this.content.appendChild(noEventsContainer);
-            return;
-        }
-
         // Filter events based on category filters
         if (this.category_filters && this.category_filters.length > 0) {
             eventDetails = eventDetails.filter(detail => {
@@ -489,7 +367,7 @@ class LLMVisionCard extends HTMLElement {
                 const noEventsContainer = document.createElement('div');
                 const noEventsMessage = translate('noEventsCategory', this.language) || "No events found for the selected category(s).";
                 noEventsContainer.innerHTML = `
-                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                            <div class="preview-event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
                                 <h3>${noEventsMessage}</h3>
                             </div>
                         `;
@@ -511,7 +389,7 @@ class LLMVisionCard extends HTMLElement {
                 const noEventsContainer = document.createElement('div');
                 const noEventsMessage = translate('noEventsCamera', this.language) || "No events found for the selected camera(s).";
                 noEventsContainer.innerHTML = `
-                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                            <div class="preview-event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
                                 <h3>${noEventsMessage}</h3>
                             </div>
                         `;
@@ -526,81 +404,73 @@ class LLMVisionCard extends HTMLElement {
         // Clear previous content
         this.content.innerHTML = '';
 
-        // Add events and key frames for the specified number of events
-        let lastDate = '';
-
-        for (let i = 0; i < (numberOfHours ? eventDetails.length : Math.min(numberOfEvents, eventDetails.length)); i++) {
-            const { event, summary, startTime, cameraName } = eventDetails[i];
-            let keyFrame = eventDetails[i].keyFrame;
-            const date = new Date(startTime);
-            const options = { month: 'short', day: 'numeric' };
-            const formattedDate = date.toLocaleDateString('en', options);
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const formattedTime = `${hours}:${minutes}`;
-            const { icon, color: defaultColor, category } = getIcon(event, this.language);
-
-            // Use custom color if set, otherwise fallback to default
-            const customColors = this.config?.custom_colors || {};
-            let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
-
-            let bgColorRgba, iconColorRgba;
-            if (Array.isArray(color) && color.length === 3) {
-                // color is [r, g, b] from custom color picker
-                bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
-                iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
-            } else {
-                // color is hex string
-                bgColorRgba = hexToRgba(color, 0.2);
-                iconColorRgba = hexToRgba(color, 1);
-            }
-
-            const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
-
-            keyFrame = keyFrame.replace('/config/www/', '/local/');
-
-            // Determine the date label
-            const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
-
-            let dateLabel;
-            if (date.toDateString() === today.toDateString()) {
-                dateLabel = translate('today', this.language);
-            } else if (date.toDateString() === yesterday.toDateString()) {
-                dateLabel = translate('yesterday', this.language);
-            } else {
-                dateLabel = formattedDate;
-            }
-
-            // Add the date if it's different from the last date
-            if (dateLabel !== lastDate) {
-                const dateHeader = document.createElement('div');
-                dateHeader.classList.add('date-header');
-                dateHeader.innerHTML = `<h2>${dateLabel}</h2>`;
-                this.content.appendChild(dateHeader);
-                lastDate = dateLabel;
-            }
-
-            const eventContainer = document.createElement('div');
-            eventContainer.classList.add('event-container');
-            eventContainer.innerHTML = `
-                <div class="icon-container" style="background-color: ${bgColorRgba};">
-                    <ha-icon icon="${icon}" style="color: ${iconColorRgba};"></ha-icon>
+        // Only show the latest event (most recent)
+        const latestEvent = eventDetails[0];
+        if (!latestEvent) {
+            this.content.innerHTML = '';
+            const noEventsContainer = document.createElement('div');
+            const noEventsMessage = translate('noEvents', this.language) || "No events found.";
+            noEventsContainer.innerHTML = `
+                <div class="preview-event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                    <h3>${noEventsMessage}</h3>
                 </div>
-                <div class="event-details">
-                    <h3>${event}</h3>
-                    <p>${secondaryText}</p>
-                </div>
-                <img src="${keyFrame}" alt="Key frame ${i + 1}" onerror="this.style.display='none'">
             `;
-
-            eventContainer.addEventListener('click', () => {
-                this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
-            });
-
-            this.content.appendChild(eventContainer);
+            this.content.appendChild(noEventsContainer);
+            return;
         }
+
+        const { event, summary, startTime, cameraName } = latestEvent;
+        const date = new Date(startTime);
+        const options = { month: 'short', day: 'numeric' };
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        let formattedDate;
+        if (date.toDateString() === today.toDateString()) {
+            formattedDate = translate('today', this.language) || "Today";
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            formattedDate = translate('yesterday', this.language) || "Yesterday";
+        } else {
+            formattedDate = date.toLocaleDateString('en-US', options);
+        }
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const formattedTime = `${formattedDate}, ${hours}:${minutes}`;
+        let keyFrame = latestEvent.keyFrame;
+        const { icon, color: defaultColor, category } = getIcon(event, this.language);
+
+        // Use custom color if set, otherwise fallback to default
+        const customColors = this.config?.custom_colors || {};
+        let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
+
+        let iconColorRgba;
+        if (Array.isArray(color) && color.length === 3) {
+            iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
+        } else {
+            iconColorRgba = hexToRgba(color, 1);
+        }
+
+        keyFrame = keyFrame.replace('/config/www/', '/local/');
+
+        const eventContainer = document.createElement('div');
+        eventContainer.classList.add('preview-event-container');
+        eventContainer.innerHTML = `
+            <img class="preview-event-image" src="${keyFrame}" alt="Key frame" onerror="this.style.display='none'">
+            <div class="preview-icon-container">
+                <ha-icon icon="${icon}" style="color: ${iconColorRgba}; font-size: 24px;"></ha-icon>
+            </div>
+            <div class="preview-event-details">${cameraName} • ${formattedTime}</div>
+            <div class="preview-event-title">${event}</div>
+        `;
+
+        eventContainer.addEventListener('click', () => {
+            this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
+        });
+
+        this.content.innerHTML = '';
+        this.content.appendChild(eventContainer);
+
     }
 
     showPopup(event, summary, startTime, keyFrame, cameraName, icon) {
@@ -626,13 +496,13 @@ class LLMVisionCard extends HTMLElement {
 
         const popup = document.createElement('div');
         popup.innerHTML = `
-            <div class="popup-overlay">
-                <div class="popup-content">
+            <div class="preview-popup-overlay">
+                <div class="preview-popup-content">
                     ${eventDetails}
                 </div>
             </div>
             <style>
-                .popup-overlay {
+                .preview-popup-overlay {
                     position: fixed;
                     top: 0;
                     left: 0;
@@ -646,10 +516,10 @@ class LLMVisionCard extends HTMLElement {
                     opacity: 0;
                     transition: opacity 0.2s ease;
                 }
-                .popup-overlay.show {
+                .preview-popup-overlay.show {
                     opacity: 1;
                 }
-                .popup-content {
+                .preview-popup-content {
                     position: relative;
                     background: var(--ha-card-background, var(--card-background-color, black));
                     color: var(--primary-text-color);
@@ -662,7 +532,7 @@ class LLMVisionCard extends HTMLElement {
                     transform: scale(0.9);
                     transition: transform 0.2s ease;
                 }
-                .popup-overlay.show .popup-content {
+                .preview-popup-overlay.show .preview-popup-content {
                     transform: scale(1);
                 }
                 .title-container {
@@ -679,17 +549,17 @@ class LLMVisionCard extends HTMLElement {
                     text-overflow: ellipsis;
                     flex-grow: 1;
                 }
-                .popup-content img {
+                .preview-popup-content img {
                     width: 100%;
                     height: auto;
                     border-radius: 12px;
                     margin-top: 10px;
                 }
-                .popup-content .secondary {
+                .preview-popup-content .secondary {
                     font-weight: bold;
                     color: var(--secondary-text-color);
                 }
-                .popup-content .summary {
+                .preview-popup-content .summary {
                     color: var(--primary-text-color);
                     font-size: 16px;
                     line-height: 22px;
@@ -705,7 +575,7 @@ class LLMVisionCard extends HTMLElement {
             
                 /* Mobile Layout */
                 @media (max-width: 768px) {
-                    .popup-content {
+                    .preview-popup-content {
                         max-width: 100%;
                         max-height: 100%;
                         border-radius: 0;
@@ -733,8 +603,8 @@ class LLMVisionCard extends HTMLElement {
             this.closePopup(popup, popstateHandler);
         });
 
-        popup.querySelector('.popup-overlay').addEventListener('click', (event) => {
-            if (event.target === popup.querySelector('.popup-overlay')) {
+        popup.querySelector('.preview-popup-overlay').addEventListener('click', (event) => {
+            if (event.target === popup.querySelector('.preview-popup-overlay')) {
                 this.closePopup(popup, popstateHandler);
             }
         });
@@ -750,14 +620,14 @@ class LLMVisionCard extends HTMLElement {
 
         // Add the show class to trigger the animation
         requestAnimationFrame(() => {
-            popup.querySelector('.popup-overlay').classList.add('show');
+            popup.querySelector('.preview-popup-overlay').classList.add('show');
         });
     }
 
     closePopup(popup, popstateHandler) {
         // Remove the show class to trigger the closing animation
-        popup.querySelector('.popup-overlay').classList.remove('show');
-        popup.querySelector('.popup-overlay').addEventListener('transitionend', () => {
+        popup.querySelector('.preview-popup-overlay').classList.remove('show');
+        popup.querySelector('.preview-popup-overlay').addEventListener('transitionend', () => {
             document.body.removeChild(popup);
         }, { once: true });
 
@@ -774,25 +644,3 @@ class LLMVisionCard extends HTMLElement {
         return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, language: 'en' };
     }
 }
-
-customElements.define('llmvision-card', LLMVisionCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
-    type: "llmvision-card",
-    name: "LLM Vision Timeline Card",
-    description: "Display the LLM Vision Timeline on your dashboard",
-    preview: true,
-    getConfigElement: LLMVisionCard.getConfigElement,
-    getConfigElementStub: LLMVisionCard.getConfigElementStub,
-});
-
-customElements.define('llmvision-preview-card', LLMVisionPreviewCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
-    type: "llmvision-preview-card",
-    name: "LLM Vision Preview Card",
-    description: "Preview the latest LLM Vision event",
-    preview: true,
-    getConfigElement: LLMVisionPreviewCard.getConfigElement,
-    getConfigElementStub: LLMVisionPreviewCard.getConfigElementStub,
-});
