@@ -268,54 +268,69 @@ export class LLMVisionPreviewCard extends HTMLElement {
                 .preview-event-container {
                     position: relative;
                     width: 100%;
-                    height: 300px; /* Or 100%, or set via config */
+                    aspect-ratio: 16 / 9;
                     overflow: hidden;
                     border-radius: var(--border-radius, 20px);
-                    background: #000;
+                    background: var(--ha-card-background, var(--card-background-color, #fff));
                     cursor: pointer;
                 }
                 .preview-event-image {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
                     display: block;
                 }
+                .preview-event-vignette {
+                    position: absolute;
+                    inset: 0;
+                    pointer-events: none;
+                    z-index: 1;
+                    background: linear-gradient(
+                        to bottom,
+                        rgba(0,0,0,0.55) 0%,
+                        rgba(0,0,0,0.00) 30%,
+                        rgba(0,0,0,0.00) 70%,
+                        rgba(0,0,0,0.55) 100%
+                    );
+                    border-radius: var(--border-radius, 20px);
+                }
                 .preview-icon-container {
                     position: absolute;
-                    bottom: 12px;
-                    left: 12px;
+                    top: 3px;
+                    left: 3px;
                     width: 40px;
                     height: 40px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: rgba(0,0,0,0.5);
+                    background: none;
                     z-index: 2;
                 }
                 .preview-event-title {
                     position: absolute;
-                    left: 57px;
-                    bottom: 16px;
+                    left: 44px;
+                    top: 14px;
                     color: #fff;
-                    font-size: 1.2em;
-                    font-weight: 600;
-                    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+                    font-size: 1em;
+                    font-weight: 500;
                     z-index: 2;
                     max-width: 80%;
+                    width: 100%;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
                 }
-
                 .preview-event-details {
                     position: absolute;
-                    right: 16px;
-                    bottom: 16px;
+                    left: 12px;
+                    bottom: 12px;
                     color: #fff;
                     font-size: 1em;
                     font-weight: 500;
-                    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
                     z-index: 2;
                     max-width: 80%;
                     overflow: hidden;
@@ -440,25 +455,15 @@ export class LLMVisionPreviewCard extends HTMLElement {
         let keyFrame = latestEvent.keyFrame;
         const { icon, color: defaultColor, category } = getIcon(event, this.language);
 
-        // Use custom color if set, otherwise fallback to default
-        const customColors = this.config?.custom_colors || {};
-        let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
-
-        let iconColorRgba;
-        if (Array.isArray(color) && color.length === 3) {
-            iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
-        } else {
-            iconColorRgba = hexToRgba(color, 1);
-        }
-
         keyFrame = keyFrame.replace('/config/www/', '/local/');
 
         const eventContainer = document.createElement('div');
         eventContainer.classList.add('preview-event-container');
         eventContainer.innerHTML = `
             <img class="preview-event-image" src="${keyFrame}" alt="Key frame" onerror="this.style.display='none'">
+            <div class="preview-event-vignette"></div>
             <div class="preview-icon-container">
-                <ha-icon icon="${icon}" style="color: ${iconColorRgba}; font-size: 24px;"></ha-icon>
+                <ha-icon icon="${icon}" style="color: white; font-size: 24px;"></ha-icon>
             </div>
             <div class="preview-event-details">${cameraName} • ${formattedTime}</div>
             <div class="preview-event-title">${event}</div>
