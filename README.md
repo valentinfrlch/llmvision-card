@@ -1,6 +1,8 @@
 <p align="center">
-<img src="https://github.com/user-attachments/assets/bebd92b8-765e-4d63-bb3d-47e1bb8b51ad" width=500px>
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./logos/dark_logo@2x.png">
+  <img alt="LLM Vision Logo" src="./logos/logo@2x.png" width="512">
+</picture></p>
 <h1 align=center>Timeline Card</h1>
 <p align=center>
 <img src=https://img.shields.io/badge/HACS-Custom-orange.svg>
