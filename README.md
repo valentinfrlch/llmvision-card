@@ -4,7 +4,7 @@
 <h1 align=center>Timeline Card</h1>
 <p align=center>
 <img src=https://img.shields.io/badge/HACS-Custom-orange.svg>
-<img src=https://img.shields.io/badge/version-1.4.3-blue>
+<img src=https://img.shields.io/badge/version-1.5.0-blue>
 <img src="https://img.shields.io/maintenance/yes/2025.svg">
 <img alt="Issues" src="https://img.shields.io/github/issues/valentinfrlch/llmvision-card?color=0088ff"/>
 <img alt="Static Badge" src="https://img.shields.io/badge/support-buymeacoffee?logo=buymeacoffee&logoColor=black&color=%23FFDD00&link=https%3A%2F%2Fbuymeacoffee.com%2Fvalentinfrlch">
@@ -47,7 +47,10 @@ Alternatively you can add the url of this repository to the custom respositories
 2. Reload
 3. Add the card to your dashboard
 
-## Configuration
+# Configuration
+## Timeline Card
+<img src="https://github.com/user-attachments/assets/b9402784-52aa-409d-be04-1fce47f2e658" width="40%">
+
 >[!TIP]
 >If both `number_of_events` and `number_of_hours` are set, the card will show events that occurred within the past specified number of hours, up to the specified number of events.
 
@@ -58,6 +61,7 @@ Alternatively you can add the url of this repository to the custom respositories
 | number_of_hours   | Show events that occurred within the past specified number of hours.                                        | 24                           |
 | number_of_events  | How many events to show. Maximum is 10.                                                                     | 5                            |
 | category_filters  | Only show events matching one of the specified categories.                                                  | `[]`                         |
+| camera_filters    | Only show events matching one of the specified cameras.                                                     | `[]`                         |
 | custom_colors     | Custom colors for categories. Colors must be specified as a dictionary where keys are category names and values are lists of RGB values (e.g., `[255, 255, 0]`). See the example configuration below for details.    | `[]`                         |
 | language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`, `sk`)    | `en`                         |
 
@@ -81,6 +85,27 @@ custom_colors:
     - 143
     - 143
     - 143
+```
+
+## Preview Card
+<img src="https://github.com/user-attachments/assets/fce64634-cb68-4d8c-bd69-7e640a2de62c" width="40%">
+
+| Parameter         | Description                                                                                                 | Default                      |
+|-------------------|-------------------------------------------------------------------------------------------------------------|------------------------------|
+| entity            | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
+| category_filters  | Only show events matching one of the specified categories.                                                  | `[]`                         |
+| camera_filters    | Only show events matching one of the specified cameras.                                                     | `[]`                         |
+| language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`, `sk`)    | `en`                         |
+
+### Example Configuration
+```yaml
+type: custom:llmvision-preview-card
+entity: calendar.llm_vision_timeline
+language: en
+category_filters:
+  - people
+camera_filters:
+  - camera.garage
 ```
 
 ## Support
