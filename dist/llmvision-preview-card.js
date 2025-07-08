@@ -314,7 +314,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     position: absolute;
                     left: 44px;
                     top: 14px;
-                    color: rbga(255, 255, 255, 1);
+                    color: rgba(255, 255, 255, 1);
                     font-size: var(--ha-font-size-l, 16px);
                     font-weight: var(--ha-font-weight-medium, 500);
                     z-index: 2;
@@ -328,7 +328,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     position: absolute;
                     left: 12px;
                     bottom: 12px;
-                    color: rbga(255, 255, 255, 0.8);
+                    color: rgba(255, 255, 255, 0.8);
                     font-size: var(--ha-font-size-m, 14px);
                     font-weight: var(--ha-font-weight-medium, 500);
                     z-index: 2;
