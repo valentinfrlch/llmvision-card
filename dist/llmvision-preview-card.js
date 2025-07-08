@@ -31,9 +31,9 @@ export class TimelinePreviewCardEditor extends LitElement {
                     gap: 16px;
                 }
                 details {
-                    border: 1px solid var(--divider-color, #e0e0e0);
-                    border-radius: var(--border-radius, 12px);
-                    background: var(--card-background-color, #fff);
+                    border: 1px solid var(--divider-color, #eeeeee);
+                    border-radius: var(--ha-card-border-radius, 20px);
+                    background: var(--ha-card-background, #f3f3f3);
                     margin-bottom: 0;
                     overflow: hidden;
                 }
@@ -270,8 +270,8 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     width: 100%;
                     aspect-ratio: 16 / 9;
                     overflow: hidden;
-                    border-radius: var(--border-radius, 20px);
-                    background: var(--ha-card-background, var(--card-background-color, #fff));
+                    border-radius: var(--ha-card-border-radius, 25px);
+                    background: var(--ha-card-background, #f3f3f3);
                     cursor: pointer;
                 }
                 .preview-event-image {
@@ -295,7 +295,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                         rgba(0,0,0,0.00) 70%,
                         rgba(0,0,0,0.55) 100%
                     );
-                    border-radius: var(--border-radius, 20px);
+                    border-radius: var(--ha-card-border-radius, 25px);
                 }
                 .preview-icon-container {
                     position: absolute;
@@ -303,7 +303,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     left: 3px;
                     width: 40px;
                     height: 40px;
-                    border-radius: 50%;
+                    border-radius: var(--ha-card-border-radius, 25px);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -328,7 +328,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     position: absolute;
                     left: 12px;
                     bottom: 12px;
-                    color: rgba(255, 255, 255, 0.8);
+                    color: rgba(255, 255, 255, 0.9);
                     font-size: var(--ha-font-size-m, 14px);
                     font-weight: var(--ha-font-weight-medium, 500);
                     z-index: 2;
@@ -526,7 +526,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                 }
                 .popup-content {
                     position: relative;
-                    background: var(--card-background-color, black);
+                    background: var(--ha-card-background, #f3f3f3);
                     color: var(--primary-text-color);
                     padding: 20px;
                     border-radius: var(--ha-card-border-radius, 25px);

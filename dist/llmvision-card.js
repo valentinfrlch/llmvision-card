@@ -34,9 +34,9 @@ class TimelineCardEditor extends LitElement {
                     gap: 16px;
                 }
                 details {
-                    border: 1px solid var(--divider-color, #e0e0e0);
+                    border: 1px solid var(--divider-color, #eeeeee);
                     border-radius: var(--ha-card-border-radius, 20px);
-                    background: var(--card-background-color, #fff);
+                    background: var(--ha-card-background, #f3f3f3);
                     margin-bottom: 0;
                     overflow: hidden;
                 }
@@ -651,7 +651,7 @@ class LLMVisionCard extends HTMLElement {
                 }
                 .popup-content {
                     position: relative;
-                    background: var(--card-background-color, black);
+                    background: var(--ha-card-background, #f3f3f3);
                     color: var(--primary-text-color);
                     padding: 20px;
                     border-radius: var(--ha-card-border-radius, 25px);
