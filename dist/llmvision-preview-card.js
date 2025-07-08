@@ -1,5 +1,5 @@
-import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.0-beta.1';
-import { colors } from './colors.js?v=1.5.0-beta.1';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.1';
+import { colors } from './colors.js?v=1.5.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 export class TimelinePreviewCardEditor extends LitElement {
@@ -314,9 +314,9 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     position: absolute;
                     left: 44px;
                     top: 14px;
-                    color: #fff;
-                    font-size: 1em;
-                    font-weight: 500;
+                    color: rbga(255, 255, 255, 1);
+                    font-size: var(--ha-font-size-l, 16px);
+                    font-weight: var(--ha-font-weight-medium, 500);
                     z-index: 2;
                     max-width: 80%;
                     width: 100%;
@@ -328,9 +328,9 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     position: absolute;
                     left: 12px;
                     bottom: 12px;
-                    color: #fff;
-                    font-size: 1em;
-                    font-weight: 500;
+                    color: rbga(255, 255, 255, 0.8);
+                    font-size: var(--ha-font-size-m, 14px);
+                    font-weight: var(--ha-font-weight-medium, 500);
                     z-index: 2;
                     max-width: 80%;
                     overflow: hidden;

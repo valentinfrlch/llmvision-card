@@ -1,8 +1,8 @@
-import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.0-beta.1';
-import { colors } from './colors.js?v=1.5.0-beta.1';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.1';
+import { colors } from './colors.js?v=1.5.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
-import { TimelinePreviewCardEditor, LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.0-beta.1';
+import { TimelinePreviewCardEditor, LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.1';
 
 class TimelineCardEditor extends LitElement {
     static get properties() {
@@ -35,7 +35,7 @@ class TimelineCardEditor extends LitElement {
                 }
                 details {
                     border: 1px solid var(--divider-color, #e0e0e0);
-                    border-radius: var(--border-radius, 20px);
+                    border-radius: var(--ha-card-border-radius, 20px);
                     background: var(--card-background-color, #fff);
                     margin-bottom: 0;
                     overflow: hidden;
@@ -356,8 +356,8 @@ class LLMVisionCard extends HTMLElement {
                     }
                 
                     .event-container h3 {
-                        font-weight: 500;
-                        font-size: 14px;
+                        font-weight: var(--ha-font-weight-medium, 500);
+                        font-size: var(--ha-font-size-m, 14px);
                         letter-spacing: 0.1px;
                         margin: 0;
                         flex-grow: 1;
@@ -368,20 +368,20 @@ class LLMVisionCard extends HTMLElement {
                     }
                 
                     .event-container p {
-                        font-weight: 400;
-                        font-size: 12px;
+                        font-weight: var(--ha-font-weight-normal, 400);
+                        font-size: var(--ha-font-size-s, 12px);
                         letter-spacing: 0.4px;
                         margin: 0;
                         flex-grow: 1;
-                        color: var(--primary-text-color);
+                        color: var(--secondary-text-color);
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
                     }
                 
                     .date-header h2 {
-                        font-weight: 600;
-                        font-size: 16px;
+                        font-weight: var(--ha-font-weight-medium, 500);
+                        font-size: var(--ha-font-size-l, 16px);
                         line-height: 24px;
                         letter-spacing: 0.1px;
                         margin: 0;
@@ -651,10 +651,10 @@ class LLMVisionCard extends HTMLElement {
                 }
                 .popup-content {
                     position: relative;
-                    background: var(--ha-card-background, var(--card-background-color, black));
+                    background: var(--card-background-color, black);
                     color: var(--primary-text-color);
                     padding: 20px;
-                    border-radius: var(--border-radius, 12px);
+                    border-radius: var(--ha-card-border-radius, 25px);
                     max-width: 500px;
                     width: 100%;
                     max-height: 80vh;
@@ -678,22 +678,24 @@ class LLMVisionCard extends HTMLElement {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     flex-grow: 1;
+                    font-family: var(--ha-font-family-heading, "Roboto");
                 }
                 .popup-content img {
                     width: 100%;
                     height: auto;
-                    border-radius: 12px;
+                    border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
                     margin-top: 10px;
                 }
                 .popup-content .secondary {
-                    font-weight: bold;
-                    color: var(--secondary-text-color);
+                    font-weight: var(--ha-font-weight-medium, 500);
+                    color: var(--primary-text-color);
+                    font-family: var(--ha-font-family-body, "Roboto");
                 }
                 .popup-content .summary {
-                    color: var(--primary-text-color);
-                    font-size: 16px;
+                    color: var(--secondary-text-color);
+                    font-size: var(--ha-font-size-l, 16px);
                     line-height: 22px;
-                    letter-spacing: 0.2px;
+                    font-family: var(--ha-font-family-body, "Roboto");
                 }
                 .close-popup {
                     background: none;

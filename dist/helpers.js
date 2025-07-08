@@ -1,14 +1,14 @@
-import { colors } from './colors.js?v=1.4.3';
-import { de } from './de.js?v=1.4.3';
-import { en } from './en.js?v=1.4.3';
-import { es } from './es.js?v=1.4.3';
-import { fr } from './fr.js?v=1.4.3';
-import { it } from './it.js?v=1.4.3';
-import { nl } from './nl.js?v=1.4.3';
-import { pl } from './pl.js?v=1.4.3';
-import { pt } from './pt.js?v=1.4.3';
-import { sk } from './sk.js?v=1.4.3';
-import { sv } from './sv.js?v=1.4.3';
+import { colors } from './colors.js?v=1.5.1';
+import { de } from './de.js?v=1.5.1';
+import { en } from './en.js?v=1.5.1';
+import { es } from './es.js?v=1.5.1';
+import { fr } from './fr.js?v=1.5.1';
+import { it } from './it.js?v=1.5.1';
+import { nl } from './nl.js?v=1.5.1';
+import { pl } from './pl.js?v=1.5.1';
+import { pt } from './pt.js?v=1.5.1';
+import { sk } from './sk.js?v=1.5.1';
+import { sv } from './sv.js?v=1.5.1';
 
 export function hexToRgba(hex, alpha = 1) {
     let c = hex.replace('#', '');
