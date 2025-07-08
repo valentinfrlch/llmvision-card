@@ -501,13 +501,13 @@ export class LLMVisionPreviewCard extends HTMLElement {
 
         const popup = document.createElement('div');
         popup.innerHTML = `
-            <div class="popup-overlay">
-                <div class="popup-content">
+            <div class="preview-popup-overlay">
+                <div class="preview-popup-content">
                     ${eventDetails}
                 </div>
             </div>
             <style>
-                .popup-overlay {
+                .preview-popup-overlay {
                     position: fixed;
                     top: 0;
                     left: 0;
@@ -521,10 +521,10 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     opacity: 0;
                     transition: opacity 0.2s ease;
                 }
-                .popup-overlay.show {
+                .preview-popup-overlay.show {
                     opacity: 1;
                 }
-                .popup-content {
+                .preview-popup-content {
                     position: relative;
                     background: var(--ha-card-background, #f3f3f3);
                     color: var(--primary-text-color);
@@ -537,7 +537,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     transform: scale(0.9);
                     transition: transform 0.2s ease;
                 }
-                .popup-overlay.show .popup-content {
+                .preview-popup-overlay.show .preview-popup-content {
                     transform: scale(1);
                 }
                 .title-container {
@@ -555,18 +555,18 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     flex-grow: 1;
                     font-family: var(--ha-font-family-heading, "Roboto");
                 }
-                .popup-content img {
+                .preview-popup-content img {
                     width: 100%;
                     height: auto;
                     border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
                     margin-top: 10px;
                 }
-                .popup-content .secondary {
+                .preview-popup-content .secondary {
                     font-weight: var(--ha-font-weight-medium, 500);
                     color: var(--primary-text-color);
                     font-family: var(--ha-font-family-body, "Roboto");
                 }
-                .popup-content .summary {
+                .preview-popup-content .summary {
                     color: var(--secondary-text-color);
                     font-size: var(--ha-font-size-l, 16px);
                     line-height: 22px;
@@ -582,7 +582,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
             
                 /* Mobile Layout */
                 @media (max-width: 768px) {
-                    .popup-content {
+                    .preview-popup-content {
                         max-width: 100%;
                         max-height: 100%;
                         border-radius: 0;
