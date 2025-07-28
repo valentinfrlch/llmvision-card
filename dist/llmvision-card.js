@@ -3,6 +3,8 @@ import { colors } from './colors.js?v=1.5.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
 import { TimelinePreviewCardEditor, LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.1';
+import { TimelineHorizontalCardEditor, LLMVisionHorizontalCard } from './llmvision-horizontal-card.js?v=1.5.1';
+
 
 class TimelineCardEditor extends LitElement {
     static get properties() {
@@ -797,4 +799,15 @@ window.customCards.push({
     preview: true,
     getConfigElement: LLMVisionPreviewCard.getConfigElement,
     getConfigElementStub: LLMVisionPreviewCard.getConfigElementStub,
+});
+
+customElements.define('llmvision-horizontal-card', LLMVisionHorizontalCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "llmvision-horizontal-card",
+    name: "LLM Vision Horizontal Card",
+    description: "Preview the latest LLM Vision event in a horizontal layout",
+    preview: true,
+    getConfigElement: LLMVisionHorizontalCard.getConfigElement,
+    getConfigElementStub: LLMVisionHorizontalCard.getConfigElementStub,
 });
