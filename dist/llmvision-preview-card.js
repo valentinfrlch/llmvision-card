@@ -270,8 +270,8 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     width: 100%;
                     aspect-ratio: 16 / 9;
                     overflow: hidden;
-                    border-radius: var(--ha-card-border-radius, 25px);
-                    background: var(--ha-card-background, #f3f3f3);
+                    border-radius: var(--ha-card-border-radius,12px);
+                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
                     cursor: pointer;
                 }
                 .preview-event-image {
@@ -295,7 +295,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                         rgba(0,0,0,0.00) 70%,
                         rgba(0,0,0,0.55) 100%
                     );
-                    border-radius: var(--ha-card-border-radius, 25px);
+                    border-radius: var(--ha-card-border-radius,12px);
                 }
                 .preview-icon-container {
                     position: absolute;
@@ -491,7 +491,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                 <div class="title-container">
                     <ha-icon icon="${icon}"></ha-icon>
                     <h2>${event}</h2>
-                    <button class="close-popup" style="font-size:30">&times;</button>
+                     <button class="close-popup" style="font-size:30"><ha-icon icon="mdi:close"></ha-icon></button>
                 </div>
                 <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
                 <p class="secondary"><span>${secondaryText}</span></p>
@@ -526,7 +526,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                 }
                 .preview-popup-content {
                     position: relative;
-                    background: var(--ha-card-background, #f3f3f3);
+                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
                     color: var(--primary-text-color);
                     padding: 20px;
                     border-radius: var(--ha-card-border-radius, 25px);

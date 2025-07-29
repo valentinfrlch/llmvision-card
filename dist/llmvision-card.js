@@ -2,8 +2,8 @@ import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.1';
 import { colors } from './colors.js?v=1.5.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 
-import { TimelinePreviewCardEditor, LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.1';
-import { TimelineHorizontalCardEditor, LLMVisionHorizontalCard } from './llmvision-horizontal-card.js?v=1.5.1';
+import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.1';
+import { LLMVisionHorizontalCard } from './llmvision-horizontal-card.js?v=1.5.1';
 
 
 class TimelineCardEditor extends LitElement {
@@ -326,22 +326,24 @@ class LLMVisionCard extends HTMLElement {
     set hass(hass) {
         if (!this.content) {
             this.innerHTML = `
-                <ha-card>
+                <ha-card style="padding: 16px;">
                     ${this.header !== "" ? `
-                    <div class="card-header" style="font-size: 1.3em; font-weight: 600; margin-bottom: 8px;">
+                    <div class="card-header" style="font-size: 1.3em; font-weight: 600; padding: 0 0 5px 0;">
                         ${this.header || "LLM Vision Events"}
                     </div>
                     ` : ""}
                     <div class="card-content"></div>
                 </ha-card>
                 <style>
+                    .card-content {
+                        padding: 0;
+                    }
                     .event-container {
                         display: flex;
                         align-items: center;
                         justify-content: flex-start;
                         height: 75px;
                         z-index: 2;
-                        margin-bottom: 10px;
                         cursor: pointer;
                     }
                 
@@ -618,7 +620,7 @@ class LLMVisionCard extends HTMLElement {
                 <div class="title-container">
                     <ha-icon icon="${icon}"></ha-icon>
                     <h2>${event}</h2>
-                    <button class="close-popup" style="font-size:30">&times;</button>
+                     <button class="close-popup" style="font-size:30"><ha-icon icon="mdi:close"></ha-icon></button>
                 </div>
                 <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
                 <p class="secondary"><span>${secondaryText}</span></p>
@@ -653,7 +655,7 @@ class LLMVisionCard extends HTMLElement {
                 }
                 .popup-content {
                     position: relative;
-                    background: var(--ha-card-background, #f3f3f3);
+                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
                     color: var(--primary-text-color);
                     padding: 20px;
                     border-radius: var(--ha-card-border-radius, 25px);

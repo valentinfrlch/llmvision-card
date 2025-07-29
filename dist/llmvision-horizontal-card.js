@@ -29,7 +29,6 @@ export class TimelineHorizontalCardEditor extends LitElement {
                 .card-content {
                     display: flex;
                     flex-direction: column;
-                    gap: 16px;
                 }
                 details {
                     border: 1px solid var(--divider-color, #eeeeee);
@@ -275,7 +274,7 @@ export class TimelineHorizontalCardEditor extends LitElement {
             .card-content {
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                padding: 0 0 8px 0 !important;
             }
         `;
     }
@@ -332,7 +331,7 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                         <div class="most-recent-event-left" style="display: flex; align-items: center; gap: 8px;"></div>
                         <div class="most-recent-event-right" style="font-size: 0.98em; color: var(--secondary-text-color); min-width: 70px; text-align: right; margin-right: 16px;"></div>
                     </div>
-                    <div class="card-content"></div>
+                    <div class="card-content" style="padding: 0 0 8px 0;"></div>
                 </ha-card>
                 <style>
                     .timeline-container {
@@ -340,7 +339,7 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                         flex-direction: column;
                         align-items: center;
                         width: 100%;
-                        padding-top: 24px;
+                        padding-top: 15px;
                     }
                     .timeline-line {
                         position: relative;
@@ -535,20 +534,6 @@ export class LLMVisionHorizontalCard extends HTMLElement {
             }
         }
 
-        // Filter based on number of hours and number of events
-        if (numberOfHours && eventDetails.length === 0) {
-            this.content.innerHTML = '';
-            const noEventsContainer = document.createElement('div');
-            const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
-            noEventsContainer.innerHTML = `
-                <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                    <h3>${noEventsMessage}</h3>
-                </div>
-            `;
-            this.content.appendChild(noEventsContainer);
-            return;
-        }
-
         // Filter events based on category filters
         if (this.category_filters && this.category_filters.length > 0) {
             eventDetails = eventDetails.filter(detail => {
@@ -556,19 +541,6 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                 const { category } = getIcon(event, this.language);
                 return this.category_filters.includes(category);
             });
-            // Show message if no events match the category filter
-            if (eventDetails.length === 0) {
-                this.content.innerHTML = '';
-                const noEventsContainer = document.createElement('div');
-                const noEventsMessage = translate('noEventsCategory', this.language) || "No events found for the selected category(s).";
-                noEventsContainer.innerHTML = `
-                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                <h3>${noEventsMessage}</h3>
-                            </div>
-                        `;
-                this.content.appendChild(noEventsContainer);
-                return;
-            }
         }
 
         // --- Filter events based on camera filters ---
@@ -578,19 +550,6 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                 if (!detail.cameraEntityId) return true;
                 return this.camera_filters.includes(detail.cameraEntityId);
             });
-            // Show message if no events match the camera filter
-            if (eventDetails.length === 0) {
-                this.content.innerHTML = '';
-                const noEventsContainer = document.createElement('div');
-                const noEventsMessage = translate('noEventsCamera', this.language) || "No events found for the selected camera(s).";
-                noEventsContainer.innerHTML = `
-                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                <h3>${noEventsMessage}</h3>
-                            </div>
-                        `;
-                this.content.appendChild(noEventsContainer);
-                return;
-            }
         }
 
         // Sort event details by start time
@@ -679,7 +638,7 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                 img.classList.add('event-image');
                 img.src = keyFrame.replace('/config/www/', '/local/');
                 img.alt = `Key frame ${i + 1}`;
-                img.onerror = function() { this.style.display = 'none'; };
+                img.onerror = function () { this.style.display = 'none'; };
                 segment.appendChild(img);
             }
 
@@ -706,7 +665,7 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                 <div class="title-container">
                     <ha-icon icon="${icon}"></ha-icon>
                     <h2>${event}</h2>
-                    <button class="close-popup" style="font-size:30">&times;</button>
+                     <button class="close-popup" style="font-size:30"><ha-icon icon="mdi:close"></ha-icon></button>
                 </div>
                 <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
                 <p class="secondary"><span>${secondaryText}</span></p>
@@ -741,7 +700,7 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                 }
                 .popup-content {
                     position: relative;
-                    background: var(--ha-card-background, #f3f3f3);
+                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
                     color: var(--primary-text-color);
                     padding: 20px;
                     border-radius: var(--ha-card-border-radius, 25px);
