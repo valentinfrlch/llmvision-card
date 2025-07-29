@@ -322,7 +322,16 @@ export class LLMVisionHorizontalCard extends HTMLElement {
     set hass(hass) {
         if (!this.content) {
             this.innerHTML = `
-                <ha-card>
+                <ha-card style="padding: 16px;">
+                    ${this.header !== "" ? `
+                    <div class="card-header" style="font-size: 1.3em; font-weight: 600; padding: 0; padding-bottom: 1px;">
+                        ${this.header || "Events Timeline"}
+                    </div>
+                    ` : ""}
+                    <div class="most-recent-event" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; justify-content: space-between;">
+                        <div class="most-recent-event-left" style="display: flex; align-items: center; gap: 8px;"></div>
+                        <div class="most-recent-event-right" style="font-size: 0.98em; color: var(--secondary-text-color); min-width: 70px; text-align: right; margin-right: 16px;"></div>
+                    </div>
                     <div class="card-content"></div>
                 </ha-card>
                 <style>
@@ -331,11 +340,11 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                         flex-direction: column;
                         align-items: center;
                         width: 100%;
-                        padding: 24px 0;
+                        padding-top: 24px;
                     }
                     .timeline-line {
                         position: relative;
-                        width: 95%;
+                        width: 100%;
                         height: 5px;
                         background: var(--divider-color, #e0e0e0);
                         border-radius: 5px;
@@ -391,9 +400,21 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                     }
                     .timeline-date {
                         font-size: 15px;
+                        font-weight: 400;
+                        color: var(--secondary-text-color);
+                        margin-top: 10px;
+                    }
+                    .most-recent-event-dot {
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 50%;
+                        display: inline-block;
+                        margin-right: 4px;
+                    }
+                    .most-recent-event-title {
+                        font-size: 1em;
                         font-weight: 500;
                         color: var(--primary-text-color);
-                        margin-bottom: 4px;
                     }
                     @media (max-width: 768px) {
                         .timeline-line {
@@ -407,12 +428,21 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                         .event-label {
                             font-size: 12px;
                         }
+                        .most-recent-event-title {
+                            font-size: 0.95em;
+                        }
+                        .most-recent-event-dot {
+                            width: 10px;
+                            height: 10px;
+                        }
                     }
                 </style>
             `;
             this.content = this.querySelector('div.card-content');
+            this.mostRecentEventDiv = this.querySelector('div.most-recent-event');
+            this.mostRecentEventLeft = this.querySelector('.most-recent-event-left');
+            this.mostRecentEventRight = this.querySelector('.most-recent-event-right');
         } else {
-            // Update header if it changes dynamically
             const headerDiv = this.querySelector('.card-header');
             if (headerDiv) {
                 if (this.header === "") {
@@ -422,6 +452,9 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                     headerDiv.textContent = this.header;
                 }
             }
+            this.mostRecentEventDiv = this.querySelector('div.most-recent-event');
+            this.mostRecentEventLeft = this.querySelector('.most-recent-event-left');
+            this.mostRecentEventRight = this.querySelector('.most-recent-event-right');
         }
 
         const calendarEntity = hass.states[this.entity];
@@ -433,11 +466,11 @@ export class LLMVisionHorizontalCard extends HTMLElement {
             return;
         }
 
-        const events = (calendarEntity.attributes.events || []).slice()
-        const summaries = (calendarEntity.attributes.summaries || []).slice()
-        const keyFrames = (calendarEntity.attributes.key_frames || []).slice()
-        const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
-        const startTimes = (calendarEntity.attributes.starts || []).slice()
+        const events = (calendarEntity.attributes.events || []).slice();
+        const summaries = (calendarEntity.attributes.summaries || []).slice();
+        const keyFrames = (calendarEntity.attributes.key_frames || []).slice();
+        const cameraNames = (calendarEntity.attributes.camera_names || []).slice();
+        const startTimes = (calendarEntity.attributes.starts || []).slice();
 
         let eventDetails = events.map((event, index) => {
             const cameraEntityId = cameraNames[index];
@@ -452,6 +485,45 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                 startTime: startTimes[index]
             };
         });
+
+        // --- Show most recent event title, dot, and timestamp ---
+        if (this.mostRecentEventLeft && this.mostRecentEventRight) {
+            this.mostRecentEventLeft.innerHTML = '';
+            this.mostRecentEventRight.innerHTML = '';
+            if (eventDetails.length > 0) {
+                // Most recent event is the first after filters and sorting
+                const mostRecent = eventDetails.slice().sort((a, b) => new Date(b.startTime) - new Date(a.startTime))[0];
+                const { event, summary, startTime, keyFrame, cameraName } = mostRecent;
+                const { category, color: defaultColor } = getIcon(event, this.language);
+                const customColors = this.config?.custom_colors || {};
+                let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
+                let bgColorRgba;
+                if (Array.isArray(color) && color.length === 3) {
+                    bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
+                } else {
+                    bgColorRgba = hexToRgba(color, 1);
+                }
+                const dot = document.createElement('span');
+                dot.className = 'most-recent-event-dot';
+                dot.style.background = bgColorRgba;
+                const title = document.createElement('span');
+                title.className = 'most-recent-event-title';
+                title.textContent = event;
+                title.style.cursor = 'pointer';
+                title.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.showPopup(event, summary, startTime, keyFrame, cameraName, null);
+                });
+                this.mostRecentEventLeft.appendChild(dot);
+                this.mostRecentEventLeft.appendChild(title);
+                // Format timestamp (HH:mm)
+                const date = new Date(startTime);
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const formattedTime = `${hours}:${minutes}`;
+                this.mostRecentEventRight.textContent = formattedTime;
+            }
+        }
 
         // Filter events based on numberOfHours if set
         if (numberOfHours) {
@@ -531,7 +603,11 @@ export class LLMVisionHorizontalCard extends HTMLElement {
         const timelineContainer = document.createElement('div');
         timelineContainer.classList.add('timeline-container');
 
-        // Optionally show a label above the timeline
+        // Timeline line
+        const timelineLine = document.createElement('div');
+        timelineLine.classList.add('timeline-line');
+        timelineContainer.appendChild(timelineLine);
+
         if (eventDetails.length > 0) {
             let labelText;
             if (numberOfHours) {
@@ -547,11 +623,6 @@ export class LLMVisionHorizontalCard extends HTMLElement {
             dateDiv.textContent = labelText;
             timelineContainer.appendChild(dateDiv);
         }
-
-        // Timeline line
-        const timelineLine = document.createElement('div');
-        timelineLine.classList.add('timeline-line');
-        timelineContainer.appendChild(timelineLine);
 
         // Calculate segment positions and widths based on time range
         let totalEvents = numberOfHours ? eventDetails.length : Math.min(numberOfEvents, eventDetails.length);
