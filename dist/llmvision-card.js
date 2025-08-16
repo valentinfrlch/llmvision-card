@@ -557,34 +557,43 @@ class LLMVisionCard extends HTMLElement {
 
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
-            keyFrame = keyFrame.replace('/config/www/', '/local/');
+            let mediaContentID = keyFrame.replace('/media/llmvision/', 'media-source://media_source/llmvision/');
+            console.log("keyFrame:", keyFrame);
+            hass.callWS({
+                type: "media_source/resolve_media",
+                media_content_id: mediaContentID,
+                expires: 60 * 60 * 3 // 3 hours
+            }).then(result => {
+                keyFrame = result.url;
+            }).catch(error => {
+                console.error("Error resolving media content ID:", error);
+            }).finally(() => {
+                // Determine the date label
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
 
-            // Determine the date label
-            const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
+                let dateLabel;
+                if (date.toDateString() === today.toDateString()) {
+                    dateLabel = translate('today', this.language);
+                } else if (date.toDateString() === yesterday.toDateString()) {
+                    dateLabel = translate('yesterday', this.language);
+                } else {
+                    dateLabel = formattedDate;
+                }
 
-            let dateLabel;
-            if (date.toDateString() === today.toDateString()) {
-                dateLabel = translate('today', this.language);
-            } else if (date.toDateString() === yesterday.toDateString()) {
-                dateLabel = translate('yesterday', this.language);
-            } else {
-                dateLabel = formattedDate;
-            }
+                // Add the date if it's different from the last date
+                if (dateLabel !== lastDate) {
+                    const dateHeader = document.createElement('div');
+                    dateHeader.classList.add('date-header');
+                    dateHeader.innerHTML = `<h2>${dateLabel}</h2>`;
+                    this.content.appendChild(dateHeader);
+                    lastDate = dateLabel;
+                }
 
-            // Add the date if it's different from the last date
-            if (dateLabel !== lastDate) {
-                const dateHeader = document.createElement('div');
-                dateHeader.classList.add('date-header');
-                dateHeader.innerHTML = `<h2>${dateLabel}</h2>`;
-                this.content.appendChild(dateHeader);
-                lastDate = dateLabel;
-            }
-
-            const eventContainer = document.createElement('div');
-            eventContainer.classList.add('event-container');
-            eventContainer.innerHTML = `
+                const eventContainer = document.createElement('div');
+                eventContainer.classList.add('event-container');
+                eventContainer.innerHTML = `
                 <div class="icon-container" style="background-color: ${bgColorRgba};">
                     <ha-icon icon="${icon}" style="color: ${iconColorRgba};"></ha-icon>
                 </div>
@@ -595,11 +604,12 @@ class LLMVisionCard extends HTMLElement {
                 <img src="${keyFrame}" alt="Key frame ${i + 1}" onerror="this.style.display='none'">
             `;
 
-            eventContainer.addEventListener('click', () => {
-                this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
-            });
+                eventContainer.addEventListener('click', () => {
+                    this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
+                });
 
-            this.content.appendChild(eventContainer);
+                this.content.appendChild(eventContainer);
+            });
         }
     }
 
