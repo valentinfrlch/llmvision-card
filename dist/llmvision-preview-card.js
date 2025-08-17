@@ -33,7 +33,6 @@ export class TimelinePreviewCardEditor extends LitElement {
                 details {
                     border: 1px solid var(--divider-color, #eeeeee);
                     border-radius: var(--ha-card-border-radius, 20px);
-                    background: var(--ha-card-background, #f3f3f3);
                     margin-bottom: 0;
                     overflow: hidden;
                 }

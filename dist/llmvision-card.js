@@ -23,8 +23,8 @@ class TimelineCardEditor extends LitElement {
         }
 
         const generalSchema = this._getSchema().slice(0, 2);
-        const filterSchema = this._getSchema().slice(2, 7);
-        const languageSchema = this._getSchema().slice(7, 7);
+        const filterSchema = this._getSchema().slice(2, 6);
+        const languageSchema = this._getSchema().slice(6, 7);
         const colorSchema = this._getSchema().slice(7);
 
 
@@ -38,7 +38,6 @@ class TimelineCardEditor extends LitElement {
                 details {
                     border: 1px solid var(--divider-color, #eeeeee);
                     border-radius: var(--ha-card-border-radius, 20px);
-                    background: var(--ha-card-background, #f3f3f3);
                     margin-bottom: 0;
                     overflow: hidden;
                 }
@@ -810,15 +809,4 @@ window.customCards.push({
     preview: true,
     getConfigElement: LLMVisionPreviewCard.getConfigElement,
     getConfigElementStub: LLMVisionPreviewCard.getConfigElementStub,
-});
-
-customElements.define('llmvision-horizontal-card', LLMVisionHorizontalCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
-    type: "llmvision-horizontal-card",
-    name: "LLM Vision Horizontal Card",
-    description: "Preview the latest LLM Vision event in a horizontal layout",
-    preview: true,
-    getConfigElement: LLMVisionHorizontalCard.getConfigElement,
-    getConfigElementStub: LLMVisionHorizontalCard.getConfigElementStub,
 });
