@@ -557,8 +557,7 @@ class LLMVisionCard extends HTMLElement {
 
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
-            let mediaContentID = keyFrame.replace('/media/llmvision/', 'media-source://media_source/llmvision/');
-            console.log("keyFrame:", keyFrame);
+            let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
             hass.callWS({
                 type: "media_source/resolve_media",
                 media_content_id: mediaContentID,

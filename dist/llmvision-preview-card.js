@@ -455,11 +455,20 @@ export class LLMVisionPreviewCard extends HTMLElement {
         let keyFrame = latestEvent.keyFrame;
         const { icon, color: defaultColor, category } = getIcon(event, this.language);
 
-        keyFrame = keyFrame.replace('/config/www/', '/local/');
+        let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
+        hass.callWS({
+            type: "media_source/resolve_media",
+            media_content_id: mediaContentID,
+            expires: 60 * 60 * 3 // 3 hours
+        }).then(result => {
+            keyFrame = result.url;
+        }).catch(error => {
+            console.error("Error resolving media content ID:", error);
+        }).finally(() => {
 
-        const eventContainer = document.createElement('div');
-        eventContainer.classList.add('preview-event-container');
-        eventContainer.innerHTML = `
+            const eventContainer = document.createElement('div');
+            eventContainer.classList.add('preview-event-container');
+            eventContainer.innerHTML = `
             <img class="preview-event-image" src="${keyFrame}" alt="Key frame" onerror="this.style.display='none'">
             <div class="preview-event-vignette"></div>
             <div class="preview-icon-container">
@@ -467,14 +476,15 @@ export class LLMVisionPreviewCard extends HTMLElement {
             </div>
             <div class="preview-event-details">${cameraName} • ${formattedTime}</div>
             <div class="preview-event-title">${event}</div>
-        `;
+            `;
 
-        eventContainer.addEventListener('click', () => {
-            this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
+            eventContainer.addEventListener('click', () => {
+                this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
+            });
+
+            this.content.innerHTML = '';
+            this.content.appendChild(eventContainer);
         });
-
-        this.content.innerHTML = '';
-        this.content.appendChild(eventContainer);
 
     }
 
