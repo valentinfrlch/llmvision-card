@@ -1,9 +1,7 @@
 import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.1';
 import { colors } from './colors.js?v=1.5.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
-
 import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.1';
-import { LLMVisionHorizontalCard } from './llmvision-horizontal-card.js?v=1.5.1';
 
 
 class TimelineCardEditor extends LitElement {
@@ -288,8 +286,10 @@ customElements.define("timeline-card-editor", TimelineCardEditor);
 
 class LLMVisionCard extends HTMLElement {
 
+    imageCache = new Map();
     config;
     content;
+    _lastEventHash = null;
 
     // required
     setConfig(config) {
@@ -441,6 +441,24 @@ class LLMVisionCard extends HTMLElement {
         const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
         const startTimes = (calendarEntity.attributes.starts || []).slice()
 
+        const currentEventHash = JSON.stringify({
+            events,
+            summaries,
+            keyFrames,
+            cameraNames,
+            startTimes,
+            category_filters: this.category_filters,
+            camera_filters: this.camera_filters,
+            number_of_events: this.number_of_events,
+            number_of_hours: this.number_of_hours,
+        });
+
+        // Skip update if no changes
+        if (currentEventHash === this._lastEventHash) {
+            return;
+        }
+        this._lastEventHash = currentEventHash;
+
         let eventDetails = events.map((event, index) => {
             const cameraEntityId = cameraNames[index];
             const cameraEntity = hass.states[cameraNames[index]];
@@ -560,16 +578,7 @@ class LLMVisionCard extends HTMLElement {
 
             const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
 
-            let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
-            hass.callWS({
-                type: "media_source/resolve_media",
-                media_content_id: mediaContentID,
-                expires: 60 * 60 * 3 // 3 hours
-            }).then(result => {
-                keyFrame = result.url;
-            }).catch(error => {
-                console.error("Error resolving media content ID:", error);
-            }).finally(() => {
+            const renderEvent = () => {
                 // Determine the date label
                 const today = new Date();
                 const yesterday = new Date(today);
@@ -611,7 +620,28 @@ class LLMVisionCard extends HTMLElement {
                 });
 
                 this.content.appendChild(eventContainer);
-            });
+            }
+
+            let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
+
+            // Use cache if available
+            if (this.imageCache.has(mediaContentID)) {
+                keyFrame = this.imageCache.get(mediaContentID);
+                renderEvent();
+            } else {
+                hass.callWS({
+                    type: "media_source/resolve_media",
+                    media_content_id: mediaContentID,
+                    expires: 60 * 60 * 3 // 3 hours
+                }).then(result => {
+                    keyFrame = result.url;
+                    this.imageCache.set(mediaContentID, keyFrame);
+                }).catch(error => {
+                    console.error("Error resolving media content ID:", error);
+                }).finally(() => {
+                    renderEvent();
+                });
+            }
         }
     }
 
