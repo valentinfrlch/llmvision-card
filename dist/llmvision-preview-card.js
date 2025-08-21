@@ -233,6 +233,7 @@ customElements.define("timeline-preview-card-editor", TimelinePreviewCardEditor)
 
 export class LLMVisionPreviewCard extends HTMLElement {
 
+    imageCache = new Map();
     config;
     content;
 
@@ -454,17 +455,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
         let keyFrame = latestEvent.keyFrame;
         const { icon, color: defaultColor, category } = getIcon(event, this.language);
 
-        let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
-        hass.callWS({
-            type: "media_source/resolve_media",
-            media_content_id: mediaContentID,
-            expires: 60 * 60 * 3 // 3 hours
-        }).then(result => {
-            keyFrame = result.url;
-        }).catch(error => {
-            console.error("Error resolving media content ID:", error);
-        }).finally(() => {
-
+        const renderEvent = () => {
             const eventContainer = document.createElement('div');
             eventContainer.classList.add('preview-event-container');
             eventContainer.innerHTML = `
@@ -483,8 +474,28 @@ export class LLMVisionPreviewCard extends HTMLElement {
 
             this.content.innerHTML = '';
             this.content.appendChild(eventContainer);
-        });
+        }
 
+        let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
+        // Use cache if available
+        if (this.imageCache.has(mediaContentID)) {
+            keyFrame = this.imageCache.get(mediaContentID);
+            renderEvent();
+        } else {
+            hass.callWS({
+                type: "media_source/resolve_media",
+                media_content_id: mediaContentID,
+                expires: 60 * 60 * 3 // 3 hours
+            }).then(result => {
+                keyFrame = result.url;
+                this.imageCache.set(mediaContentID, keyFrame);
+            }).catch(error => {
+                console.error("Error resolving media content ID:", error);
+            }).finally(() => {
+                renderEvent();
+            });
+
+        }
     }
 
     showPopup(event, summary, startTime, keyFrame, cameraName, icon) {
