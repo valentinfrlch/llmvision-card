@@ -344,6 +344,7 @@ class LLMVisionCard extends HTMLElement {
                         height: 75px;
                         z-index: 2;
                         cursor: pointer;
+                        margin-bottom: 8px;
                     }
                 
                     .event-container:last-child {
@@ -613,7 +614,7 @@ class LLMVisionCard extends HTMLElement {
                     <p>${secondaryText}</p>
                 </div>
                 <img src="${keyFrame}" alt="Key frame ${i + 1}" onerror="this.style.display='none'">
-            `;
+                `;
 
                 eventContainer.addEventListener('click', () => {
                     this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
