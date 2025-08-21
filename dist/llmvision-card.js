@@ -289,6 +289,7 @@ class LLMVisionCard extends HTMLElement {
     imageCache = new Map();
     config;
     content;
+    _lastEventHash = null;
 
     // required
     setConfig(config) {
@@ -439,6 +440,24 @@ class LLMVisionCard extends HTMLElement {
         const keyFrames = (calendarEntity.attributes.key_frames || []).slice()
         const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
         const startTimes = (calendarEntity.attributes.starts || []).slice()
+
+        const currentEventHash = JSON.stringify({
+            events,
+            summaries,
+            keyFrames,
+            cameraNames,
+            startTimes,
+            category_filters: this.category_filters,
+            camera_filters: this.camera_filters,
+            number_of_events: this.number_of_events,
+            number_of_hours: this.number_of_hours,
+        });
+
+        // Skip update if no changes
+        if (currentEventHash === this._lastEventHash) {
+            return;
+        }
+        this._lastEventHash = currentEventHash;
 
         let eventDetails = events.map((event, index) => {
             const cameraEntityId = cameraNames[index];
@@ -621,8 +640,7 @@ class LLMVisionCard extends HTMLElement {
                     console.error("Error resolving media content ID:", error);
                 }).finally(() => {
                     renderEvent();
-                }
-                );
+                });
             }
         }
     }
