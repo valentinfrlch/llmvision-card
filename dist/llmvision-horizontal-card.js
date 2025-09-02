@@ -1,10 +1,8 @@
 import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.1';
 import { colors } from './colors.js?v=1.5.1';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
-import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.1';
 
-
-class TimelineCardEditor extends LitElement {
+export class TimelineHorizontalCardEditor extends LitElement {
     static get properties() {
         return {
             _config: { type: Object },
@@ -21,8 +19,8 @@ class TimelineCardEditor extends LitElement {
         }
 
         const generalSchema = this._getSchema().slice(0, 2);
-        const filterSchema = this._getSchema().slice(2, 6);
-        const languageSchema = this._getSchema().slice(6, 7);
+        const filterSchema = this._getSchema().slice(2, 7);
+        const languageSchema = this._getSchema().slice(7, 7);
         const colorSchema = this._getSchema().slice(7);
 
 
@@ -31,11 +29,11 @@ class TimelineCardEditor extends LitElement {
                 .card-content {
                     display: flex;
                     flex-direction: column;
-                    gap: 16px;
                 }
                 details {
                     border: 1px solid var(--divider-color, #eeeeee);
                     border-radius: var(--ha-card-border-radius, 20px);
+                    background: var(--ha-card-background, #f3f3f3);
                     margin-bottom: 0;
                     overflow: hidden;
                 }
@@ -276,20 +274,18 @@ class TimelineCardEditor extends LitElement {
             .card-content {
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                padding: 0 0 8px 0 !important;
             }
         `;
     }
 }
 
-customElements.define("timeline-card-editor", TimelineCardEditor);
+customElements.define("timeline-horizontal-card-editor", TimelineHorizontalCardEditor);
 
-class LLMVisionCard extends HTMLElement {
+export class LLMVisionHorizontalCard extends HTMLElement {
 
-    imageCache = new Map();
     config;
     content;
-    _lastEventHash = null;
 
     // required
     setConfig(config) {
@@ -315,7 +311,7 @@ class LLMVisionCard extends HTMLElement {
     }
 
     static getConfigElement() {
-        return document.createElement('timeline-card-editor');
+        return document.createElement('timeline-horizontal-card-editor');
     }
 
     static getStubConfig() {
@@ -327,95 +323,125 @@ class LLMVisionCard extends HTMLElement {
             this.innerHTML = `
                 <ha-card style="padding: 16px;">
                     ${this.header !== "" ? `
-                    <div class="card-header" style="font-size: 1.3em; font-weight: 600; padding: 0 0 5px 0;">
-                        ${this.header || "LLM Vision Events"}
+                    <div class="card-header" style="font-size: 1.3em; font-weight: 600; padding: 0; padding-bottom: 1px;">
+                        ${this.header || "Events Timeline"}
                     </div>
                     ` : ""}
-                    <div class="card-content"></div>
+                    <div class="most-recent-event" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; justify-content: space-between;">
+                        <div class="most-recent-event-left" style="display: flex; align-items: center; gap: 8px;"></div>
+                        <div class="most-recent-event-right" style="font-size: 0.98em; color: var(--secondary-text-color); min-width: 70px; text-align: right; margin-right: 16px;"></div>
+                    </div>
+                    <div class="card-content" style="padding: 0 0 8px 0;"></div>
                 </ha-card>
                 <style>
-                    .card-content {
-                        padding: 0;
-                    }
-                    .event-container {
+                    .timeline-container {
                         display: flex;
+                        flex-direction: column;
                         align-items: center;
-                        justify-content: flex-start;
-                        height: 75px;
-                        z-index: 2;
-                        cursor: pointer;
-                        margin-bottom: 8px;
+                        width: 100%;
+                        padding-top: 15px;
                     }
-                
-                    .event-container:last-child {
-                        margin-bottom: 0;
+                    .timeline-line {
+                        position: relative;
+                        width: 100%;
+                        height: 5px;
+                        background: var(--divider-color, #e0e0e0);
+                        border-radius: 5px;
+                        margin-bottom: 5px;
+                        margin-top: 2px;
                     }
-                
-                    .event-container img {
+                    .timeline-segment {
+                        position: absolute;
                         height: 100%;
-                        aspect-ratio: 1 / 1;
-                        margin-left: auto;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        transition: box-shadow 0.2s;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    }
+                    .timeline-segment:hover {
+                        box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+                    }
+                    .event-label {
+                        position: absolute;
+                        top: 16px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: var(--ha-card-background, #f3f3f3);
+                        color: var(--primary-text-color);
+                        padding: 4px 10px;
+                        border-radius: 8px;
+                        font-size: 13px;
+                        font-weight: 500;
+                        white-space: nowrap;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                        pointer-events: none;
+                        opacity: 0;
+                        transition: opacity 0.2s;
+                    }
+                    .timeline-segment:hover .event-label {
+                        opacity: 1;
+                    }
+                    .event-image {
+                        position: absolute;
+                        top: 40px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 60px;
+                        height: 60px;
                         border-radius: 12px;
                         object-fit: cover;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                        background: #fff;
+                        display: none;
                     }
-                
-                    .event-container h3 {
-                        font-weight: var(--ha-font-weight-medium, 500);
-                        font-size: var(--ha-font-size-m, 14px);
-                        letter-spacing: 0.1px;
-                        margin: 0;
-                        flex-grow: 1;
-                        color: var(--primary-text-color);
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
+                    .timeline-segment:hover .event-image {
+                        display: block;
                     }
-                
-                    .event-container p {
-                        font-weight: var(--ha-font-weight-normal, 400);
-                        font-size: var(--ha-font-size-s, 12px);
-                        letter-spacing: 0.4px;
-                        margin: 0;
-                        flex-grow: 1;
+                    .timeline-date {
+                        font-size: 15px;
+                        font-weight: 400;
                         color: var(--secondary-text-color);
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
+                        margin-top: 10px;
                     }
-                
-                    .date-header h2 {
-                        font-weight: var(--ha-font-weight-medium, 500);
-                        font-size: var(--ha-font-size-l, 16px);
-                        line-height: 24px;
-                        letter-spacing: 0.1px;
-                        margin: 0;
-                        color: var(--primary-text-color);
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-                
-                    .icon-container {
-                        width: 36px;
-                        height: 36px;
+                    .most-recent-event-dot {
+                        width: 8px;
+                        height: 8px;
                         border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin-right: 10px;
-                        position: relative;
-                        transition: transform 180ms ease-in-out;
-                        flex-shrink: 0;
+                        display: inline-block;
+                        margin-right: 4px;
                     }
-                
-                    .event-details {
-                        flex-grow: 1;
-                        min-width: 0;
+                    .most-recent-event-title {
+                        font-size: 1em;
+                        font-weight: 500;
+                        color: var(--primary-text-color);
+                    }
+                    @media (max-width: 768px) {
+                        .timeline-line {
+                            width: 98%;
+                        }
+                        .event-image {
+                            width: 40px;
+                            height: 40px;
+                            top: 32px;
+                        }
+                        .event-label {
+                            font-size: 12px;
+                        }
+                        .most-recent-event-title {
+                            font-size: 0.95em;
+                        }
+                        .most-recent-event-dot {
+                            width: 10px;
+                            height: 10px;
+                        }
                     }
                 </style>
             `;
             this.content = this.querySelector('div.card-content');
+            this.mostRecentEventDiv = this.querySelector('div.most-recent-event');
+            this.mostRecentEventLeft = this.querySelector('.most-recent-event-left');
+            this.mostRecentEventRight = this.querySelector('.most-recent-event-right');
         } else {
-            // Update header if it changes dynamically
             const headerDiv = this.querySelector('.card-header');
             if (headerDiv) {
                 if (this.header === "") {
@@ -425,6 +451,9 @@ class LLMVisionCard extends HTMLElement {
                     headerDiv.textContent = this.header;
                 }
             }
+            this.mostRecentEventDiv = this.querySelector('div.most-recent-event');
+            this.mostRecentEventLeft = this.querySelector('.most-recent-event-left');
+            this.mostRecentEventRight = this.querySelector('.most-recent-event-right');
         }
 
         const calendarEntity = hass.states[this.entity];
@@ -436,29 +465,11 @@ class LLMVisionCard extends HTMLElement {
             return;
         }
 
-        const events = (calendarEntity.attributes.events || []).slice()
-        const summaries = (calendarEntity.attributes.summaries || []).slice()
-        const keyFrames = (calendarEntity.attributes.key_frames || []).slice()
-        const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
-        const startTimes = (calendarEntity.attributes.starts || []).slice()
-
-        const currentEventHash = JSON.stringify({
-            events,
-            summaries,
-            keyFrames,
-            cameraNames,
-            startTimes,
-            category_filters: this.category_filters,
-            camera_filters: this.camera_filters,
-            number_of_events: this.number_of_events,
-            number_of_hours: this.number_of_hours,
-        });
-
-        // Skip update if no changes
-        if (currentEventHash === this._lastEventHash) {
-            return;
-        }
-        this._lastEventHash = currentEventHash;
+        const events = (calendarEntity.attributes.events || []).slice();
+        const summaries = (calendarEntity.attributes.summaries || []).slice();
+        const keyFrames = (calendarEntity.attributes.key_frames || []).slice();
+        const cameraNames = (calendarEntity.attributes.camera_names || []).slice();
+        const startTimes = (calendarEntity.attributes.starts || []).slice();
 
         let eventDetails = events.map((event, index) => {
             const cameraEntityId = cameraNames[index];
@@ -474,6 +485,45 @@ class LLMVisionCard extends HTMLElement {
             };
         });
 
+        // --- Show most recent event title, dot, and timestamp ---
+        if (this.mostRecentEventLeft && this.mostRecentEventRight) {
+            this.mostRecentEventLeft.innerHTML = '';
+            this.mostRecentEventRight.innerHTML = '';
+            if (eventDetails.length > 0) {
+                // Most recent event is the first after filters and sorting
+                const mostRecent = eventDetails.slice().sort((a, b) => new Date(b.startTime) - new Date(a.startTime))[0];
+                const { event, summary, startTime, keyFrame, cameraName } = mostRecent;
+                const { category, color: defaultColor } = getIcon(event, this.language);
+                const customColors = this.config?.custom_colors || {};
+                let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
+                let bgColorRgba;
+                if (Array.isArray(color) && color.length === 3) {
+                    bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
+                } else {
+                    bgColorRgba = hexToRgba(color, 1);
+                }
+                const dot = document.createElement('span');
+                dot.className = 'most-recent-event-dot';
+                dot.style.background = bgColorRgba;
+                const title = document.createElement('span');
+                title.className = 'most-recent-event-title';
+                title.textContent = event;
+                title.style.cursor = 'pointer';
+                title.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.showPopup(event, summary, startTime, keyFrame, cameraName, null);
+                });
+                this.mostRecentEventLeft.appendChild(dot);
+                this.mostRecentEventLeft.appendChild(title);
+                // Format timestamp (HH:mm)
+                const date = new Date(startTime);
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const formattedTime = `${hours}:${minutes}`;
+                this.mostRecentEventRight.textContent = formattedTime;
+            }
+        }
+
         // Filter events based on numberOfHours if set
         if (numberOfHours) {
             const cutoffTime = new Date().getTime() - numberOfHours * 60 * 60 * 1000;
@@ -484,20 +534,6 @@ class LLMVisionCard extends HTMLElement {
             }
         }
 
-        // Filter based on number of hours and number of events
-        if (numberOfHours && eventDetails.length === 0) {
-            this.content.innerHTML = '';
-            const noEventsContainer = document.createElement('div');
-            const noEventsMessage = translate('noEventsHours', this.language).replace('{hours}', numberOfHours);
-            noEventsContainer.innerHTML = `
-                <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                    <h3>${noEventsMessage}</h3>
-                </div>
-            `;
-            this.content.appendChild(noEventsContainer);
-            return;
-        }
-
         // Filter events based on category filters
         if (this.category_filters && this.category_filters.length > 0) {
             eventDetails = eventDetails.filter(detail => {
@@ -505,19 +541,6 @@ class LLMVisionCard extends HTMLElement {
                 const { category } = getIcon(event, this.language);
                 return this.category_filters.includes(category);
             });
-            // Show message if no events match the category filter
-            if (eventDetails.length === 0) {
-                this.content.innerHTML = '';
-                const noEventsContainer = document.createElement('div');
-                const noEventsMessage = translate('noEventsCategory', this.language) || "No events found for the selected category(s).";
-                noEventsContainer.innerHTML = `
-                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                <h3>${noEventsMessage}</h3>
-                            </div>
-                        `;
-                this.content.appendChild(noEventsContainer);
-                return;
-            }
         }
 
         // --- Filter events based on camera filters ---
@@ -527,19 +550,6 @@ class LLMVisionCard extends HTMLElement {
                 if (!detail.cameraEntityId) return true;
                 return this.camera_filters.includes(detail.cameraEntityId);
             });
-            // Show message if no events match the camera filter
-            if (eventDetails.length === 0) {
-                this.content.innerHTML = '';
-                const noEventsContainer = document.createElement('div');
-                const noEventsMessage = translate('noEventsCamera', this.language) || "No events found for the selected camera(s).";
-                noEventsContainer.innerHTML = `
-                            <div class="event-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                <h3>${noEventsMessage}</h3>
-                            </div>
-                        `;
-                this.content.appendChild(noEventsContainer);
-                return;
-            }
         }
 
         // Sort event details by start time
@@ -548,102 +558,98 @@ class LLMVisionCard extends HTMLElement {
         // Clear previous content
         this.content.innerHTML = '';
 
-        // Add events and key frames for the specified number of events
-        let lastDate = '';
+        // Horizontal timeline rendering
+        const timelineContainer = document.createElement('div');
+        timelineContainer.classList.add('timeline-container');
 
-        for (let i = 0; i < (numberOfHours ? eventDetails.length : Math.min(numberOfEvents, eventDetails.length)); i++) {
-            const { event, summary, startTime, cameraName } = eventDetails[i];
-            let keyFrame = eventDetails[i].keyFrame;
-            const date = new Date(startTime);
-            const options = { month: 'short', day: 'numeric' };
-            const formattedDate = date.toLocaleDateString('en', options);
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
+        // Timeline line
+        const timelineLine = document.createElement('div');
+        timelineLine.classList.add('timeline-line');
+        timelineContainer.appendChild(timelineLine);
+
+        if (eventDetails.length > 0) {
+            let labelText;
+            if (numberOfHours) {
+                labelText = `Last ${numberOfHours}h`;
+            } else {
+                const firstDate = new Date(eventDetails[eventDetails.length - 1].startTime);
+                const lastDate = new Date(eventDetails[0].startTime);
+                const options = { month: 'short', day: 'numeric' };
+                labelText = `${firstDate.toLocaleDateString('en', options)} - ${lastDate.toLocaleDateString('en', options)}`;
+            }
+            const dateDiv = document.createElement('div');
+            dateDiv.classList.add('timeline-date');
+            dateDiv.textContent = labelText;
+            timelineContainer.appendChild(dateDiv);
+        }
+
+        // Calculate segment positions and widths based on time range
+        let totalEvents = numberOfHours ? eventDetails.length : Math.min(numberOfEvents, eventDetails.length);
+        let minTime, maxTime;
+        if (numberOfHours && eventDetails.length > 0) {
+            maxTime = new Date().getTime();
+            minTime = maxTime - numberOfHours * 60 * 60 * 1000;
+        } else if (eventDetails.length > 0) {
+            // fallback: use earliest and latest event
+            minTime = Math.min(...eventDetails.map(e => new Date(e.startTime).getTime()));
+            maxTime = Math.max(...eventDetails.map(e => new Date(e.startTime).getTime()));
+        }
+
+        for (let i = 0; i < totalEvents; i++) {
+            const { event, summary, startTime, cameraName, keyFrame } = eventDetails[i];
+            const eventTime = new Date(startTime).getTime();
+            const hours = new Date(startTime).getHours().toString().padStart(2, '0');
+            const minutes = new Date(startTime).getMinutes().toString().padStart(2, '0');
             const formattedTime = `${hours}:${minutes}`;
-            const { icon, color: defaultColor, category } = getIcon(event, this.language);
-
             // Use custom color if set, otherwise fallback to default
+            const { category, color: defaultColor } = getIcon(event, this.language);
             const customColors = this.config?.custom_colors || {};
             let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
-
-            let bgColorRgba, iconColorRgba;
+            let bgColorRgba;
             if (Array.isArray(color) && color.length === 3) {
-                // color is [r, g, b] from custom color picker
-                bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
-                iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
+                bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.8)`;
             } else {
-                // color is hex string
-                bgColorRgba = hexToRgba(color, 0.2);
-                iconColorRgba = hexToRgba(color, 1);
+                bgColorRgba = hexToRgba(color, 0.8);
             }
-
-            const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
-
-            const renderEvent = () => {
-                // Determine the date label
-                const today = new Date();
-                const yesterday = new Date(today);
-                yesterday.setDate(today.getDate() - 1);
-
-                let dateLabel;
-                if (date.toDateString() === today.toDateString()) {
-                    dateLabel = translate('today', this.language);
-                } else if (date.toDateString() === yesterday.toDateString()) {
-                    dateLabel = translate('yesterday', this.language);
-                } else {
-                    dateLabel = formattedDate;
-                }
-
-                // Add the date if it's different from the last date
-                if (dateLabel !== lastDate) {
-                    const dateHeader = document.createElement('div');
-                    dateHeader.classList.add('date-header');
-                    dateHeader.innerHTML = `<h2>${dateLabel}</h2>`;
-                    this.content.appendChild(dateHeader);
-                    lastDate = dateLabel;
-                }
-
-                const eventContainer = document.createElement('div');
-                eventContainer.classList.add('event-container');
-                eventContainer.innerHTML = `
-                <div class="icon-container" style="background-color: ${bgColorRgba};">
-                    <ha-icon icon="${icon}" style="color: ${iconColorRgba};"></ha-icon>
-                </div>
-                <div class="event-details">
-                    <h3>${event}</h3>
-                    <p>${secondaryText}</p>
-                </div>
-                <img src="${keyFrame}" alt="Key frame ${i + 1}" onerror="this.style.display='none'">
-                `;
-
-                eventContainer.addEventListener('click', () => {
-                    this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
-                });
-
-                this.content.appendChild(eventContainer);
-            }
-
-            let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
-
-            // Use cache if available
-            if (this.imageCache.has(mediaContentID)) {
-                keyFrame = this.imageCache.get(mediaContentID);
-                renderEvent();
+            // Calculate left and width for segment based on time
+            let leftPercent = 0, widthPercent = 2;
+            if (minTime !== undefined && maxTime !== undefined && maxTime > minTime) {
+                leftPercent = ((eventTime - minTime) / (maxTime - minTime)) * 100;
+                // widthPercent: show as a small fixed width (2%)
             } else {
-                hass.callWS({
-                    type: "media_source/resolve_media",
-                    media_content_id: mediaContentID,
-                    expires: 60 * 60 * 3 // 3 hours
-                }).then(result => {
-                    keyFrame = result.url;
-                    this.imageCache.set(mediaContentID, keyFrame);
-                }).catch(error => {
-                    console.error("Error resolving media content ID:", error);
-                }).finally(() => {
-                    renderEvent();
-                });
+                leftPercent = (i / totalEvents) * 100;
             }
+
+            const segment = document.createElement('div');
+            segment.classList.add('timeline-segment');
+            segment.style.left = `calc(${leftPercent}% - 1%)`;
+            segment.style.width = `${widthPercent}%`;
+            segment.style.background = bgColorRgba;
+
+            // Label for event
+            const label = document.createElement('div');
+            label.classList.add('event-label');
+            label.textContent = `${event} (${formattedTime}${cameraName ? ' • ' + cameraName : ''})`;
+            segment.appendChild(label);
+
+            // Optional: show key frame image on hover
+            if (keyFrame) {
+                const img = document.createElement('img');
+                img.classList.add('event-image');
+                img.src = keyFrame.replace('/config/www/', '/local/');
+                img.alt = `Key frame ${i + 1}`;
+                img.onerror = function () { this.style.display = 'none'; };
+                segment.appendChild(img);
+            }
+
+            segment.addEventListener('click', () => {
+                this.showPopup(event, summary, startTime, keyFrame, cameraName, null);
+            });
+
+            timelineLine.appendChild(segment);
         }
+
+        this.content.appendChild(timelineContainer);
     }
 
     showPopup(event, summary, startTime, keyFrame, cameraName, icon) {
@@ -819,25 +825,3 @@ class LLMVisionCard extends HTMLElement {
         return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, language: 'en' };
     }
 }
-
-customElements.define('llmvision-card', LLMVisionCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
-    type: "llmvision-card",
-    name: "LLM Vision Timeline Card",
-    description: "Display the LLM Vision Timeline on your dashboard",
-    preview: true,
-    getConfigElement: LLMVisionCard.getConfigElement,
-    getConfigElementStub: LLMVisionCard.getConfigElementStub,
-});
-
-customElements.define('llmvision-preview-card', LLMVisionPreviewCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
-    type: "llmvision-preview-card",
-    name: "LLM Vision Preview Card",
-    description: "Preview the latest LLM Vision event",
-    preview: true,
-    getConfigElement: LLMVisionPreviewCard.getConfigElement,
-    getConfigElementStub: LLMVisionPreviewCard.getConfigElementStub,
-});

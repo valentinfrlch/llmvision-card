@@ -33,7 +33,6 @@ export class TimelinePreviewCardEditor extends LitElement {
                 details {
                     border: 1px solid var(--divider-color, #eeeeee);
                     border-radius: var(--ha-card-border-radius, 20px);
-                    background: var(--ha-card-background, #f3f3f3);
                     margin-bottom: 0;
                     overflow: hidden;
                 }
@@ -234,8 +233,10 @@ customElements.define("timeline-preview-card-editor", TimelinePreviewCardEditor)
 
 export class LLMVisionPreviewCard extends HTMLElement {
 
+    imageCache = new Map();
     config;
     content;
+    _lastEventHash = null;
 
     // required
     setConfig(config) {
@@ -270,8 +271,8 @@ export class LLMVisionPreviewCard extends HTMLElement {
                     width: 100%;
                     aspect-ratio: 16 / 9;
                     overflow: hidden;
-                    border-radius: var(--ha-card-border-radius, 25px);
-                    background: var(--ha-card-background, #f3f3f3);
+                    border-radius: var(--ha-card-border-radius,12px);
+                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
                     cursor: pointer;
                 }
                 .preview-event-image {
@@ -295,7 +296,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                         rgba(0,0,0,0.00) 70%,
                         rgba(0,0,0,0.55) 100%
                     );
-                    border-radius: var(--ha-card-border-radius, 25px);
+                    border-radius: var(--ha-card-border-radius,12px);
                 }
                 .preview-icon-container {
                     position: absolute;
@@ -354,6 +355,23 @@ export class LLMVisionPreviewCard extends HTMLElement {
         const keyFrames = (calendarEntity.attributes.key_frames || []).slice()
         const cameraNames = (calendarEntity.attributes.camera_names || []).slice()
         const startTimes = (calendarEntity.attributes.starts || []).slice()
+
+        const currentEventHash = JSON.stringify({
+            events,
+            summaries,
+            keyFrames,
+            cameraNames,
+            startTimes,
+            category_filters: this.category_filters,
+            camera_filters: this.camera_filters,
+            number_of_events: this.number_of_events,
+            number_of_hours: this.number_of_hours,
+        });
+
+        if (currentEventHash === this._lastEventHash) {
+            return;
+        }
+        this._lastEventHash = currentEventHash;
 
         let eventDetails = events.map((event, index) => {
             const cameraEntityId = cameraNames[index];
@@ -455,11 +473,10 @@ export class LLMVisionPreviewCard extends HTMLElement {
         let keyFrame = latestEvent.keyFrame;
         const { icon, color: defaultColor, category } = getIcon(event, this.language);
 
-        keyFrame = keyFrame.replace('/config/www/', '/local/');
-
-        const eventContainer = document.createElement('div');
-        eventContainer.classList.add('preview-event-container');
-        eventContainer.innerHTML = `
+        const renderEvent = () => {
+            const eventContainer = document.createElement('div');
+            eventContainer.classList.add('preview-event-container');
+            eventContainer.innerHTML = `
             <img class="preview-event-image" src="${keyFrame}" alt="Key frame" onerror="this.style.display='none'">
             <div class="preview-event-vignette"></div>
             <div class="preview-icon-container">
@@ -467,15 +484,36 @@ export class LLMVisionPreviewCard extends HTMLElement {
             </div>
             <div class="preview-event-details">${cameraName} • ${formattedTime}</div>
             <div class="preview-event-title">${event}</div>
-        `;
+            `;
 
-        eventContainer.addEventListener('click', () => {
-            this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
-        });
+            eventContainer.addEventListener('click', () => {
+                this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
+            });
 
-        this.content.innerHTML = '';
-        this.content.appendChild(eventContainer);
+            this.content.innerHTML = '';
+            this.content.appendChild(eventContainer);
+        }
 
+        let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
+        // Use cache if available
+        if (this.imageCache.has(mediaContentID)) {
+            keyFrame = this.imageCache.get(mediaContentID);
+            renderEvent();
+        } else {
+            hass.callWS({
+                type: "media_source/resolve_media",
+                media_content_id: mediaContentID,
+                expires: 60 * 60 * 3 // 3 hours
+            }).then(result => {
+                keyFrame = result.url;
+                this.imageCache.set(mediaContentID, keyFrame);
+            }).catch(error => {
+                console.error("Error resolving media content ID:", error);
+            }).finally(() => {
+                renderEvent();
+            });
+
+        }
     }
 
     showPopup(event, summary, startTime, keyFrame, cameraName, icon) {
@@ -491,7 +529,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                 <div class="title-container">
                     <ha-icon icon="${icon}"></ha-icon>
                     <h2>${event}</h2>
-                    <button class="close-popup" style="font-size:30">&times;</button>
+                     <button class="close-popup" style="font-size:30"><ha-icon icon="mdi:close"></ha-icon></button>
                 </div>
                 <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
                 <p class="secondary"><span>${secondaryText}</span></p>
@@ -526,7 +564,7 @@ export class LLMVisionPreviewCard extends HTMLElement {
                 }
                 .preview-popup-content {
                     position: relative;
-                    background: var(--ha-card-background, #f3f3f3);
+                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
                     color: var(--primary-text-color);
                     padding: 20px;
                     border-radius: var(--ha-card-border-radius, 25px);
