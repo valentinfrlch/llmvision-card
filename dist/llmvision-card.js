@@ -623,7 +623,7 @@ class LLMVisionCard extends HTMLElement {
                 this.content.appendChild(eventContainer);
             }
 
-            let mediaContentID = keyFrame.replace('/config/media/', 'media-source://media_source/');
+            let mediaContentID = keyFrame.replace('/media/', 'media-source://media_source/local/');
 
             // Use cache if available
             if (this.imageCache.has(mediaContentID)) {
