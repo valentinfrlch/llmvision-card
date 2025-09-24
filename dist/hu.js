@@ -10,73 +10,70 @@ export const hu = {
     "categories": {
         "people": {
             "objects": {
-                "person": "mdi:walk",
-                "individual": "mdi:walk",
-                "figure": "mdi:walk",
-                "people": "mdi:walk",
-                "child": "mdi:walk",
-                "woman": "mdi:walk",
-                "man": "mdi:walk",
-                "human": "mdi:walk",
-                "cyclist": "mdi:bike",
+                "személy": "mdi:walk",
+                "egyén": "mdi:walk",
+                "alak": "mdi:walk",
+                "személyek": "mdi:walk",
+                "gyerek": "mdi:walk",
+                "nő": "mdi:walk",
+                "férfi": "mdi:walk",
+                "ember": "mdi:walk",
+                "kerékpáros": "mdi:bike",
             }
         },
         "vehicles": {
             "objects": {
-                "courier": "mdi:truck-delivery",
-                "mailman": "mdi:truck-delivery",
-                "bike": "mdi:bike",
-                "bicycle": "mdi:bike",
-                "motorcycle": "mdi:motorbike",
-                "motorbike": "mdi:motorbike",
-                "bus": "mdi:bus",
-                "car": "mdi:car",
-                "van": "mdi:car",
+                "futár": "mdi:truck-delivery",
+                "postás": "mdi:truck-delivery",
+                "kerékpár": "mdi:bike",
+                "motorkerékpár": "mdi:bike",
+                "busz": "mdi:bus",
+                "autó": "mdi:car",
+                "furgon": "mdi:car",
                 "suv": "mdi:car",
-                "vehicle": "mdi:car",
-                "truck": "mdi:truck",
-                "street": "mdi:road-variant",
-                "path": "mdi:road-variant",
-                "driveway": "mdi:road-variant"
+                "jármű": "mdi:car",
+                "teherautó": "mdi:truck",
+                "utca": "mdi:road-variant",
+                "járda": "mdi:road-variant",
+                "kocsibehajtó": "mdi:road-variant"
             }
         },
         "animals": {
             "objects": {
-                "dog": "mdi:dog",
-                "cat": "mdi:cat",
-                "bird": "mdi:duck",
-                "pet": "mdi:dog",
-                "animal": "mdi:dog"
+                "kutya": "mdi:dog",
+                "macska": "mdi:cat",
+                "madár": "mdi:duck",
+                "háziállat": "mdi:dog",
+                "állat": "mdi:dog"
             }
         },
         "packages": {
             "objects": {
-                "box": "mdi:package-variant-closed",
-                "package": "mdi:package-variant-closed",
-                "parcel": "mdi:package-variant-closed",
-                "letter": "mdi:email"
+                "doboz": "mdi:package-variant-closed",
+                "csomag": "mdi:package-variant-closed",
+                "levél": "mdi:email"
             }
         },
         "entities": {
             "objects": {
-                "camera": "mdi:cctv",
-                "sensor": "mdi:access-point",
-                "light": "mdi:lightbulb",
-                "key": "mdi:key",
-                "lock": "mdi:lock",
-                "alarm": "mdi:alarm-light",
-                "house": "mdi:home",
-                "porch": "mdi:door-closed",
-                "door": "mdi:door-closed",
-                "window": "mdi:window-closed-variant"
+                "kamera": "mdi:cctv",
+                "érzékelő": "mdi:access-point",
+                "világítás": "mdi:lightbulb",
+                "kulcs": "mdi:key",
+                "zár": "mdi:lock",
+                "riasztó": "mdi:alarm-light",
+                "ház": "mdi:home",
+                "bejárat": "mdi:door-closed",
+                "ajtó": "mdi:door-closed",
+                "ablak": "mdi:window-closed-variant"
             }
         },
         "nature": {
             "objects": {
-                "garden": "mdi:flower",
-                "plant": "mdi:flower",
-                "flower": "mdi:flower",
-                "tree": "mdi:tree"
+                "kert": "mdi:flower",
+                "növény": "mdi:flower",
+                "virág": "mdi:flower",
+                "fa": "mdi:tree"
             }
         }
     },
