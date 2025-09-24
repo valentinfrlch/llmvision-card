@@ -1,11 +1,11 @@
-export const en = {
+export const hu = {
     "text": {
-        "noEvents": "No events",
-        "noEventsHours": "No events in the last {hours} hours",
-        "noEventsCamera": "No events found for the selected camera(s).",
-        "noEventsCategory": "No events found for the selected category.",
-        "today": "Today",
-        "yesterday": "Yesterday"
+        "noEvents": "Nincsenek események",
+        "noEventsHours": "Nincsenek események az elmúlt {hours} órában",
+        "noEventsCamera": "A kiválasztott kamerá(k)hoz nem tartoznak események.",
+        "noEventsCategory": "A kiválasztott kategóriához nem tartoznak események.",
+        "today": "Ma",
+        "yesterday": "Tegnap"
     },
     "categories": {
         "people": {
