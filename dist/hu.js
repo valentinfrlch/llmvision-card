@@ -14,7 +14,7 @@ export const hu = {
                 "egyén": "mdi:walk",
                 "alak": "mdi:walk",
                 "személyek": "mdi:walk",
-                "gyerek": "mdi:walk",
+                "gyermek": "mdi:walk",
                 "nő": "mdi:walk",
                 "férfi": "mdi:walk",
                 "ember": "mdi:walk",
