@@ -34,7 +34,7 @@ export const hu = {
                 "jármű": "mdi:car",
                 "teherautó": "mdi:truck",
                 "utca": "mdi:road-variant",
-                "járda": "mdi:road-variant",
+                "ösvény": "mdi:road-variant",
                 "kocsibehajtó": "mdi:road-variant"
             }
         },
