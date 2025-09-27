@@ -8,9 +8,10 @@ export class TimelinePreviewCardEditor extends LitElement {
     setConfig(config) { this._config = config || {}; }
     render() {
         if (!this._config) return html`<div>Please configure the card.</div>`;
-        const generalSchema = this._getSchema().slice(0,1);
-        const filterSchema = this._getSchema().slice(1,3);
-        const languageSchema = this._getSchema().slice(3);
+        const generalSchema = this._getSchema().slice(0, 1);
+        const filterSchema = this._getSchema().slice(1, 3);
+        const languageSchema = this._getSchema().slice(3, 4);
+        const customizeSchema = this._getSchema().slice(4);
         return html`
             <style>
                 .preview-card-content { display:flex; flex-direction:column; gap:16px; }
@@ -48,6 +49,14 @@ export class TimelinePreviewCardEditor extends LitElement {
                                 @value-changed=${this._valueChanged}></ha-form>
                         </div>
                     </details>
+                    <details>
+                        <summary><ha-icon class="section-icon" icon="mdi:palette"></ha-icon>Customization</summary>
+                        <div class="section-content">
+                            <ha-form .data=${this._config} .schema=${customizeSchema}
+                                .computeLabel=${this._computeLabel} .computeHelper=${this._computeHelper}
+                                @value-changed=${this._valueChanged}></ha-form>
+                        </div>
+                    </details>
                 </div>
             </ha-card>
         `;
@@ -60,43 +69,62 @@ export class TimelinePreviewCardEditor extends LitElement {
                 select: {
                     mode: "dropdown",
                     options: Object.keys(this.hass.states)
-                        .filter(e=>e.startsWith('calendar.'))
-                        .map(e=>({ value:e, label: this.hass.states[e].attributes.friendly_name || e }))
+                        .filter(e => e.startsWith('calendar.'))
+                        .map(e => ({ value: e, label: this.hass.states[e].attributes.friendly_name || e }))
                 }
             }
         }];
         const filterSchema = [
-            { name: "category_filters",
-              description: "Filter events by category (title). Only events matching selected categories will be shown.",
-              selector: { select: { multiple:true, options: Object.keys(colors.categories).map(c=>({ value:c, label: c.charAt(0).toUpperCase()+c.slice(1) })) } } },
-            { name: "camera_filters",
-              description: "Filter events by camera entity. Only events from selected cameras will be shown.",
-              selector: { select: { multiple:true, options: Object.keys(this.hass.states)
-                .filter(e=>e.startsWith('camera.'))
-                .map(e=>({ value:e, label: this.hass.states[e].attributes.friendly_name || e })) } } }
+            {
+                name: "category_filters",
+                description: "Filter events by category (title). Only events matching selected categories will be shown.",
+                selector: { select: { multiple: true, options: Object.keys(colors.categories).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
+            },
+            {
+                name: "camera_filters",
+                description: "Filter events by camera entity. Only events from selected cameras will be shown.",
+                selector: {
+                    select: {
+                        multiple: true, options: Object.keys(this.hass.states)
+                            .filter(e => e.startsWith('camera.'))
+                            .map(e => ({ value: e, label: this.hass.states[e].attributes.friendly_name || e }))
+                    }
+                }
+            }
         ];
         const languageSchema = [{
-            name:"language",
-            description:"Language for the card. This will be used to generate icons and translations.",
-            selector:{ select:{ options:[
-                {value:"de",label:"German"},{value:"en",label:"English"},{value:"es",label:"Spanish"},
-                {value:"fr",label:"French"},{value:"it",label:"Italian"},{value:"nl",label:"Dutch"},
-                {value:"pl",label:"Polish"},{value:"pt",label:"Portuguese"},{value:"sk",label:"Slovak"},
-                {value:"sv",label:"Swedish"} ]}}
+            name: "language",
+            description: "Language for the card. This will be used to generate icons and translations.",
+            selector: {
+                select: {
+                    options: [
+                        { value: "de", label: "German" }, { value: "en", label: "English" }, { value: "es", label: "Spanish" },
+                        { value: "fr", label: "French" }, { value: "it", label: "Italian" }, { value: "nl", label: "Dutch" },
+                        { value: "pl", label: "Polish" }, { value: "pt", label: "Portuguese" }, { value: "sk", label: "Slovak" },
+                        { value: "sv", label: "Swedish" }]
+                }
+            }
         }];
-        return [...generalSchema, ...filterSchema, ...languageSchema];
+        const customizeSchema = [
+            { name: "default_icon", description: "Icon when no category keyword matches.", selector: { icon: {} } }]
+        return [...generalSchema, ...filterSchema, ...languageSchema, ...customizeSchema];
     }
-    _computeLabel(s){ return ({ entity:"Calendar Entity", category_filters:"Category Filters", camera_filters:"Camera Filters", language:"Language" })[s.name] || s.name; }
+    _computeLabel(s) {
+        return ({
+            entity: "Calendar Entity", category_filters: "Category Filters",
+            camera_filters: "Camera Filters", language: "Language",
+        })[s.name] || s.name;
+    }
     _computeHelper = s => s.description || "";
-    _valueChanged(e){ this.dispatchEvent(new CustomEvent("config-changed",{ detail:{ config: e.detail.value }})); }
-    static get styles(){ return css`ha-card{padding:16px;}`; }
+    _valueChanged(e) { this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: e.detail.value } })); }
+    static get styles() { return css`ha-card{padding:16px;}`; }
 }
 customElements.define("timeline-preview-card-editor", TimelinePreviewCardEditor);
 
 export class LLMVisionPreviewCard extends BaseLLMVisionCard {
-    setConfig(config) { this.setCommonConfig(config, { requireEventLimits:false }); }
-    static getConfigElement(){ return document.createElement('timeline-preview-card-editor'); }
-    static getStubConfig(){ return { entity:'calendar.llm_vision_timeline', language:'en' }; }
+    setConfig(config) { this.setCommonConfig(config, { requireEventLimits: false }); }
+    static getConfigElement() { return document.createElement('timeline-preview-card-editor'); }
+    static getStubConfig() { return { entity: 'calendar.llm_vision_timeline', language: 'en' }; }
 
     set hass(hass) {
         if (!this.content) {
@@ -130,8 +158,8 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
         if (!details.length) {
             this.content.innerHTML = '';
             const msgKey = this.category_filters.length ? 'noEventsCategory'
-                        : this.camera_filters.length ? 'noEventsCamera'
-                        : 'noEvents';
+                : this.camera_filters.length ? 'noEventsCamera'
+                    : 'noEvents';
             const msg = translate(msgKey, this.language) || "No events found.";
             this.content.innerHTML = `<div class="preview-event-container" style="display:flex;align-items:center;justify-content:center;"><h3>${msg}</h3></div>`;
             return;
@@ -142,10 +170,13 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
         if (!latest) return;
         const dateLabel = this.formatDateTimeShort(latest.startTime);
         const d = new Date(latest.startTime);
-        const time = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+        const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
         const formatted = `${dateLabel}, ${time}`;
         let { event, summary, keyFrame, cameraName, startTime } = latest;
-        const { icon } = getIcon(event, this.language);
+        let { icon, category } = getIcon(event, this.language);
+        if (category === undefined && this.default_icon) {
+            icon = this.default_icon;
+        }
 
         const render = (resolved) => {
             const container = document.createElement('div');

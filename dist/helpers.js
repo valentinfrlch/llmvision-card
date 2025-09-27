@@ -65,7 +65,7 @@ export function getIcon(title, lang = 'en') {
         console.error('Error getting icon:', error);
     }
 
-    return { icon: 'mdi:motion-outline', color: '#929292' }; // Default icon and colors if no keyword is found
+    return { icon: 'mdi:record-rec', color: '#929292' }; // Default icon and colors if no keyword is found
 }
 
 const translations = {

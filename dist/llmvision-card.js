@@ -6,13 +6,13 @@ import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.2';
 
 class TimelineCardEditor extends LitElement {
     static get properties() { return { _config: { type: Object } }; }
-    setConfig(config){ this._config = config || {}; }
+    setConfig(config) { this._config = config || {}; }
     render() {
         if (!this._config) return html`<div>Please configure the card.</div>`;
-        const generalSchema = this._getSchema().slice(0,2);
-        const filterSchema = this._getSchema().slice(2,6);
-        const languageSchema = this._getSchema().slice(6,7);
-        const colorSchema = this._getSchema().slice(7);
+        const generalSchema = this._getSchema().slice(0, 2);
+        const filterSchema = this._getSchema().slice(2, 6);
+        const languageSchema = this._getSchema().slice(6, 7);
+        const customizeSchema = this._getSchema().slice(7);
         return html`
             <style>
                 .card-content{display:flex;flex-direction:column;gap:16px;}
@@ -51,9 +51,9 @@ class TimelineCardEditor extends LitElement {
                         </div>
                     </details>
                     <details>
-                        <summary><ha-icon class="section-icon" icon="mdi:palette"></ha-icon>Category Colors</summary>
+                        <summary><ha-icon class="section-icon" icon="mdi:palette"></ha-icon>Customization</summary>
                         <div class="section-content">
-                            <ha-form .data=${this._config} .schema=${colorSchema}
+                            <ha-form .data=${this._config} .schema=${customizeSchema}
                                 .computeLabel=${this._computeLabel} .computeHelper=${this._computeHelper}
                                 @value-changed=${this._valueChanged}></ha-form>
                         </div>
@@ -64,45 +64,67 @@ class TimelineCardEditor extends LitElement {
     }
     _getSchema() {
         const generalSchema = [
-            { name:"header", description:"Header text for the card.", selector:{ text:{} } },
-            { name:"entity", description:"Select the LLM Vision timeline entity to display.",
-              selector:{ select:{ mode:"dropdown", options: Object.keys(this.hass.states)
-                .filter(e=>e.startsWith('calendar.'))
-                .map(e=>({ value:e, label: this.hass.states[e].attributes.friendly_name || e })) } } }
+            { name: "header", description: "Header text for the card.", selector: { text: {} } },
+            {
+                name: "entity", description: "Select the LLM Vision timeline entity to display.",
+                selector: {
+                    select: {
+                        mode: "dropdown", options: Object.keys(this.hass.states)
+                            .filter(e => e.startsWith('calendar.'))
+                            .map(e => ({ value: e, label: this.hass.states[e].attributes.friendly_name || e }))
+                    }
+                }
+            }
         ];
         const filterSchema = [
-            { name:"number_of_events", description:"Number of most recent events to display. A maximum of 10 events can be displayed.", selector:{ number:{ min:1,max:10,step:1 } } },
-            { name:"number_of_hours", description:"Number of hours to look back for events. Useful for filtering older events.", selector:{ number:{ min:1,max:168,step:1 } } },
-            { name:"category_filters", description:"Filter events by category (title). Only events matching selected categories will be shown.",
-              selector:{ select:{ multiple:true, options: Object.keys(colors.categories).map(c=>({ value:c, label: c.charAt(0).toUpperCase()+c.slice(1) })) } } },
-            { name:"camera_filters", description:"Filter events by camera entity. Only events from selected cameras will be shown.",
-              selector:{ select:{ multiple:true, options: Object.keys(this.hass.states)
-                .filter(e=>e.startsWith('camera.'))
-                .map(e=>({ value:e, label: this.hass.states[e].attributes.friendly_name || e })) } } }
+            { name: "number_of_events", description: "Number of most recent events to display. A maximum of 10 events can be displayed.", selector: { number: { min: 1, max: 10, step: 1 } } },
+            { name: "number_of_hours", description: "Number of hours to look back for events. Useful for filtering older events.", selector: { number: { min: 1, max: 168, step: 1 } } },
+            {
+                name: "category_filters", description: "Filter events by category (title). Only events matching selected categories will be shown.",
+                selector: { select: { multiple: true, options: Object.keys(colors.categories).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
+            },
+            {
+                name: "camera_filters", description: "Filter events by camera entity. Only events from selected cameras will be shown.",
+                selector: {
+                    select: {
+                        multiple: true, options: Object.keys(this.hass.states)
+                            .filter(e => e.startsWith('camera.'))
+                            .map(e => ({ value: e, label: this.hass.states[e].attributes.friendly_name || e }))
+                    }
+                }
+            }
         ];
         const languageSchema = [{
-            name:"language", description:"Language for the card. This will be used to generate icons and translations.",
-            selector:{ select:{ options:[
-                {value:"de",label:"German"},{value:"en",label:"English"},{value:"es",label:"Spanish"},{value:"fr",label:"French"},
-                {value:"it",label:"Italian"},{value:"nl",label:"Dutch"},{value:"pl",label:"Polish"},{value:"pt",label:"Portuguese"},
-                {value:"sk",label:"Slovak"},{value:"sv",label:"Swedish"} ]}}
+            name: "language", description: "Language for the card. This will be used to generate icons and translations.",
+            selector: {
+                select: {
+                    options: [
+                        { value: "de", label: "German" }, { value: "en", label: "English" }, { value: "es", label: "Spanish" }, { value: "fr", label: "French" },
+                        { value: "it", label: "Italian" }, { value: "nl", label: "Dutch" }, { value: "pl", label: "Polish" }, { value: "pt", label: "Portuguese" },
+                        { value: "sk", label: "Slovak" }, { value: "sv", label: "Swedish" }]
+                }
+            }
         }];
-        const colorSchema = Object.keys(colors.categories).map(c=>({
-            name:`custom_colors.${c}`,
-            description:`Color for ${c.charAt(0).toUpperCase()+c.slice(1)}`,
-            selector:{ color_rgb:{} }
-        }));
-        return [...generalSchema, ...filterSchema, ...languageSchema, ...colorSchema];
+        const customizeSchema = [
+            { name: "default_icon", description: "Icon when no category keyword matches.", selector: { icon: {} } },
+            { name: "default_color", description: "Color for uncategorized events.", selector: { color_rgb: {} } },
+        ].concat(Object.keys(colors.categories).map(c => ({
+            name: `custom_colors.${c}`,
+            description: `Color for ${c.charAt(0).toUpperCase() + c.slice(1)}`,
+            selector: { color_rgb: {} }
+        })));
+        return [...generalSchema, ...filterSchema, ...languageSchema, ...customizeSchema];
     }
-    _computeLabel(s){
+    _computeLabel(s) {
         return ({
-            header:"Header", entity:"Calendar Entity", number_of_events:"Number of Events",
-            number_of_hours:"Number of Hours", category_filters:"Category Filters",
-            camera_filters:"Camera Filters", custom_colors:"Custom Colors", language:"Language"
+            header: "Header", entity: "Calendar Entity", number_of_events: "Number of Events",
+            number_of_hours: "Number of Hours", category_filters: "Category Filters",
+            camera_filters: "Camera Filters", custom_colors: "Custom Colors", language: "Language",
+            default_icon: "Default Icon", default_color: "Default Color"
         })[s.name] || s.name;
     }
     _computeHelper = s => s.description || "";
-    _valueChanged(e){
+    _valueChanged(e) {
         let newConfig = e.detail.value;
         let customColors = { ...(this._config.custom_colors || {}) };
         for (const k of Object.keys(newConfig)) {
@@ -113,7 +135,7 @@ class TimelineCardEditor extends LitElement {
             }
         }
         if (Object.keys(customColors).length) newConfig.custom_colors = customColors;
-        this.dispatchEvent(new CustomEvent("config-changed",{ detail:{ config:newConfig }}));
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
     }
     static get styles() { return css`ha-card{padding:16px;}`; }
 }
@@ -122,10 +144,10 @@ customElements.define("timeline-card-editor", TimelineCardEditor);
 class LLMVisionCard extends BaseLLMVisionCard {
     setConfig(config) {
         this.header = config.header || '';
-        this.setCommonConfig(config, { requireEventLimits:true });
+        this.setCommonConfig(config, { requireEventLimits: true });
     }
-    static getConfigElement(){ return document.createElement('timeline-card-editor'); }
-    static getStubConfig(){ return { entity:'calendar.llm_vision_timeline', number_of_hours:24, number_of_events:3, language:'en' }; }
+    static getConfigElement() { return document.createElement('timeline-card-editor'); }
+    static getStubConfig() { return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' }; }
 
     set hass(hass) {
         if (!this.content) {
@@ -203,7 +225,11 @@ class LLMVisionCard extends BaseLLMVisionCard {
                 this.content.appendChild(header);
                 lastDate = dateLabel;
             }
-            const { icon, color: defaultColor, category } = getIcon(d.event, this.language);
+            const result = getIcon(d.event, this.language);
+            let { icon, color: defaultColor, category } = result;
+            if (category === undefined && this.default_icon) {
+                icon = this.default_icon;
+            }
             const colorsComputed = this.computeColors(category, defaultColor);
             const container = document.createElement('div');
             container.classList.add('event-container');
@@ -215,7 +241,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
                     <h3>${d.event}</h3>
                     <p>${d.cameraName ? `${timeStr} • ${d.cameraName}` : timeStr}</p>
                 </div>
-                <img alt="Key frame ${idx+1}" style="display:none;" onerror="this.style.display='none'">
+                <img alt="Key frame ${idx + 1}" style="display:none;" onerror="this.style.display='none'">
             `;
             const imgEl = container.querySelector('img');
             container.addEventListener('click', () => {

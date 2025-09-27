@@ -33,6 +33,8 @@ export class BaseLLMVisionCard extends HTMLElement {
         this.number_of_events = config.number_of_events;
         this.number_of_hours = config.number_of_hours;
         this.custom_colors = config.custom_colors || {};
+        this.default_icon = config.default_icon || 'mdi:motion-outline';
+        this.default_color = config.default_color || '#929292';
         if (!this.entity) {
             throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
         }
@@ -182,7 +184,13 @@ export class BaseLLMVisionCard extends HTMLElement {
 
     computeColors(category, defaultColor) {
         const customColors = this.custom_colors || {};
-        let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
+        let color;
+        if (category === undefined || category === null) {
+            if (this.default_color !== undefined) color = this.default_color;
+            else color = defaultColor;
+        } else {
+            color = (customColors[category] !== undefined) ? customColors[category] : defaultColor;
+        }
         let bgColorRgba, iconColorRgba;
         if (Array.isArray(color) && color.length === 3) {
             bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
