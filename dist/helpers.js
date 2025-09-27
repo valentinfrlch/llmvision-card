@@ -10,6 +10,7 @@ import { pl } from './pl.js?v=1.5.1';
 import { pt } from './pt.js?v=1.5.1';
 import { sk } from './sk.js?v=1.5.1';
 import { sv } from './sv.js?v=1.5.1';
+import { hu } from './hu.js?v=1.5.1';
 import { cs } from './cs.js?v=1.5.1';
 
 export function hexToRgba(hex, alpha = 1) {
@@ -50,6 +51,8 @@ export function getIcon(title, lang = 'en') {
             categories = sk.categories;
         } else if (lang === 'sv') {
             categories = sv.categories;
+        } else if (lang === 'hu') {
+            categories = hu.categories;
         } else if (lang === 'cs') {
             categories = cs.categories;
         } else {
@@ -86,6 +89,7 @@ const translations = {
     pt: pt.text,
     sk: sk.text,
     sv: sv.text,
+    hu: hu.text,
     cs: cs.text,
 };
 

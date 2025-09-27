@@ -110,6 +110,7 @@ export class TimelinePreviewCardEditor extends LitElement {
                             { value: "pt", label: "Portuguese" },
                             { value: "sk", label: "Slovak" },
                             { value: "sv", label: "Swedish" }
+                            { value: "hu", label: "Magyar" }
                         ]
                     }
                 }
