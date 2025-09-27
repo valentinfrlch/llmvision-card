@@ -1,7 +1,7 @@
-import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.1';
-import { colors } from './colors.js?v=1.5.1';
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.2';
+import { colors } from './colors.js?v=1.5.2';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
-import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.1';
+import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.2';
 
 
 class TimelineCardEditor extends LitElement {
@@ -322,6 +322,137 @@ class LLMVisionCard extends HTMLElement {
         return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' };
     }
 
+    _getDateLabel(dateObj) {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        if (dateObj.toDateString() === today.toDateString()) return translate('today', this.language);
+        if (dateObj.toDateString() === yesterday.toDateString()) return translate('yesterday', this.language);
+        return dateObj.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    }
+
+    _formatTime(dateObj) {
+        return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+    }
+
+    _computeColors(category, defaultColor) {
+        const customColors = this.config?.custom_colors || {};
+        let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
+        let bgColorRgba, iconColorRgba;
+        if (Array.isArray(color) && color.length === 3) {
+            bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
+            iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
+        } else {
+            bgColorRgba = hexToRgba(color, 0.2);
+            iconColorRgba = hexToRgba(color, 1);
+        }
+        return { bgColorRgba, iconColorRgba };
+    }
+
+    _mediaIdFromKeyFrame(keyFrame) {
+        return keyFrame.replace('/media/', 'media-source://media_source/local/');
+    }
+
+    _resolveKeyFrame(keyFrame, hass) {
+        if (!keyFrame) return Promise.resolve('');
+        if (/^https?:\/\//i.test(keyFrame)) return Promise.resolve(keyFrame);
+        const mediaContentID = this._mediaIdFromKeyFrame(keyFrame);
+        if (this.imageCache.has(mediaContentID)) {
+            return Promise.resolve(this.imageCache.get(mediaContentID));
+        }
+        return hass.callWS({
+            type: "media_source/resolve_media",
+            media_content_id: mediaContentID,
+            expires: 60 * 60 * 3
+        }).then(result => {
+            const url = result.url;
+            this.imageCache.set(mediaContentID, url);
+            return url;
+        }).catch(err => {
+            console.error("Error resolving media content ID:", err);
+            return keyFrame; // fallback
+        });
+    }
+
+    _loadPreviewImage(imgEl, keyFrame, hass) {
+        if (!keyFrame) return;
+        this._resolveKeyFrame(keyFrame, hass).then(url => {
+            if (!url) return;
+            imgEl.src = url;
+            imgEl.style.display = '';
+        });
+    }
+
+    _createEventContainer({ event, summary, startTime, cameraName, keyFrame, icon, colors, timeStr, idx }) {
+        const secondaryText = cameraName ? `${timeStr} • ${cameraName}` : timeStr;
+        const div = document.createElement('div');
+        div.classList.add('event-container');
+        div.innerHTML = `
+            <div class="icon-container" style="background-color:${colors.bgColorRgba};">
+                <ha-icon icon="${icon}" style="color:${colors.iconColorRgba};"></ha-icon>
+            </div>
+            <div class="event-details">
+                <h3>${event}</h3>
+                <p>${secondaryText}</p>
+            </div>
+            <img alt="Key frame ${idx + 1}" style="display:none;" onerror="this.style.display='none'">
+        `;
+        return div;
+    }
+
+    _attachPopupHandler(container, detail, hass) {
+        const { event, summary, startTime, cameraName, keyFrame } = detail;
+        const { icon } = getIcon(event, this.language);
+        container.addEventListener('click', () => {
+            this._resolveKeyFrame(keyFrame, hass).then(resolved =>
+                this.showPopup(event, summary, startTime, resolved, cameraName, icon)
+            );
+        });
+    }
+
+    _renderEvents(eventDetails, hass, numberOfEvents, numberOfHours) {
+        this.content.innerHTML = '';
+        const list = numberOfHours ? eventDetails : eventDetails.slice(0, numberOfEvents);
+        if (!list.length) return;
+
+        let lastDateLabel = '';
+
+        list.forEach((detail, idx) => {
+            const { event, summary, startTime, cameraName } = detail;
+            const dateObj = new Date(startTime);
+            const timeStr = this._formatTime(dateObj);
+            const dateLabel = this._getDateLabel(dateObj);
+
+            if (dateLabel !== lastDateLabel) {
+                const header = document.createElement('div');
+                header.classList.add('date-header');
+                header.innerHTML = `<h2>${dateLabel}</h2>`;
+                this.content.appendChild(header);
+                lastDateLabel = dateLabel;
+            }
+
+            const { icon, color: defaultColor, category } = getIcon(event, this.language);
+            const colors = this._computeColors(category, defaultColor);
+
+            const container = this._createEventContainer({
+                event,
+                summary,
+                startTime,
+                cameraName,
+                keyFrame: detail.keyFrame,
+                icon,
+                colors,
+                timeStr,
+                idx
+            });
+
+            const imgEl = container.querySelector('img');
+            this._attachPopupHandler(container, detail, hass);
+            this.content.appendChild(container);
+            this._loadPreviewImage(imgEl, detail.keyFrame, hass);
+        });
+    }
+
     set hass(hass) {
         if (!this.content) {
             this.innerHTML = `
@@ -550,54 +681,19 @@ class LLMVisionCard extends HTMLElement {
     }
 
     _renderEvents(eventDetails, hass, numberOfEvents, numberOfHours) {
-        // Clear previous content
         this.content.innerHTML = '';
 
-        // Determine which events to display
         const list = numberOfHours ? eventDetails : eventDetails.slice(0, numberOfEvents);
-
         if (!list.length) return;
-
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-
-        const formatDateLabel = (dateObj) => {
-            if (dateObj.toDateString() === today.toDateString()) return translate('today', this.language);
-            if (dateObj.toDateString() === yesterday.toDateString()) return translate('yesterday', this.language);
-            return dateObj.toLocaleDateString('en', { month: 'short', day: 'numeric' });
-        };
 
         let lastDateLabel = '';
 
         list.forEach((detail, idx) => {
-            const { event, summary, startTime, cameraName } = detail;
-            let { keyFrame } = detail;
-
+            const { event, summary, startTime, cameraName, keyFrame } = detail;
             const dateObj = new Date(startTime);
-            const hours = dateObj.getHours().toString().padStart(2, '0');
-            const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-            const timeStr = `${hours}:${minutes}`;
+            const timeStr = this._formatTime(dateObj);
+            const dateLabel = this._getDateLabel(dateObj);
 
-            const { icon, color: defaultColor, category } = getIcon(event, this.language);
-
-            // Color handling (custom overrides)
-            const customColors = this.config?.custom_colors || {};
-            let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
-
-            let bgColorRgba, iconColorRgba;
-            if (Array.isArray(color) && color.length === 3) {
-                bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
-                iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
-            } else {
-                bgColorRgba = hexToRgba(color, 0.2);
-                iconColorRgba = hexToRgba(color, 1);
-            }
-
-            const secondaryText = cameraName ? `${timeStr} • ${cameraName}` : timeStr;
-
-            // Date header (once per group)
-            const dateLabel = formatDateLabel(dateObj);
             if (dateLabel !== lastDateLabel) {
                 const dateHeader = document.createElement('div');
                 dateHeader.classList.add('date-header');
@@ -606,57 +702,31 @@ class LLMVisionCard extends HTMLElement {
                 lastDateLabel = dateLabel;
             }
 
-            // Event container with placeholder image (keeps order stable)
-            const eventContainer = document.createElement('div');
-            eventContainer.classList.add('event-container');
-            eventContainer.innerHTML = `
-                <div class="icon-container" style="background-color: ${bgColorRgba};">
-                    <ha-icon icon="${icon}" style="color: ${iconColorRgba};"></ha-icon>
-                </div>
-                <div class="event-details">
-                    <h3>${event}</h3>
-                    <p>${secondaryText}</p>
-                </div>
-                <img alt="Key frame ${idx + 1}" style="display:none;" onerror="this.style.display='none'">
-            `;
+            const { icon, color: defaultColor, category } = getIcon(event, this.language);
+            const colors = this._computeColors(category, defaultColor);
 
-            const imgEl = eventContainer.querySelector('img');
-
-            eventContainer.addEventListener('click', () => {
-                this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
+            const container = this._createEventContainer({
+                event,
+                summary,
+                startTime,
+                cameraName,
+                keyFrame,
+                icon,
+                colors,
+                timeStr,
+                idx
             });
 
-            this.content.appendChild(eventContainer);
+            const imgEl = container.querySelector('img');
 
-            // No keyframe -> nothing to resolve
-            if (!keyFrame) return;
-
-            const mediaContentID = keyFrame.replace('/media/', 'media-source://media_source/local/');
-
-            const setImage = (url) => {
-                if (!url) return;
-                imgEl.src = url;
-                imgEl.style.display = '';
-            };
-
-            // Cached
-            if (this.imageCache.has(mediaContentID)) {
-                setImage(this.imageCache.get(mediaContentID));
-                return;
-            }
-
-            // Resolve asynchronously without affecting DOM order
-            hass.callWS({
-                type: "media_source/resolve_media",
-                media_content_id: mediaContentID,
-                expires: 60 * 60 * 3
-            }).then(result => {
-                const resolved = result.url;
-                this.imageCache.set(mediaContentID, resolved);
-                setImage(resolved);
-            }).catch(err => {
-                console.error("Error resolving media content ID:", err);
+            container.addEventListener('click', () => {
+                this._resolveKeyFrame(keyFrame, hass).then(resolved =>
+                    this.showPopup(event, summary, startTime, resolved, cameraName, icon)
+                );
             });
+
+            this.content.appendChild(container);
+            this._loadPreviewImage(imgEl, keyFrame, hass);
         });
     }
 
