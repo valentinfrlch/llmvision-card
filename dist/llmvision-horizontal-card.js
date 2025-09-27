@@ -212,8 +212,8 @@ export class TimelineHorizontalCardEditor extends LitElement {
                             { value: "pl", label: "Polish" },
                             { value: "pt", label: "Portuguese" },
                             { value: "sk", label: "Slovak" },
-                            { value: "sv", label: "Swedish" }
-                            { value: "hu", label: "Magyar" }
+                            { value: "sv", label: "Swedish" },
+                            { value: "hu", label: "Hungarian" }
                         ]
                     }
                 }

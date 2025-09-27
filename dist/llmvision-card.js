@@ -111,13 +111,13 @@ class TimelineCardEditor extends LitElement {
                             { value: "pl", label: "Polish" },
                             { value: "pt", label: "Portuguese" },
                             { value: "sk", label: "Slovak" },
-                            { value: "sv", label: "Swedish" }
-                            { value: "hu", label: "Magyar" }
+                            { value: "sv", label: "Swedish" },
+                            { value: "hu", label: "Hungarian" }
                         ]
                     }
                 }
             }
-        }];
+        ];
         const customizeSchema = [
             { name: "default_icon", description: "Icon when no category keyword matches.", selector: { icon: {} } },
             { name: "default_color", description: "Color for uncategorized events.", selector: { color_rgb: {} } },
