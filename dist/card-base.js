@@ -1,0 +1,331 @@
+import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.2';
+
+const __LLMVISION_VERSION = 'v1.5.2';
+function __logLLMVisionBadge(context) {
+    if (!window.__LLMVISION_BADGE_LOGGED) {
+        console.log(
+            '%cLLM Vision%c%c' + __LLMVISION_VERSION,
+            'background:#0071FF;color:#fff;padding:2px 6px 2px 8px;border-radius:4px 0 0 4px;font-weight:600;',
+            'background:#0058c7;color:#fff;padding:2px 4px;font-weight:500;',
+            'background:#0058c7;color:#fff;padding:2px 8px 2px 6px;border-radius:0 4px 4px 0;font-weight:600;'
+        );
+        window.__LLMVISION_BADGE_LOGGED = true;
+    }
+}
+
+export class BaseLLMVisionCard extends HTMLElement {
+    imageCache = new Map();
+    _lastEventHash = null;
+
+    connectedCallback() {
+        if (!this._badgeLogged) {
+            __logLLMVisionBadge(this.badgeContext || 'Card');
+            this._badgeLogged = true;
+        }
+    }
+
+    setCommonConfig(config, { requireEventLimits = false } = {}) {
+        this.config = config;
+        this.entity = config.entity;
+        this.category_filters = config.category_filters || [];
+        this.camera_filters = config.camera_filters || [];
+        this.language = config.language;
+        this.number_of_events = config.number_of_events;
+        this.number_of_hours = config.number_of_hours;
+        this.custom_colors = config.custom_colors || {};
+        if (!this.entity) {
+            throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
+        }
+        if (requireEventLimits) {
+            if (!this.number_of_events && !this.number_of_hours) {
+                throw new Error('Either number_of_events or number_of_hours needs to be set.');
+            }
+            if (this.number_of_events && this.number_of_events < 1) {
+                throw new Error('number_of_events must be greater than 0.');
+            }
+        }
+    }
+
+    _readCalendarAttributes(hass) {
+        const calendarEntity = hass.states[this.entity];
+        if (!calendarEntity) return null;
+        const attrs = calendarEntity.attributes;
+        return {
+            events: (attrs.events || []).slice(),
+            summaries: (attrs.summaries || []).slice(),
+            keyFrames: (attrs.key_frames || []).slice(),
+            cameraNames: (attrs.camera_names || []).slice(),
+            startTimes: (attrs.starts || []).slice(),
+        };
+    }
+
+    _buildEventDetails(hass, data) {
+        const { events, summaries, keyFrames, cameraNames, startTimes } = data;
+        return events.map((event, index) => {
+            const cameraEntityId = cameraNames[index];
+            const cameraEntity = hass.states[cameraEntityId];
+            const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
+            return {
+                event,
+                summary: summaries[index],
+                keyFrame: keyFrames[index] || '',
+                cameraName: cameraFriendlyName,
+                cameraEntityId,
+                startTime: startTimes[index]
+            };
+        });
+    }
+
+    _hashState(base) {
+        return JSON.stringify(base);
+    }
+
+    _filterByHours(details, hours) {
+        if (!hours) return details;
+        const cutoff = Date.now() - hours * 3600 * 1000;
+        return details.filter(d => new Date(d.startTime).getTime() >= cutoff);
+    }
+
+    _filterByCategories(details) {
+        if (!this.category_filters?.length) return details;
+        return details.filter(d => {
+            const { category } = getIcon(d.event, this.language);
+            return this.category_filters.includes(category);
+        });
+    }
+
+    _filterByCameras(details) {
+        if (!this.camera_filters?.length) return details;
+        return details.filter(d => {
+            if (!d.cameraEntityId) return true;
+            return this.camera_filters.includes(d.cameraEntityId);
+        });
+    }
+
+    _applyAllFilters(details) {
+        let res = details;
+        res = this._filterByCategories(res);
+        res = this._filterByCameras(res);
+        return res;
+    }
+
+    _sort(details) {
+        return details.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+    }
+
+    _limit(details) {
+        if (this.number_of_hours) {
+            // number_of_events acts as secondary limiter only after hours filter
+            if (this.number_of_events) return details.slice(0, this.number_of_events);
+            return details;
+        }
+        if (this.number_of_events) return details.slice(0, this.number_of_events);
+        return details;
+    }
+
+    formatDateLabel(dateObj) {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        if (dateObj.toDateString() === today.toDateString()) return translate('today', this.language) || "Today";
+        if (dateObj.toDateString() === yesterday.toDateString()) return translate('yesterday', this.language) || "Yesterday";
+        return dateObj.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    }
+
+    formatTime(dateObj) {
+        return `${dateObj.getHours().toString().padStart(2,'0')}:${dateObj.getMinutes().toString().padStart(2,'0')}`;
+    }
+
+    formatDateTimeShort(dateStr) {
+        const date = new Date(dateStr);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        const options = { month: 'short', day: 'numeric' };
+        if (date.toDateString() === today.toDateString()) {
+            return translate('today', this.language) || "Today";
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            return translate('yesterday', this.language) || "Yesterday";
+        }
+        return date.toLocaleDateString('en-US', options);
+    }
+
+    formatDateTimeFull(dateStr) {
+        const d = new Date(dateStr);
+        const options = { month: 'short', day: 'numeric' };
+        const datePart = d.toLocaleDateString('en-US', options);
+        const h = d.getHours().toString().padStart(2,'0');
+        const m = d.getMinutes().toString().padStart(2,'0');
+        return `${datePart}, ${h}:${m}`;
+    }
+
+    resolveKeyFrame(hass, keyFrame) {
+        if (!keyFrame) return Promise.resolve('');
+        if (/^https?:\/\//i.test(keyFrame)) return Promise.resolve(keyFrame);
+        const mediaContentID = keyFrame.replace('/media/', 'media-source://media_source/local/');
+        if (this.imageCache.has(mediaContentID)) {
+            return Promise.resolve(this.imageCache.get(mediaContentID));
+        }
+        return hass.callWS({
+            type: "media_source/resolve_media",
+            media_content_id: mediaContentID,
+            expires: 60 * 60 * 3
+        }).then(result => {
+            const url = result.url;
+            this.imageCache.set(mediaContentID, url);
+            return url;
+        }).catch(err => {
+            console.error("Error resolving media content ID:", err);
+            return keyFrame;
+        });
+    }
+
+    computeColors(category, defaultColor) {
+        const customColors = this.custom_colors || {};
+        let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
+        let bgColorRgba, iconColorRgba;
+        if (Array.isArray(color) && color.length === 3) {
+            bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
+            iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
+        } else {
+            bgColorRgba = hexToRgba(color, 0.2);
+            iconColorRgba = hexToRgba(color, 1);
+        }
+        return { bgColorRgba, iconColorRgba };
+    }
+
+    showPopup({ event, summary, startTime, keyFrame, cameraName, icon, prefix }) {
+        const formattedTime = this.formatDateTimeFull(startTime);
+        const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
+        const overlayClass = `${prefix}-overlay`;
+        const contentClass = `${prefix}-content`;
+        const closeBtnClass = `close-${prefix}`;
+        const htmlBlock = `
+            <div>
+                <div class="title-container">
+                    <ha-icon icon="${icon}"></ha-icon>
+                    <h2>${event}</h2>
+                    <button class="${closeBtnClass}" style="font-size:30"><ha-icon icon="mdi:close"></ha-icon></button>
+                </div>
+                <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
+                <p class="secondary"><span>${secondaryText}</span></p>
+                <p class="summary">${summary}</p>
+            </div>
+        `;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+            <div class="${overlayClass}">
+                <div class="${contentClass}">
+                    ${htmlBlock}
+                </div>
+            </div>
+            <style>
+                .${overlayClass} {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0,0,0,0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                }
+                .${overlayClass}.show { opacity: 1; }
+                .${contentClass} {
+                    position: relative;
+                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
+                    color: var(--primary-text-color);
+                    padding: 20px;
+                    border-radius: var(--ha-card-border-radius, 25px);
+                    max-width: 500px;
+                    width: 100%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    transform: scale(0.9);
+                    transition: transform 0.2s ease;
+                }
+                .${overlayClass}.show .${contentClass} { transform: scale(1); }
+                .title-container {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 5px;
+                }
+                .title-container ha-icon { margin-right: 10px; }
+                .title-container h2 {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    flex-grow: 1;
+                    font-family: var(--ha-font-family-heading, "Roboto");
+                }
+                .${contentClass} img {
+                    width: 100%;
+                    height: auto;
+                    border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
+                    margin-top: 10px;
+                }
+                .${contentClass} .secondary {
+                    font-weight: var(--ha-font-weight-medium, 500);
+                    color: var(--primary-text-color);
+                    font-family: var(--ha-font-family-body, "Roboto");
+                }
+                .${contentClass} .summary {
+                    color: var(--secondary-text-color);
+                    font-size: var(--ha-font-size-l, 16px);
+                    line-height: 22px;
+                    font-family: var(--ha-font-family-body, "Roboto");
+                }
+                .${closeBtnClass} {
+                    background:none;
+                    border:none;
+                    font-size:30px;
+                    cursor:pointer;
+                    color: var(--primary-text-color);
+                }
+                @media (max-width: 768px) {
+                    .${contentClass} {
+                        max-width: 100%;
+                        max-height: 100%;
+                        border-radius: 0;
+                        height: 100%;
+                    }
+                }
+            </style>
+        `;
+
+        if (!history.state || !history.state.popupOpen) {
+            history.pushState({ popupOpen: true }, '');
+        }
+        const overlayEl = wrapper.querySelector(`.${overlayClass}`);
+        const popstateHandler = () => this.closePopup(wrapper, overlayClass, popstateHandler);
+        window.addEventListener('popstate', popstateHandler);
+        wrapper.querySelector(`.${closeBtnClass}`).addEventListener('click', () =>
+            this.closePopup(wrapper, overlayClass, popstateHandler)
+        );
+        overlayEl.addEventListener('click', (ev) => {
+            if (ev.target === overlayEl) this.closePopup(wrapper, overlayClass, popstateHandler);
+        });
+        const escHandler = (ev) => {
+            if (ev.key === 'Escape') this.closePopup(wrapper, overlayClass, popstateHandler, escHandler);
+        };
+        document.addEventListener('keydown', escHandler);
+        wrapper._escHandler = escHandler;
+
+        document.body.appendChild(wrapper);
+        requestAnimationFrame(() => overlayEl.classList.add('show'));
+    }
+
+    closePopup(wrapper, overlayClass, popstateHandler, escHandler) {
+        const overlay = wrapper.querySelector(`.${overlayClass}`);
+        overlay.classList.remove('show');
+        overlay.addEventListener('transitionend', () => {
+            if (wrapper._escHandler) document.removeEventListener('keydown', wrapper._escHandler);
+            document.body.removeChild(wrapper);
+        }, { once: true });
+        if (history.state && history.state.popupOpen) {
+            history.replaceState(null, '');
+        }
+        window.removeEventListener('popstate', popstateHandler);
+    }
+}
