@@ -78,5 +78,5 @@ export const hu = {
             }
         }
     },
-    "regex": ""
+    "regex": "`\\b${key}(?:k|ek|ok|ök|ak|uk|ák|ők)?\\b`, 'iu'"
 }

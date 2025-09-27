@@ -79,5 +79,5 @@ export const nl = {
             }
         }
     },
-    "regex": "`\\b${key}(en)?\\b`, 'i'"
-};
+    "regex": "`\\b${key}(?:en|s|'s|s'|jes|eren)?\\b`, 'iu'"
+}

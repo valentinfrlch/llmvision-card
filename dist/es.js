@@ -75,5 +75,5 @@ export const es = {
             }
         }
     },
-    "regex": "`\\b${key}(es)?\\b`, 'i'"
+    "regex": "`\\b${key}(?:es|s)?\\b`, 'iu'"
 };

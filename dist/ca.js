@@ -82,5 +82,5 @@ export const ca = {
             }
         }
     },
-    "regex": ""
+    "regex": "`\\b${key}(?:es|s)?\\b`, 'iu'"
 }

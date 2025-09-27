@@ -75,5 +75,5 @@ export const fr = {
             }
         }
     },
-    "regex": "`\\b${key}(s)?\\b`, 'i'"
+    "regex": "`\\b${key}(?:s|x|aux|eaux|eux)?\\b`, 'iu'"
 };

@@ -76,5 +76,5 @@ export const pt = {
             }
         }
     },
-    "regex": ""
+    "regex": "`\\b${key}(?:s|ns|es|is|ais|eis|óis|uis|ões|ães)?\\b`, 'iu'"
 }

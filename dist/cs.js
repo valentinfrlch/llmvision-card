@@ -80,5 +80,5 @@ export const cs = {
             }
         }
     },
-    "regex": ""
+    "regex": "`\\b${key}(?:y|i|ové|ovi|a|e|ů|í|é|á)?\\b`, 'iu'"
 }
