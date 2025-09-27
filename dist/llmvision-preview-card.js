@@ -174,6 +174,7 @@ export class TimelinePreviewCardEditor extends LitElement {
                 selector: {
                     select: {
                         options: [
+                            { value: "ca", label: "Catalan" },
                             { value: "de", label: "German" },
                             { value: "en", label: "English" },
                             { value: "es", label: "Spanish" },
