@@ -546,66 +546,70 @@ class LLMVisionCard extends HTMLElement {
         eventDetails.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
 
         // Clear previous content
+        this._renderEvents(eventDetails, hass, numberOfEvents, numberOfHours);
+    }
+
+    _renderEvents(eventDetails, hass, numberOfEvents, numberOfHours) {
+        // Clear previous content
         this.content.innerHTML = '';
 
-        // Add events and key frames for the specified number of events
-        let lastDate = '';
+        // Determine which events to display
+        const list = numberOfHours ? eventDetails : eventDetails.slice(0, numberOfEvents);
 
-        for (let i = 0; i < (numberOfHours ? eventDetails.length : Math.min(numberOfEvents, eventDetails.length)); i++) {
-            const { event, summary, startTime, cameraName } = eventDetails[i];
-            let keyFrame = eventDetails[i].keyFrame;
-            const date = new Date(startTime);
-            const options = { month: 'short', day: 'numeric' };
-            const formattedDate = date.toLocaleDateString('en', options);
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const formattedTime = `${hours}:${minutes}`;
+        if (!list.length) return;
+
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        const formatDateLabel = (dateObj) => {
+            if (dateObj.toDateString() === today.toDateString()) return translate('today', this.language);
+            if (dateObj.toDateString() === yesterday.toDateString()) return translate('yesterday', this.language);
+            return dateObj.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+        };
+
+        let lastDateLabel = '';
+
+        list.forEach((detail, idx) => {
+            const { event, summary, startTime, cameraName } = detail;
+            let { keyFrame } = detail;
+
+            const dateObj = new Date(startTime);
+            const hours = dateObj.getHours().toString().padStart(2, '0');
+            const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+
             const { icon, color: defaultColor, category } = getIcon(event, this.language);
 
-            // Use custom color if set, otherwise fallback to default
+            // Color handling (custom overrides)
             const customColors = this.config?.custom_colors || {};
             let color = customColors[category] !== undefined ? customColors[category] : defaultColor;
 
             let bgColorRgba, iconColorRgba;
             if (Array.isArray(color) && color.length === 3) {
-                // color is [r, g, b] from custom color picker
                 bgColorRgba = `rgba(${color[0]},${color[1]},${color[2]},0.2)`;
                 iconColorRgba = `rgba(${color[0]},${color[1]},${color[2]},1)`;
             } else {
-                // color is hex string
                 bgColorRgba = hexToRgba(color, 0.2);
                 iconColorRgba = hexToRgba(color, 1);
             }
 
-            const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
+            const secondaryText = cameraName ? `${timeStr} • ${cameraName}` : timeStr;
 
-            const renderEvent = () => {
-                // Determine the date label
-                const today = new Date();
-                const yesterday = new Date(today);
-                yesterday.setDate(today.getDate() - 1);
+            // Date header (once per group)
+            const dateLabel = formatDateLabel(dateObj);
+            if (dateLabel !== lastDateLabel) {
+                const dateHeader = document.createElement('div');
+                dateHeader.classList.add('date-header');
+                dateHeader.innerHTML = `<h2>${dateLabel}</h2>`;
+                this.content.appendChild(dateHeader);
+                lastDateLabel = dateLabel;
+            }
 
-                let dateLabel;
-                if (date.toDateString() === today.toDateString()) {
-                    dateLabel = translate('today', this.language);
-                } else if (date.toDateString() === yesterday.toDateString()) {
-                    dateLabel = translate('yesterday', this.language);
-                } else {
-                    dateLabel = formattedDate;
-                }
-
-                // Add the date if it's different from the last date
-                if (dateLabel !== lastDate) {
-                    const dateHeader = document.createElement('div');
-                    dateHeader.classList.add('date-header');
-                    dateHeader.innerHTML = `<h2>${dateLabel}</h2>`;
-                    this.content.appendChild(dateHeader);
-                    lastDate = dateLabel;
-                }
-
-                const eventContainer = document.createElement('div');
-                eventContainer.classList.add('event-container');
-                eventContainer.innerHTML = `
+            // Event container with placeholder image (keeps order stable)
+            const eventContainer = document.createElement('div');
+            eventContainer.classList.add('event-container');
+            eventContainer.innerHTML = `
                 <div class="icon-container" style="background-color: ${bgColorRgba};">
                     <ha-icon icon="${icon}" style="color: ${iconColorRgba};"></ha-icon>
                 </div>
@@ -613,37 +617,47 @@ class LLMVisionCard extends HTMLElement {
                     <h3>${event}</h3>
                     <p>${secondaryText}</p>
                 </div>
-                <img src="${keyFrame}" alt="Key frame ${i + 1}" onerror="this.style.display='none'">
-                `;
+                <img alt="Key frame ${idx + 1}" style="display:none;" onerror="this.style.display='none'">
+            `;
 
-                eventContainer.addEventListener('click', () => {
-                    this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
-                });
+            const imgEl = eventContainer.querySelector('img');
 
-                this.content.appendChild(eventContainer);
-            }
+            eventContainer.addEventListener('click', () => {
+                this.showPopup(event, summary, startTime, keyFrame, cameraName, icon);
+            });
 
-            let mediaContentID = keyFrame.replace('/media/', 'media-source://media_source/local/');
+            this.content.appendChild(eventContainer);
 
-            // Use cache if available
+            // No keyframe -> nothing to resolve
+            if (!keyFrame) return;
+
+            const mediaContentID = keyFrame.replace('/media/', 'media-source://media_source/local/');
+
+            const setImage = (url) => {
+                if (!url) return;
+                imgEl.src = url;
+                imgEl.style.display = '';
+            };
+
+            // Cached
             if (this.imageCache.has(mediaContentID)) {
-                keyFrame = this.imageCache.get(mediaContentID);
-                renderEvent();
-            } else {
-                hass.callWS({
-                    type: "media_source/resolve_media",
-                    media_content_id: mediaContentID,
-                    expires: 60 * 60 * 3 // 3 hours
-                }).then(result => {
-                    keyFrame = result.url;
-                    this.imageCache.set(mediaContentID, keyFrame);
-                }).catch(error => {
-                    console.error("Error resolving media content ID:", error);
-                }).finally(() => {
-                    renderEvent();
-                });
+                setImage(this.imageCache.get(mediaContentID));
+                return;
             }
-        }
+
+            // Resolve asynchronously without affecting DOM order
+            hass.callWS({
+                type: "media_source/resolve_media",
+                media_content_id: mediaContentID,
+                expires: 60 * 60 * 3
+            }).then(result => {
+                const resolved = result.url;
+                this.imageCache.set(mediaContentID, resolved);
+                setImage(resolved);
+            }).catch(err => {
+                console.error("Error resolving media content ID:", err);
+            });
+        });
     }
 
     showPopup(event, summary, startTime, keyFrame, cameraName, icon) {
