@@ -10,6 +10,7 @@ import { pl } from './pl.js?v=1.5.1';
 import { pt } from './pt.js?v=1.5.1';
 import { sk } from './sk.js?v=1.5.1';
 import { sv } from './sv.js?v=1.5.1';
+import { cs } from './cs.js?v=1.5.1';
 
 export function hexToRgba(hex, alpha = 1) {
     let c = hex.replace('#', '');
@@ -49,6 +50,8 @@ export function getIcon(title, lang = 'en') {
             categories = sk.categories;
         } else if (lang === 'sv') {
             categories = sv.categories;
+        } else if (lang === 'cs') {
+            categories = cs.categories;
         } else {
             throw new Error(`Unsupported language: ${lang}`);
         }
@@ -83,6 +86,7 @@ const translations = {
     pt: pt.text,
     sk: sk.text,
     sv: sv.text,
+    cs: cs.text,
 };
 
 export function translate(key, language) {
