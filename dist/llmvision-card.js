@@ -94,14 +94,26 @@ class TimelineCardEditor extends LitElement {
                 }
             }
         ];
-        const languageSchema = [{
-            name: "language", description: "Language for the card. This will be used to generate icons and translations.",
-            selector: {
-                select: {
-                    options: [
-                        { value: "de", label: "German" }, { value: "en", label: "English" }, { value: "es", label: "Spanish" }, { value: "fr", label: "French" },
-                        { value: "it", label: "Italian" }, { value: "nl", label: "Dutch" }, { value: "pl", label: "Polish" }, { value: "pt", label: "Portuguese" },
-                        { value: "sk", label: "Slovak" }, { value: "sv", label: "Swedish" }]
+        const languageSchema = [
+            {
+                name: "language",
+                description: "Language for the card. This will be used to generate icons and translations.",
+                selector: {
+                    select: {
+                        options: [
+                            { value: "ca", label: "Catalan" },
+                            { value: "de", label: "German" },
+                            { value: "en", label: "English" },
+                            { value: "es", label: "Spanish" },
+                            { value: "fr", label: "French" },
+                            { value: "it", label: "Italian" },
+                            { value: "nl", label: "Dutch" },
+                            { value: "pl", label: "Polish" },
+                            { value: "pt", label: "Portuguese" },
+                            { value: "sk", label: "Slovak" },
+                            { value: "sv", label: "Swedish" }
+                        ]
+                    }
                 }
             }
         }];
