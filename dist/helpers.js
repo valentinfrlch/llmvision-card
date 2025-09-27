@@ -1,4 +1,5 @@
 import { colors } from './colors.js?v=1.5.1';
+import { ca } from './ca.js?v=1.5.1';
 import { de } from './de.js?v=1.5.1';
 import { en } from './en.js?v=1.5.1';
 import { es } from './es.js?v=1.5.1';
@@ -27,7 +28,9 @@ export function getIcon(title, lang = 'en') {
     let categories;
 
     try {
-        if (lang === 'de') {
+        if (lang === 'ca') {
+            categories = ca.categories;
+        } else if (lang === 'de') {
             categories = de.categories;
         } else if (lang === 'en') {
             categories = en.categories;
@@ -68,10 +71,11 @@ export function getIcon(title, lang = 'en') {
         console.error('Error getting icon:', error);
     }
 
-    return { icon: 'mdi:cube-scan', color: '#929292' }; // Default icon and colors if no keyword is found
+    return { icon: 'mdi:record-rec', color: '#929292' }; // Default icon and colors if no keyword is found
 }
 
 const translations = {
+    ca: ca.text,
     de: de.text,
     en: en.text,
     es: es.text,
