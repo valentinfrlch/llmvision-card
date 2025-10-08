@@ -33,7 +33,7 @@ export class BaseLLMVisionCard extends HTMLElement {
         this.number_of_events = config.number_of_events;
         this.number_of_hours = config.number_of_hours;
         this.custom_colors = config.custom_colors || {};
-        this.default_icon = config.default_icon || 'mdi:motion-outline';
+        this.default_icon = config.default_icon || 'mdi:motion-sensor';
         this.default_color = config.default_color || '#929292';
         if (!this.entity) {
             throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
