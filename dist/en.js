@@ -80,5 +80,5 @@ export const en = {
             }
         }
     },
-    "regex": ""
+    "regex": "`\\b${key}s?\\b`, 'i'"
 }

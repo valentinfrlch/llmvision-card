@@ -89,5 +89,5 @@ export const sv = {
             }
         }
     },
-    "regex": "`\\b${key}(en)?\\b`, 'i'"
+    "regex": "`\\b${key}(?:ar(?:na)?|er(?:na)?|or(?:na)?|r|s|na|en)?\\b`, 'iu'"
 }

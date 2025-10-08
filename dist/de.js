@@ -76,5 +76,5 @@ export const de = {
             }
         }
     },
-    "regex": "`\\b${key}(en)?\\b`, 'i'"
+    "regex": "`\\b${key}(?:en|s)?\\b`, 'i'"
 };

@@ -202,15 +202,18 @@ export class TimelineHorizontalCardEditor extends LitElement {
                 selector: {
                     select: {
                         options: [
-                            { value: "de", label: "German" },
-                            { value: "en", label: "English" },
-                            { value: "es", label: "Spanish" },
-                            { value: "fr", label: "French" },
-                            { value: "it", label: "Italian" },
+                            { value: "ca", label: "Catalan" },
+                            { value: "cz", label: "Czech" },
                             { value: "nl", label: "Dutch" },
+                            { value: "en", label: "English" },
+                            { value: "fr", label: "French" },
+                            { value: "de", label: "German" },
+                            { value: "hu", label: "Hungarian" },
+                            { value: "it", label: "Italian" },
                             { value: "pl", label: "Polish" },
                             { value: "pt", label: "Portuguese" },
                             { value: "sk", label: "Slovak" },
+                            { value: "es", label: "Spanish" },
                             { value: "sv", label: "Swedish" }
                         ]
                     }
