@@ -138,13 +138,32 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
     static getConfigElement() { return document.createElement('timeline-preview-card-editor'); }
     static getStubConfig() { return { entity: 'calendar.llm_vision_timeline', language: 'en' }; }
 
+    getCardSize() {
+        return 3;
+    }
+
+    // The rules for sizing your card in the grid in sections view
+    getGridOptions() {
+        return {
+            rows: 2,
+            columns: 6,
+            min_rows: 2,
+            max_rows: 8,
+            min_columns: 6,
+            max_columns: 24
+        };
+    }
+
     set hass(hass) {
         if (!this.content) {
+            // Adhere to the grid cell allocated to the card
+            this.style.display = 'block';
+            this.style.height = '100%';
             this.innerHTML = `
                 <ha-card><div class="preview-card-content"></div></ha-card>
                 <style>
                 .preview-event-container{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:var(--ha-card-border-radius,12px);background:var(--ha-card-background,var(--card-background-color,#f3f3f3));cursor:pointer;}
-                .preview-event-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+                .preview-event-image{position:absolute;inset:0;width:100%;height:100%;border-radius:var(--ha-card-border-radius,12px);object-fit:cover;display:block;}
                 .preview-event-vignette{position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,0.55)0%,rgba(0,0,0,0)30%,rgba(0,0,0,0)70%,rgba(0,0,0,0.55)100%);border-radius:var(--ha-card-border-radius,12px);}
                 .preview-icon-container{position:absolute;top:3px;left:3px;width:40px;height:40px;border-radius:var(--ha-card-border-radius,25px);display:flex;align-items:center;justify-content:center;background:none;z-index:2;}
                 .preview-event-title{position:absolute;left:44px;top:14px;color:#fff;font-size:var(--ha-font-size-l,16px);font-weight:var(--ha-font-weight-medium,500);z-index:2;max-width:80%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
@@ -154,74 +173,85 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
             this.content = this.querySelector('.preview-card-content');
         }
 
-        const raw = this.fetchEvents(hass);
-        if (!raw) return;
+        this._loadAndRender(hass);
+    }
+
+    async _loadAndRender(hass) {
+        let details = await this.fetchEvents(hass);
+        if (!details) return;
 
         const currentHash = this._hashState({
-            ...raw,
+            ...details,
             category_filters: this.category_filters,
-            camera_filters: this.camera_filters
+            camera_filters: this.camera_filters,
+            number_of_events: this.number_of_events,
+            number_of_days: this.number_of_days
         });
         if (currentHash === this._lastEventHash) return;
         this._lastEventHash = currentHash;
 
-        let details = this._buildEventDetails(hass, raw);
-        details = this._applyAllFilters(details);
+        console.log('Fetched events:', details);
+
         if (!details.length) {
             this.content.innerHTML = '';
-            const msgKey = this.category_filters.length ? 'noEventsCategory'
-                : this.camera_filters.length ? 'noEventsCamera'
-                    : 'noEvents';
-            const msg = translate(msgKey, this.language) || "No events found.";
-            this.content.innerHTML = `<div class="preview-event-container" style="display:flex;align-items:center;justify-content:center;"><h3>${msg}</h3></div>`;
+            let key;
+            if (this.category_filters.length) key = 'noEventsCategory';
+            else if (this.camera_filters.length) key = 'noEventsCamera';
+            else if (this.number_of_days) key = 'noEventsHours';
+            else key = 'noEvents';
+            let msg = translate(key, this.language) || "No events found.";
+            if (key === 'noEventsHours') msg = msg.replace('{hours}', this.number_of_days);
+            this.content.innerHTML = `<div class="event-container" style="display:flex;align-items:center;justify-content:center;height:100%;"><h3>${msg}</h3></div>`;
             return;
         }
+        console.log('Rendering events:', details);
+        this._render(details, hass);
+    }
 
-        details = this._sort(details);
-        const latest = details[0];
-        if (!latest) return;
-        const dateLabel = this.formatDateTimeShort(latest.startTime);
-        const d = new Date(latest.startTime);
-        const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-        const formatted = `${dateLabel}, ${time}`;
-        let { event, summary, keyFrame, cameraName, startTime } = latest;
-        let { icon, category } = getIcon(event, this.language);
-        if (category === undefined && this.default_icon) {
-            icon = this.default_icon;
-        }
-
-        const render = (resolved) => {
-            const container = document.createElement('div');
-            container.classList.add('preview-event-container');
-            container.innerHTML = `
-                <img class="preview-event-image" src="${resolved || ''}" alt="Key frame" onerror="this.style.display='none'">
+    _render(details, hass) {
+        let event = details[0];
+        const container = document.createElement('div');
+        const result = getIcon(event.title, this.language);
+        let { icon, color: defaultColor, category } = result;
+        let cameraName = event.cameraName;
+        const dateObj = new Date(event.startTime);
+        const dateLabel = this.formatDateLabel(dateObj);
+        const timeStr = this.formatTime(dateObj);
+        container.innerHTML = `
+                <img class="preview-event-image" src="" alt="Key frame" onerror="this.style.display='none'">
                 <div class="preview-event-vignette"></div>
                 <div class="preview-icon-container">
                     <ha-icon icon="${icon}" style="color:white;font-size:24px;"></ha-icon>
                 </div>
-                <div class="preview-event-details">${cameraName} • ${formatted}</div>
-                <div class="preview-event-title">${event}</div>
+                <div class="preview-event-details">${cameraName} • ${dateLabel}, ${timeStr}</div>
+                <div class="preview-event-title">${event.title}</div>
             `;
-            container.addEventListener('click', () => {
+        container.addEventListener('click', () => {
+            this.resolveKeyFrame(hass, event.keyFrame).then(url => {
                 this.showPopup({
-                    event,
-                    summary,
-                    startTime,
-                    keyFrame: resolved,
-                    cameraName,
+                    event: event.title,
+                    summary: event.description,
+                    startTime: event.startTime,
+                    keyFrame: url,
+                    cameraName: event.cameraName,
                     icon,
-                    prefix: 'preview-popup'
+                    prefix: 'popup'
                 });
             });
-            this.content.innerHTML = '';
-            this.content.appendChild(container);
-        };
-
-        this.resolveKeyFrame(hass, keyFrame).then(render);
+        });
+        this.content.innerHTML = '';
+        this.content.appendChild(container);
+        this.resolveKeyFrame(hass, event.keyFrame).then(url => {
+            const img = container.querySelector('img');
+            if (img) {
+                img.src = url;
+                img.style.display = 'block';
+            }
+        });
     }
 
     static getStubConfig() {
-        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, language: 'en' };
+        return { language: 'en' };
     }
 }
 customElements.define("llmvision-preview-card", LLMVisionPreviewCard);

@@ -1,7 +1,7 @@
 export const nl = {
     "text": {
         "noEvents": "Geen evenementen",
-        "noEventsHours": "Geen evenementen in de afgelopen {hours} uur",
+        "noEventsDays": "Geen evenementen in de afgelopen {days} dagen",
         "noEventsCamera": "Geen evenementen gevonden voor de geselecteerde camera('s).",
         "noEventsCategory": "Geen evenementen gevonden voor de geselecteerde categorie.",
         "today": "Vandaag",

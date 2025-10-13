@@ -1,7 +1,7 @@
 export const cs = {
     "text": {
         "noEvents": "Žádné události",
-        "noEventsHours": "Žádné události za posledních {hours} hodin",
+        "noEventsDays": "Žádné události za posledních {days} dní",
         "noEventsCamera": "Žádné události nenalezeny pro vybranou kameru/y",
         "noEventsCategory": "Žádné události nenalezeny pro vybranou kategorii",
         "today": "Dnes",

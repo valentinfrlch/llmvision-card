@@ -26,21 +26,17 @@ export class BaseLLMVisionCard extends HTMLElement {
 
     setCommonConfig(config, { requireEventLimits = false } = {}) {
         this.config = config;
-        this.entity = config.entity;
         this.category_filters = config.category_filters || [];
         this.camera_filters = config.camera_filters || [];
         this.language = config.language;
         this.number_of_events = config.number_of_events;
-        this.number_of_hours = config.number_of_hours;
+        this.number_of_days = config.number_of_days;
         this.custom_colors = config.custom_colors || {};
         this.default_icon = config.default_icon || 'mdi:motion-sensor';
         this.default_color = config.default_color || '#929292';
-        if (!this.entity) {
-            throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
-        }
         if (requireEventLimits) {
-            if (!this.number_of_events && !this.number_of_hours) {
-                throw new Error('Either number_of_events or number_of_hours needs to be set.');
+            if (!this.number_of_events && !this.number_of_days) {
+                throw new Error('Either number_of_events or number_of_days needs to be set.');
             }
             if (this.number_of_events && this.number_of_events < 1) {
                 throw new Error('number_of_events must be greater than 0.');
@@ -48,22 +44,20 @@ export class BaseLLMVisionCard extends HTMLElement {
         }
     }
 
-    async fetchEvents(hass, numberOfEvents=10, numberOfHours=0, cameraEntityIds=[], categoryFilters=[]) {
+    async fetchEvents(hass) {
         try {
             const params = new URLSearchParams();
-            if (this.entity) params.set('entity', this.entity);
-            if (this.number_of_hours) params.set('hours', this.number_of_hours);
+            // if (this.number_of_days) params.set('hours', this.number_of_days);
             if (this.number_of_events) params.set('limit', this.number_of_events);
             if (this.camera_filters?.length) {
                 params.set('cameras', this.camera_filters.join(','));
             }
+            /*
             if (this.category_filters?.length) {
                 params.set('categories', this.category_filters.join(','));
-            }
+            } */
 
-            // Calls /api/llm_vision/events?entity=...&hours=...&limit=...
-            // const path = `llm_vision/events?${params.toString()}`;
-            const path = `llmvision/events`;
+            const path = `llmvision/timeline/events${params.toString() ? '?' + params.toString() : ''}`;
             const data = await hass.callApi('GET', path);
             const items = Array.isArray(data?.events) ? data.events : [];
 
@@ -82,7 +76,7 @@ export class BaseLLMVisionCard extends HTMLElement {
             });
         } catch (err) {
             console.error('Error fetching events from API:', err);
-            return this._fallbackEventsFromEntity(hass);
+            return null;
         }
     }
 
@@ -124,7 +118,7 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     _limit(details) {
-        if (this.number_of_hours) {
+        if (this.number_of_days) {
             // number_of_events acts as secondary limiter only after hours filter
             if (this.number_of_events) return details.slice(0, this.number_of_events);
             return details;

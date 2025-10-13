@@ -9,10 +9,10 @@ class TimelineCardEditor extends LitElement {
     setConfig(config) { this._config = config || {}; }
     render() {
         if (!this._config) return html`<div>Please configure the card.</div>`;
-        const generalSchema = this._getSchema().slice(0, 2);
-        const filterSchema = this._getSchema().slice(2, 6);
-        const languageSchema = this._getSchema().slice(6, 7);
-        const customizeSchema = this._getSchema().slice(7);
+        const generalSchema = this._getSchema().slice(0, 3);
+        const filterSchema = this._getSchema().slice(3, 5);
+        const languageSchema = this._getSchema().slice(5, 6);
+        const customizeSchema = this._getSchema().slice(6);
         return html`
             <style>
                 .card-content{display:flex;flex-direction:column;gap:16px;}
@@ -65,20 +65,10 @@ class TimelineCardEditor extends LitElement {
     _getSchema() {
         const generalSchema = [
             { name: "header", description: "Header text for the card.", selector: { text: {} } },
-            {
-                name: "entity", description: "Select the LLM Vision timeline entity to display.",
-                selector: {
-                    select: {
-                        mode: "dropdown", options: Object.keys(this.hass.states)
-                            .filter(e => e.startsWith('calendar.'))
-                            .map(e => ({ value: e, label: this.hass.states[e].attributes.friendly_name || e }))
-                    }
-                }
-            }
+            { name: "number_of_events", description: "Number of most recent events to display. A maximum of 10 events can be displayed.", selector: { number: { min: 1, max: 100, step: 1 } } },
+            { name: "number_of_days", description: "Number of days to look back for events. Useful for filtering older events.", selector: { number: { min: 1, max: 365, step: 1 } } },
         ];
         const filterSchema = [
-            { name: "number_of_events", description: "Number of most recent events to display. A maximum of 10 events can be displayed.", selector: { number: { min: 1, max: 10, step: 1 } } },
-            { name: "number_of_hours", description: "Number of hours to look back for events. Useful for filtering older events.", selector: { number: { min: 1, max: 168, step: 1 } } },
             {
                 name: "category_filters", description: "Filter events by category (title). Only events matching selected categories will be shown.",
                 selector: { select: { multiple: true, options: Object.keys(colors.categories).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
@@ -132,7 +122,7 @@ class TimelineCardEditor extends LitElement {
     _computeLabel(s) {
         return ({
             header: "Header", entity: "Calendar Entity", number_of_events: "Number of Events",
-            number_of_hours: "Number of Hours", category_filters: "Category Filters",
+            number_of_days: "Number of Days", category_filters: "Category Filters",
             camera_filters: "Camera Filters", custom_colors: "Custom Colors", language: "Language",
             default_icon: "Default Icon", default_color: "Default Color"
         })[s.name] || s.name;
@@ -161,7 +151,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
         this.setCommonConfig(config, { requireEventLimits: true });
     }
     static getConfigElement() { return document.createElement('timeline-card-editor'); }
-    static getStubConfig() { return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' }; }
+    static getStubConfig() { return { number_of_days: 7, number_of_events: 3, language: 'en' }; }
 
     getCardSize() {
         return 3;
@@ -171,17 +161,17 @@ class LLMVisionCard extends BaseLLMVisionCard {
     getGridOptions() {
         return {
             rows: 5,
-            columns: 12,
+            columns: 9,
             min_rows: 2,
             max_rows: 8,
             min_columns: 9,
-            max_columns: 12
+            max_columns: 24
         };
     }
 
     set hass(hass) {
         if (!this.content) {
-            // Make the host element participate in grid height
+            // Adhere to the grid cell allocated to the card
             this.style.display = 'block';
             this.style.height = '100%';
 
@@ -229,7 +219,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
             category_filters: this.category_filters,
             camera_filters: this.camera_filters,
             number_of_events: this.number_of_events,
-            number_of_hours: this.number_of_hours
+            number_of_days: this.number_of_days
         });
         if (currentHash === this._lastEventHash) return;
         this._lastEventHash = currentHash;
@@ -241,10 +231,10 @@ class LLMVisionCard extends BaseLLMVisionCard {
             let key;
             if (this.category_filters.length) key = 'noEventsCategory';
             else if (this.camera_filters.length) key = 'noEventsCamera';
-            else if (this.number_of_hours) key = 'noEventsHours';
+            else if (this.number_of_days) key = 'noEventsHours';
             else key = 'noEvents';
             let msg = translate(key, this.language) || "No events found.";
-            if (key === 'noEventsHours') msg = msg.replace('{hours}', this.number_of_hours);
+            if (key === 'noEventsHours') msg = msg.replace('{hours}', this.number_of_days);
             this.content.innerHTML = `<div class="event-container" style="display:flex;align-items:center;justify-content:center;height:100%;"><h3>${msg}</h3></div>`;
             return;
         }
@@ -308,7 +298,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
     }
 
     static getStubConfig() {
-        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, language: 'en' };
+        return { number_of_days: 24, number_of_events: 5, language: 'en' };
     }
 }
 

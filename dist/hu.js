@@ -1,7 +1,7 @@
 export const hu = {
     "text": {
         "noEvents": "Nincsenek események",
-        "noEventsHours": "Nincsenek események az elmúlt {hours} órában",
+        "noEventsDays": "Nincsenek események az elmúlt {days} napban",
         "noEventsCamera": "A kiválasztott kamerá(k)hoz nem tartoznak események.",
         "noEventsCategory": "A kiválasztott kategóriához nem tartoznak események.",
         "today": "Ma",
