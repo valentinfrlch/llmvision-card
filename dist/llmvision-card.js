@@ -163,15 +163,40 @@ class LLMVisionCard extends BaseLLMVisionCard {
     static getConfigElement() { return document.createElement('timeline-card-editor'); }
     static getStubConfig() { return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' }; }
 
+    getCardSize() {
+        return 3;
+    }
+
+    // The rules for sizing your card in the grid in sections view
+    getGridOptions() {
+        return {
+            rows: 5,
+            columns: 12,
+            min_rows: 2,
+            max_rows: 8,
+            min_columns: 9,
+            max_columns: 12
+        };
+    }
+
     set hass(hass) {
         if (!this.content) {
+            // Make the host element participate in grid height
+            this.style.display = 'block';
+            this.style.height = '100%';
+
             this.innerHTML = `
                 <ha-card style="padding:16px;">
                     ${this.header !== "" ? `<div class="card-header" style="font-size:1.3em;font-weight:600;padding:0 0 5px 0;">${this.header || "LLM Vision Events"}</div>` : ""}
                     <div class="card-content"></div>
                 </ha-card>
                 <style>
-                    .card-content{padding:0;}
+                    /* Stretch the card to the allocated grid cell */
+                    ha-card{height:100%;display:flex;flex-direction:column;box-sizing:border-box;}
+
+                    /* The scrollable content area inside the card */
+                    .card-content{padding:0;flex:1 1 auto;min-height:0;overflow:auto;}
+
                     .event-container{display:flex;align-items:center;justify-content:flex-start;height:75px;cursor:pointer;margin-bottom:8px;}
                     .event-container:last-child{margin-bottom:0;}
                     .event-container img{height:100%;aspect-ratio:1/1;margin-left:auto;border-radius:12px;object-fit:cover;}
@@ -191,11 +216,16 @@ class LLMVisionCard extends BaseLLMVisionCard {
             }
         }
 
-        const raw = this._readCalendarAttributes(hass);
-        if (!raw) return;
+        this._loadAndRender(hass);
+    }
+
+
+    async _loadAndRender(hass) {
+        let details = await this.fetchEvents(hass);
+        if (!details) return;
 
         const currentHash = this._hashState({
-            ...raw,
+            ...details,
             category_filters: this.category_filters,
             camera_filters: this.camera_filters,
             number_of_events: this.number_of_events,
@@ -204,9 +234,8 @@ class LLMVisionCard extends BaseLLMVisionCard {
         if (currentHash === this._lastEventHash) return;
         this._lastEventHash = currentHash;
 
-        let details = this._buildEventDetails(hass, raw);
-        if (this.number_of_hours) details = this._filterByHours(details, this.number_of_hours);
-        details = this._applyAllFilters(details);
+        console.log('Fetched events:', details);
+
         if (!details.length) {
             this.content.innerHTML = '';
             let key;
@@ -219,9 +248,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
             this.content.innerHTML = `<div class="event-container" style="display:flex;align-items:center;justify-content:center;height:100%;"><h3>${msg}</h3></div>`;
             return;
         }
-        details = this._sort(details);
-        details = this._limit(details);
-
+        console.log('Rendering events:', details);
         this._render(details, hass);
     }
 
@@ -239,7 +266,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
                 this.content.appendChild(header);
                 lastDate = dateLabel;
             }
-            const result = getIcon(d.event, this.language);
+            const result = getIcon(d.title, this.language);
             let { icon, color: defaultColor, category } = result;
             if (category === undefined && this.default_icon) {
                 icon = this.default_icon;
@@ -252,7 +279,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
                     <ha-icon icon="${icon}" style="color:${colorsComputed.iconColorRgba};"></ha-icon>
                 </div>
                 <div class="event-details">
-                    <h3>${d.event}</h3>
+                    <h3>${d.title}</h3>
                     <p>${d.cameraName ? `${timeStr} • ${d.cameraName}` : timeStr}</p>
                 </div>
                 <img alt="Key frame ${idx + 1}" style="display:none;" onerror="this.style.display='none'">
@@ -261,8 +288,8 @@ class LLMVisionCard extends BaseLLMVisionCard {
             container.addEventListener('click', () => {
                 this.resolveKeyFrame(hass, d.keyFrame).then(url => {
                     this.showPopup({
-                        event: d.event,
-                        summary: d.summary,
+                        event: d.title,
+                        summary: d.description,
                         startTime: d.startTime,
                         keyFrame: url,
                         cameraName: d.cameraName,

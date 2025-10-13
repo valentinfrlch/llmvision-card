@@ -154,7 +154,7 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
             this.content = this.querySelector('.preview-card-content');
         }
 
-        const raw = this._readCalendarAttributes(hass);
+        const raw = this.fetchEvents(hass);
         if (!raw) return;
 
         const currentHash = this._hashState({

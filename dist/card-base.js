@@ -1,10 +1,10 @@
 import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.2';
 
-const __LLMVISION_VERSION = 'v1.5.2';
+const __LLMVISION_VERSION = 'v1.6.0 alpha 1';
 function __logLLMVisionBadge(context) {
     if (!window.__LLMVISION_BADGE_LOGGED) {
         console.log(
-            '%cLLM Vision%c%c' + __LLMVISION_VERSION,
+            '%cLLM Vision Card%c%c' + __LLMVISION_VERSION,
             'background:#0071FF;color:#fff;padding:2px 6px 2px 8px;border-radius:4px 0 0 4px;font-weight:600;',
             'background:#0058c7;color:#fff;padding:2px 4px;font-weight:500;',
             'background:#0058c7;color:#fff;padding:2px 8px 2px 6px;border-radius:0 4px 4px 0;font-weight:600;'
@@ -48,34 +48,42 @@ export class BaseLLMVisionCard extends HTMLElement {
         }
     }
 
-    _readCalendarAttributes(hass) {
-        const calendarEntity = hass.states[this.entity];
-        if (!calendarEntity) return null;
-        const attrs = calendarEntity.attributes;
-        return {
-            events: (attrs.events || []).slice(),
-            summaries: (attrs.summaries || []).slice(),
-            keyFrames: (attrs.key_frames || []).slice(),
-            cameraNames: (attrs.camera_names || []).slice(),
-            startTimes: (attrs.starts || []).slice(),
-        };
-    }
+    async fetchEvents(hass, numberOfEvents=10, numberOfHours=0, cameraEntityIds=[], categoryFilters=[]) {
+        try {
+            const params = new URLSearchParams();
+            if (this.entity) params.set('entity', this.entity);
+            if (this.number_of_hours) params.set('hours', this.number_of_hours);
+            if (this.number_of_events) params.set('limit', this.number_of_events);
+            if (this.camera_filters?.length) {
+                params.set('cameras', this.camera_filters.join(','));
+            }
+            if (this.category_filters?.length) {
+                params.set('categories', this.category_filters.join(','));
+            }
 
-    _buildEventDetails(hass, data) {
-        const { events, summaries, keyFrames, cameraNames, startTimes } = data;
-        return events.map((event, index) => {
-            const cameraEntityId = cameraNames[index];
-            const cameraEntity = hass.states[cameraEntityId];
-            const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
-            return {
-                event,
-                summary: summaries[index],
-                keyFrame: keyFrames[index] || '',
-                cameraName: cameraFriendlyName,
-                cameraEntityId,
-                startTime: startTimes[index]
-            };
-        });
+            // Calls /api/llm_vision/events?entity=...&hours=...&limit=...
+            // const path = `llm_vision/events?${params.toString()}`;
+            const path = `llmvision/events`;
+            const data = await hass.callApi('GET', path);
+            const items = Array.isArray(data?.events) ? data.events : [];
+
+            return items.map((item) => {
+                const cameraEntityId = item.camera_name || '';
+                const cameraEntity = cameraEntityId ? hass.states[cameraEntityId] : undefined;
+                const cameraFriendlyName = cameraEntity ? (cameraEntity.attributes?.friendly_name || cameraEntityId) : '';
+                return {
+                    title: item.summary || '',
+                    description: item.description || '',
+                    keyFrame: (item.key_frame || '').replace('/config/www/', '/local/'),
+                    cameraName: cameraFriendlyName,
+                    startTime: item.start || null,
+                    endTime: item.end || null,
+                };
+            });
+        } catch (err) {
+            console.error('Error fetching events from API:', err);
+            return this._fallbackEventsFromEntity(hass);
+        }
     }
 
     _hashState(base) {
@@ -135,7 +143,7 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     formatTime(dateObj) {
-        return `${dateObj.getHours().toString().padStart(2,'0')}:${dateObj.getMinutes().toString().padStart(2,'0')}`;
+        return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
     }
 
     formatDateTimeShort(dateStr) {
@@ -156,8 +164,8 @@ export class BaseLLMVisionCard extends HTMLElement {
         const d = new Date(dateStr);
         const options = { month: 'short', day: 'numeric' };
         const datePart = d.toLocaleDateString('en-US', options);
-        const h = d.getHours().toString().padStart(2,'0');
-        const m = d.getMinutes().toString().padStart(2,'0');
+        const h = d.getHours().toString().padStart(2, '0');
+        const m = d.getMinutes().toString().padStart(2, '0');
         return `${datePart}, ${h}:${m}`;
     }
 
