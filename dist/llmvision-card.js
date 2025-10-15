@@ -101,6 +101,7 @@ class TimelineCardEditor extends LitElement {
                 selector: {
                     select: {
                         options: [
+                            { value: "bg", label: "Bulgarian" },
                             { value: "ca", label: "Catalan" },
                             { value: "cz", label: "Czech" },
                             { value: "nl", label: "Dutch" },
