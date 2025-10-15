@@ -1,4 +1,4 @@
-export const en = {
+export const bg = {
     "text": {
         "noEvents": "Няма нови известия.",
         "noEventsHours": "Няма нови известия за последните {hours} часа.",
@@ -10,75 +10,75 @@ export const en = {
     "categories": {
         "people": {
             "objects": {
-                "person": "mdi:walk",
-                "individual": "mdi:walk",
-                "figure": "mdi:walk",
-                "people": "mdi:walk",
-                "child": "mdi:walk",
-                "woman": "mdi:walk",
-                "man": "mdi:walk",
-                "human": "mdi:walk",
-                "cyclist": "mdi:bike",
+                "човек": "mdi:walk",
+                "индивид": "mdi:walk",
+                "фигура": "mdi:walk",
+                "хора": "mdi:walk",
+                "дете": "mdi:walk",
+                "жена": "mdi:walk",
+                "мъж": "mdi:walk",
+                "човек": "mdi:walk",
+                "колоездач": "mdi:bike",
             }
         },
         "vehicles": {
             "objects": {
-                "courier": "mdi:truck-delivery",
-                "mailman": "mdi:truck-delivery",
-                "bike": "mdi:bike",
-                "bicycle": "mdi:bike",
-                "motorcycle": "mdi:motorbike",
-                "motorbike": "mdi:motorbike",
-                "bus": "mdi:bus",
-                "car": "mdi:car",
-                "van": "mdi:car",
-                "suv": "mdi:car",
-                "vehicle": "mdi:car",
-                "truck": "mdi:truck",
-                "street": "mdi:road-variant",
-                "path": "mdi:road-variant",
-                "driveway": "mdi:road-variant"
+                "куриер": "mdi:truck-delivery",
+                "пощальон": "mdi:truck-delivery",
+                "колело": "mdi:bike",
+                "мотор": "mdi:motorbike",
+                "мотоциклет": "mdi:motorbike",
+                "автобус": "mdi:bus",
+                "кола": "mdi:car",
+                "ван": "mdi:car",
+                "джип": "mdi:car",
+                "камион": "mdi:truck",
+                "улица": "mdi:road-variant",
+                "път": "mdi:road-variant",
+                "алея": "mdi:road-variant"
             }
         },
         "animals": {
             "objects": {
-                "dog": "mdi:dog",
-                "cat": "mdi:cat",
-                "bird": "mdi:duck",
-                "pet": "mdi:dog",
-                "animal": "mdi:dog"
+                "куче": "mdi:dog",
+                "котка": "mdi:cat",
+                "птица": "mdi:duck",
+                "домашен любимец": "mdi:dog",
+                "животно": "mdi:dog"
             }
         },
         "packages": {
             "objects": {
-                "box": "mdi:package-variant-closed",
-                "package": "mdi:package-variant-closed",
-                "parcel": "mdi:package-variant-closed",
-                "letter": "mdi:email"
+                "кутия": "mdi:package-variant-closed",
+                "пакет": "mdi:package-variant-closed",
+                "парцел": "mdi:package-variant-closed",
+                "писмо": "mdi:email"
             }
         },
         "entities": {
             "objects": {
-                "camera": "mdi:cctv",
-                "sensor": "mdi:access-point",
-                "light": "mdi:lightbulb",
-                "key": "mdi:key",
-                "lock": "mdi:lock",
-                "alarm": "mdi:alarm-light",
-                "house": "mdi:home",
-                "porch": "mdi:door-closed",
-                "door": "mdi:door-closed",
-                "window": "mdi:window-closed-variant"
+                "камера": "mdi:cctv",
+                "сензор": "mdi:access-point",
+                "светлина": "mdi:lightbulb",
+                "крушка": "mdi:lightbulb",
+                "ключ": "mdi:key",
+                "ключалка": "mdi:lock",
+                "аларма": "mdi:alarm-light",
+                "къща": "mdi:home",
+                "дом": "mdi:home",
+                "порта": "mdi:door-closed",
+                "врата": "mdi:door-closed",
+                "прозорец": "mdi:window-closed-variant"
             }
         },
         "nature": {
             "objects": {
-                "garden": "mdi:flower",
-                "plant": "mdi:flower",
-                "flower": "mdi:flower",
-                "tree": "mdi:tree"
+                "градина": "mdi:flower",
+                "растение": "mdi:flower",
+                "цвете": "mdi:flower",
+                "дърво": "mdi:tree"
             }
         }
     },
-    "regex": "`\\b${key}s?\\b`, 'i'"
+    "regex": "`\\b${key}(а|ът|та|то|те|ите|ове|ове|и|я|ю|е|ен|на|но|ни|ни)?\\b`, 'i'"
 }
