@@ -1,4 +1,5 @@
 import { colors } from './colors.js?v=1.5.2';
+import { bg } from './bg.js?v=1.5.2';
 import { ca } from './ca.js?v=1.5.2';
 import { de } from './de.js?v=1.5.2';
 import { en } from './en.js?v=1.5.2';
@@ -30,7 +31,10 @@ export function getIcon(title, lang = 'en') {
     let pluralRegex;
 
     try {
-        if (lang === 'ca') {
+        if (lang === 'bg') {
+            categories = bg.categories;
+            pluralRegex = bg.regex;
+        } else if (lang === 'ca') {
             categories = ca.categories;
             pluralRegex = ca.regex;
         } else if (lang === 'cs') {
@@ -133,6 +137,7 @@ export function getIcon(title, lang = 'en') {
 }
 
 const translations = {
+    bg: bg.text,
     ca: ca.text,
     cs: cs.text,
     de: de.text,
