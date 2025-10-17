@@ -254,11 +254,15 @@ export class BaseLLMVisionCard extends HTMLElement {
                         </div>` : ''}
                     </div>
                     <div class="${titleRowClass}">
-                        <ha-icon icon="${icon}"></ha-icon>
-                        <h2>${event}</h2>
+                        <div class="${prefix}-title-main">
+                            <ha-icon icon="${icon}"></ha-icon>
+                            <h2>${event}</h2>
+                        </div>
+                        <div class="${prefix}-title-secondary">
+                            <p class="secondary"><span>${secondaryText}</span></p>
+                        </div>
                     </div>
                     <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
-                    <p class="secondary"><span>${secondaryText}</span></p>
                     <p class="summary">${summary}</p>
                 </div>
             `;
@@ -312,19 +316,34 @@ export class BaseLLMVisionCard extends HTMLElement {
                     /* Title row: icon + title */
                     .${titleRowClass} {
                         display: flex;
+                        flex-direction: column;
                         align-items: center;
-                        justify-content: center; /* centered horizontally */
-                        gap: 10px;
+                        gap: 6px;
                         margin-bottom: 6px;
                     }
-                    .${titleRowClass} h2 {
+                    .${prefix}-title-main {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        justify-content: center;
+                    }
+                    .${prefix}-title-main h2 {
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
-                        /* flex: 1 1 auto; */ /* no stretch, keep content-sized for centering */
                         margin: 0;
                         font-family: var(--ha-font-family-heading, "Roboto");
                         text-align: center;
+                    }
+                    .${prefix}-title-secondary {
+                        width: 100%;
+                        text-align: center;
+                    }
+                    .${prefix}-title-secondary .secondary {
+                        font-weight: var(--ha-font-weight-medium, 500);
+                        margin-top: 4px;
+                        color: var(--primary-text-color);
+                        font-family: var(--ha-font-family-body, "Roboto");
                     }
     
                     /* Image and text */
@@ -333,11 +352,6 @@ export class BaseLLMVisionCard extends HTMLElement {
                         height: auto;
                         border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
                         margin-top: 10px;
-                    }
-                    .${contentClass} .secondary {
-                        font-weight: var(--ha-font-weight-medium, 500);
-                        color: var(--primary-text-color);
-                        font-family: var(--ha-font-family-body, "Roboto");
                     }
                     .${contentClass} .summary {
                         color: var(--secondary-text-color);
