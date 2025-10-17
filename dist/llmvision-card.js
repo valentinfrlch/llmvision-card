@@ -211,7 +211,11 @@ class LLMVisionCard extends BaseLLMVisionCard {
 
 
     async _loadAndRender(hass) {
-        let details = await this.fetchEvents(hass);
+        let details = await this.fetchEvents(hass,
+            this.number_of_events,
+            this.number_of_days,
+            this.camera_filters,
+            this.category_filters);
         if (!details) return;
 
         const currentHash = this._hashState({
@@ -284,8 +288,9 @@ class LLMVisionCard extends BaseLLMVisionCard {
                         keyFrame: url,
                         cameraName: d.cameraName,
                         icon,
-                        prefix: 'popup'
-                    });
+                        prefix: 'popup',
+                        eventId: d.id
+                    }, hass);
                 });
             });
             this.content.appendChild(container);

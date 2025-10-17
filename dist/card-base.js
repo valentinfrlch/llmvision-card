@@ -44,13 +44,13 @@ export class BaseLLMVisionCard extends HTMLElement {
         }
     }
 
-    async fetchEvents(hass) {
+    async fetchEvents(hass, limit = 10, days = 7, cameras = [], categories = []) {
         try {
             const params = new URLSearchParams();
             // if (this.number_of_days) params.set('hours', this.number_of_days);
-            if (this.number_of_events) params.set('limit', this.number_of_events);
-            if (this.camera_filters?.length) {
-                params.set('cameras', this.camera_filters.join(','));
+            if (limit) params.set('limit', limit);
+            if (cameras?.length) {
+                params.set('cameras', cameras.join(','));
             }
             /*
             if (this.category_filters?.length) {
@@ -72,11 +72,22 @@ export class BaseLLMVisionCard extends HTMLElement {
                     cameraName: cameraFriendlyName,
                     startTime: item.start || null,
                     endTime: item.end || null,
+                    id: item.uid || '',
                 };
             });
         } catch (err) {
             console.error('Error fetching events from API:', err);
             return null;
+        }
+    }
+
+    async deleteEvent(hass, eventId) {
+        try {
+            await hass.callApi('DELETE', `llmvision/timeline/event/${encodeURIComponent(eventId)}`);
+            return true;
+        } catch (err) {
+            console.error('Error deleting event from API:', err);
+            return false;
         }
     }
 
@@ -204,105 +215,193 @@ export class BaseLLMVisionCard extends HTMLElement {
         return { bgColorRgba, iconColorRgba };
     }
 
-    showPopup({ event, summary, startTime, keyFrame, cameraName, icon, prefix }) {
+    showPopup({ event, summary, startTime, keyFrame, cameraName, icon, prefix, eventId }, hassArg) {
+        console.log('Showing popup for event:', eventId);
+
+        const hass = hassArg || this.hass;
         const formattedTime = this.formatDateTimeFull(startTime);
         const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
         const overlayClass = `${prefix}-overlay`;
         const contentClass = `${prefix}-content`;
         const closeBtnClass = `close-${prefix}`;
+        // New menu-related classes
+        const headerRowClass = `${prefix}-header-row`;
+        const titleRowClass = `${prefix}-title-row`;
+        const menuWrapperClass = `${prefix}-menu`;
+        const menuBtnClass = `${prefix}-menu-btn`;
+        const menuListClass = `${prefix}-menu-list`;
+        const menuItemClass = `${prefix}-menu-item`;
+        const menuDeleteClass = `${prefix}-menu-item-delete`;
+
         const htmlBlock = `
-            <div>
-                <div class="title-container">
-                    <ha-icon icon="${icon}"></ha-icon>
-                    <h2>${event}</h2>
-                    <button class="${closeBtnClass}" style="font-size:30"><ha-icon icon="mdi:close"></ha-icon></button>
+                <div>
+                    <div class="${headerRowClass}">
+                        <button class="${closeBtnClass}" title="Close" style="font-size:30px">
+                            <ha-icon icon="mdi:close"></ha-icon>
+                        </button>
+                        <div class="spacer"></div>
+                        ${eventId ? `
+                        <div class="${menuWrapperClass}">
+                            <button class="${menuBtnClass}" title="Menu" style="font-size:26px">
+                                <ha-icon icon="mdi:dots-vertical"></ha-icon>
+                            </button>
+                            <div class="${menuListClass}" hidden>
+                                <button class="${menuItemClass} ${menuDeleteClass}" title="Delete event">
+                                    <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+                                    <span>${translate('delete', this.language) || 'Delete'}</span>
+                                </button>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                    <div class="${titleRowClass}">
+                        <ha-icon icon="${icon}"></ha-icon>
+                        <h2>${event}</h2>
+                    </div>
+                    <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
+                    <p class="secondary"><span>${secondaryText}</span></p>
+                    <p class="summary">${summary}</p>
                 </div>
-                <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
-                <p class="secondary"><span>${secondaryText}</span></p>
-                <p class="summary">${summary}</p>
-            </div>
-        `;
+            `;
+
         const wrapper = document.createElement('div');
         wrapper.innerHTML = `
-            <div class="${overlayClass}">
-                <div class="${contentClass}">
-                    ${htmlBlock}
+                <div class="${overlayClass}">
+                    <div class="${contentClass}">
+                        ${htmlBlock}
+                    </div>
                 </div>
-            </div>
-            <style>
-                .${overlayClass} {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0,0,0,0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 1000;
-                    opacity: 0;
-                    transition: opacity 0.2s ease;
-                }
-                .${overlayClass}.show { opacity: 1; }
-                .${contentClass} {
-                    position: relative;
-                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
-                    color: var(--primary-text-color);
-                    padding: 20px;
-                    border-radius: var(--ha-card-border-radius, 25px);
-                    max-width: 500px;
-                    width: 100%;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                    transform: scale(0.9);
-                    transition: transform 0.2s ease;
-                }
-                .${overlayClass}.show .${contentClass} { transform: scale(1); }
-                .title-container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    margin-bottom: 5px;
-                }
-                .title-container ha-icon { margin-right: 10px; }
-                .title-container h2 {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    flex-grow: 1;
-                    font-family: var(--ha-font-family-heading, "Roboto");
-                }
-                .${contentClass} img {
-                    width: 100%;
-                    height: auto;
-                    border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
-                    margin-top: 10px;
-                }
-                .${contentClass} .secondary {
-                    font-weight: var(--ha-font-weight-medium, 500);
-                    color: var(--primary-text-color);
-                    font-family: var(--ha-font-family-body, "Roboto");
-                }
-                .${contentClass} .summary {
-                    color: var(--secondary-text-color);
-                    font-size: var(--ha-font-size-l, 16px);
-                    line-height: 22px;
-                    font-family: var(--ha-font-family-body, "Roboto");
-                }
-                .${closeBtnClass} {
-                    background:none;
-                    border:none;
-                    font-size:30px;
-                    cursor:pointer;
-                    color: var(--primary-text-color);
-                }
-                @media (max-width: 768px) {
-                    .${contentClass} {
-                        max-width: 100%;
-                        max-height: 100%;
-                        border-radius: 0;
-                        height: 100%;
+                <style>
+                    .${overlayClass} {
+                        position: fixed;
+                        inset: 0;
+                        background: rgba(0,0,0,0.5);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1000;
+                        opacity: 0;
+                        transition: opacity 0.2s ease;
                     }
-                }
-            </style>
-        `;
+                    .${overlayClass}.show { opacity: 1; }
+                    .${contentClass} {
+                        position: relative;
+                        background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
+                        color: var(--primary-text-color);
+                        padding: 20px;
+                        border-radius: var(--ha-card-border-radius, 25px);
+                        max-width: 500px;
+                        width: 100%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        transform: scale(0.9);
+                        transition: transform 0.2s ease;
+                    }
+                    .${overlayClass}.show .${contentClass} { transform: scale(1); }
+    
+                    /* Header row: close left, kebab right */
+                    .${headerRowClass} {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        margin-bottom: 4px;
+                    }
+                    .${headerRowClass} .spacer {
+                        flex: 1 1 auto;
+                    }
+    
+                    /* Title row: icon + title */
+                    .${titleRowClass} {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center; /* centered horizontally */
+                        gap: 10px;
+                        margin-bottom: 6px;
+                    }
+                    .${titleRowClass} h2 {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        /* flex: 1 1 auto; */ /* no stretch, keep content-sized for centering */
+                        margin: 0;
+                        font-family: var(--ha-font-family-heading, "Roboto");
+                        text-align: center;
+                    }
+    
+                    /* Image and text */
+                    .${contentClass} img {
+                        width: 100%;
+                        height: auto;
+                        border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
+                        margin-top: 10px;
+                    }
+                    .${contentClass} .secondary {
+                        font-weight: var(--ha-font-weight-medium, 500);
+                        color: var(--primary-text-color);
+                        font-family: var(--ha-font-family-body, "Roboto");
+                    }
+                    .${contentClass} .summary {
+                        color: var(--secondary-text-color);
+                        font-size: var(--ha-font-size-l, 16px);
+                        line-height: 22px;
+                        font-family: var(--ha-font-family-body, "Roboto");
+                    }
+    
+                    /* Buttons */
+                    .${closeBtnClass}, .${menuBtnClass} {
+                        background: none;
+                        border: none;
+                        cursor: pointer;
+                        color: var(--primary-text-color);
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+    
+                    /* Menu */
+                    .${menuWrapperClass} {
+                        position: relative;
+                    }
+                    .${menuListClass} {
+                        position: absolute;
+                        right: 0;
+                        top: calc(100% + 6px);
+                        background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
+                        color: var(--primary-text-color);
+                        border-radius: 10px;
+                        box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+                        padding: 6px;
+                        min-width: 160px;
+                        z-index: 10;
+                    }
+                    .${menuItemClass} {
+                        width: 100%;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        background: none;
+                        border: none;
+                        color: inherit;
+                        cursor: pointer;
+                        padding: 8px 10px;
+                        border-radius: 8px;
+                    }
+                    .${menuItemClass}:hover {
+                        background: rgba(0,0,0,0.06);
+                    }
+                    .${menuDeleteClass} {
+                        color: var(--error-color, #d32f2f);
+                    }
+    
+                    @media (max-width: 768px) {
+                        .${contentClass} {
+                            max-width: 100%;
+                            max-height: 100%;
+                            border-radius: 0;
+                            height: 100%;
+                        }
+                    }
+                </style>
+            `;
 
         if (!history.state || !history.state.popupOpen) {
             history.pushState({ popupOpen: true }, '');
@@ -321,6 +420,44 @@ export class BaseLLMVisionCard extends HTMLElement {
         };
         document.addEventListener('keydown', escHandler);
         wrapper._escHandler = escHandler;
+
+        // Menu toggle and outside-click close
+        const menuBtn = wrapper.querySelector(`.${menuBtnClass}`);
+        const menuList = wrapper.querySelector(`.${menuListClass}`);
+        if (menuBtn && menuList) {
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuList.hidden = !menuList.hidden;
+            });
+            wrapper.addEventListener('click', (e) => {
+                if (!menuList.hidden && !e.target.closest(`.${menuWrapperClass}`)) {
+                    menuList.hidden = true;
+                }
+            });
+        }
+
+        // Wire up Delete inside menu
+        const deleteItem = wrapper.querySelector(`.${menuDeleteClass}`);
+        if (deleteItem && eventId) {
+            deleteItem.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (deleteItem.disabled) return;
+                const confirmMsg = translate('confirm_delete_event', this.language) || "Are you sure you want to delete this event?";
+                if (!confirm(confirmMsg)) {
+                    if (menuList) menuList.hidden = true;
+                    return;
+                }
+                deleteItem.disabled = true;
+                const success = await this.deleteEvent(hass, eventId);
+                if (success) {
+                    this.closePopup(wrapper, overlayClass, popstateHandler, escHandler);
+                } else {
+                    alert(translate('error_delete_event', this.language) || "Failed to delete the event. Please try again.");
+                    deleteItem.disabled = false;
+                    if (menuList) menuList.hidden = true;
+                }
+            });
+        }
 
         document.body.appendChild(wrapper);
         requestAnimationFrame(() => overlayEl.classList.add('show'));

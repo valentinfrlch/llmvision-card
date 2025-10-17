@@ -177,7 +177,12 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
     }
 
     async _loadAndRender(hass) {
-        let details = await this.fetchEvents(hass);
+        let details = await this.fetchEvents(hass,
+            1,
+            this.number_of_days,
+            this.camera_filters,
+            this.category_filters
+        );
         if (!details) return;
 
         const currentHash = this._hashState({
@@ -189,8 +194,6 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
         });
         if (currentHash === this._lastEventHash) return;
         this._lastEventHash = currentHash;
-
-        console.log('Fetched events:', details);
 
         if (!details.length) {
             this.content.innerHTML = '';
@@ -204,7 +207,6 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
             this.content.innerHTML = `<div class="event-container" style="display:flex;align-items:center;justify-content:center;height:100%;"><h3>${msg}</h3></div>`;
             return;
         }
-        console.log('Rendering events:', details);
         this._render(details, hass);
     }
 
@@ -235,8 +237,9 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
                     keyFrame: url,
                     cameraName: event.cameraName,
                     icon,
-                    prefix: 'popup'
-                });
+                    prefix: 'popup',
+                    eventId: event.id
+                }, hass);
             });
         });
         this.content.innerHTML = '';
