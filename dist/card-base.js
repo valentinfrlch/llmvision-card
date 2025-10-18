@@ -52,10 +52,10 @@ export class BaseLLMVisionCard extends HTMLElement {
             if (cameras?.length) {
                 params.set('cameras', cameras.join(','));
             }
-            /*
-            if (this.category_filters?.length) {
-                params.set('categories', this.category_filters.join(','));
-            } */
+            if (days) params.set('days', days);
+            if (categories?.length) {
+                params.set('categories', categories.join(','));
+            }
 
             const path = `llmvision/timeline/events${params.toString() ? '?' + params.toString() : ''}`;
             const data = await hass.callApi('GET', path);
@@ -68,7 +68,8 @@ export class BaseLLMVisionCard extends HTMLElement {
                 return {
                     title: item.summary || '',
                     description: item.description || '',
-                    keyFrame: (item.key_frame || '').replace('/config/www/', '/local/'),
+                    category: item.category || '',
+                    keyFrame: (item.key_frame || ''),
                     cameraName: cameraFriendlyName,
                     startTime: item.start || null,
                     endTime: item.end || null,

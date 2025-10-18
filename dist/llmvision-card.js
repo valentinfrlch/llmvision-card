@@ -211,7 +211,8 @@ class LLMVisionCard extends BaseLLMVisionCard {
 
 
     async _loadAndRender(hass) {
-        let details = await this.fetchEvents(hass,
+        let details = await this.fetchEvents(
+            hass,
             this.number_of_events,
             this.number_of_days,
             this.camera_filters,
