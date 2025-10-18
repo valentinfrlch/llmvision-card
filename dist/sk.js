@@ -1,7 +1,7 @@
 export const sk = {
     "text": {
         "noEvents": "Žiadne udalosti",
-        "noEventsHours": "Žiadne udalosti za posledných {hours} hodín",
+        "noEventsDays": "Žiadne udalosti za posledných {days} dní",
         "noEventsCamera": "Žiadne udalosti nenájdené pre vybranú kameru(y).",
         "noEventsCategory": "Žiadne udalosti nenájdené pre vybranú kategóriu.",
         "today": "Dnes",

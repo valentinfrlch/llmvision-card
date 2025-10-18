@@ -1,10 +1,10 @@
 import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.2';
 
-const __LLMVISION_VERSION = 'v1.5.2';
+const __LLMVISION_VERSION = 'v1.6.0 alpha 1';
 function __logLLMVisionBadge(context) {
     if (!window.__LLMVISION_BADGE_LOGGED) {
         console.log(
-            '%cLLM Vision%c%c' + __LLMVISION_VERSION,
+            '%cLLM Vision Card%c%c' + __LLMVISION_VERSION,
             'background:#0071FF;color:#fff;padding:2px 6px 2px 8px;border-radius:4px 0 0 4px;font-weight:600;',
             'background:#0058c7;color:#fff;padding:2px 4px;font-weight:500;',
             'background:#0058c7;color:#fff;padding:2px 8px 2px 6px;border-radius:0 4px 4px 0;font-weight:600;'
@@ -26,21 +26,17 @@ export class BaseLLMVisionCard extends HTMLElement {
 
     setCommonConfig(config, { requireEventLimits = false } = {}) {
         this.config = config;
-        this.entity = config.entity;
         this.category_filters = config.category_filters || [];
         this.camera_filters = config.camera_filters || [];
         this.language = config.language;
         this.number_of_events = config.number_of_events;
-        this.number_of_hours = config.number_of_hours;
+        this.number_of_days = config.number_of_days;
         this.custom_colors = config.custom_colors || {};
         this.default_icon = config.default_icon || 'mdi:motion-sensor';
         this.default_color = config.default_color || '#929292';
-        if (!this.entity) {
-            throw new Error('You need to define the timeline (calendar entity) in the card configuration.');
-        }
         if (requireEventLimits) {
-            if (!this.number_of_events && !this.number_of_hours) {
-                throw new Error('Either number_of_events or number_of_hours needs to be set.');
+            if (!this.number_of_events && !this.number_of_days) {
+                throw new Error('Either number_of_events or number_of_days needs to be set.');
             }
             if (this.number_of_events && this.number_of_events < 1) {
                 throw new Error('number_of_events must be greater than 0.');
@@ -48,34 +44,52 @@ export class BaseLLMVisionCard extends HTMLElement {
         }
     }
 
-    _readCalendarAttributes(hass) {
-        const calendarEntity = hass.states[this.entity];
-        if (!calendarEntity) return null;
-        const attrs = calendarEntity.attributes;
-        return {
-            events: (attrs.events || []).slice(),
-            summaries: (attrs.summaries || []).slice(),
-            keyFrames: (attrs.key_frames || []).slice(),
-            cameraNames: (attrs.camera_names || []).slice(),
-            startTimes: (attrs.starts || []).slice(),
-        };
+    async fetchEvents(hass, limit = 10, days = 7, cameras = [], categories = []) {
+        try {
+            const params = new URLSearchParams();
+            // if (this.number_of_days) params.set('hours', this.number_of_days);
+            if (limit) params.set('limit', limit);
+            if (cameras?.length) {
+                params.set('cameras', cameras.join(','));
+            }
+            if (days) params.set('days', days);
+            if (categories?.length) {
+                params.set('categories', categories.join(','));
+            }
+
+            const path = `llmvision/timeline/events${params.toString() ? '?' + params.toString() : ''}`;
+            const data = await hass.callApi('GET', path);
+            const items = Array.isArray(data?.events) ? data.events : [];
+
+            return items.map((item) => {
+                const cameraEntityId = item.camera_name || '';
+                const cameraEntity = cameraEntityId ? hass.states[cameraEntityId] : undefined;
+                const cameraFriendlyName = cameraEntity ? (cameraEntity.attributes?.friendly_name || cameraEntityId) : '';
+                return {
+                    title: item.summary || '',
+                    description: item.description || '',
+                    category: item.category || '',
+                    keyFrame: (item.key_frame || ''),
+                    cameraName: cameraFriendlyName,
+                    startTime: item.start || null,
+                    endTime: item.end || null,
+                    id: item.uid || '',
+                };
+            });
+        } catch (err) {
+            console.error('Error fetching events from API:', err);
+            return null;
+        }
     }
 
-    _buildEventDetails(hass, data) {
-        const { events, summaries, keyFrames, cameraNames, startTimes } = data;
-        return events.map((event, index) => {
-            const cameraEntityId = cameraNames[index];
-            const cameraEntity = hass.states[cameraEntityId];
-            const cameraFriendlyName = cameraEntity ? cameraEntity.attributes.friendly_name : '';
-            return {
-                event,
-                summary: summaries[index],
-                keyFrame: keyFrames[index] || '',
-                cameraName: cameraFriendlyName,
-                cameraEntityId,
-                startTime: startTimes[index]
-            };
-        });
+    async deleteEvent(hass, eventId) {
+        try {
+            await hass.callApi('DELETE', `llmvision/timeline/event/${encodeURIComponent(eventId)}`);
+            return true;
+        } catch (err) {
+            console.error('Error deleting event from API:', err);
+            return false;
+        }
     }
 
     _hashState(base) {
@@ -116,7 +130,7 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     _limit(details) {
-        if (this.number_of_hours) {
+        if (this.number_of_days) {
             // number_of_events acts as secondary limiter only after hours filter
             if (this.number_of_events) return details.slice(0, this.number_of_events);
             return details;
@@ -135,7 +149,7 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     formatTime(dateObj) {
-        return `${dateObj.getHours().toString().padStart(2,'0')}:${dateObj.getMinutes().toString().padStart(2,'0')}`;
+        return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
     }
 
     formatDateTimeShort(dateStr) {
@@ -156,8 +170,8 @@ export class BaseLLMVisionCard extends HTMLElement {
         const d = new Date(dateStr);
         const options = { month: 'short', day: 'numeric' };
         const datePart = d.toLocaleDateString('en-US', options);
-        const h = d.getHours().toString().padStart(2,'0');
-        const m = d.getMinutes().toString().padStart(2,'0');
+        const h = d.getHours().toString().padStart(2, '0');
+        const m = d.getMinutes().toString().padStart(2, '0');
         return `${datePart}, ${h}:${m}`;
     }
 
@@ -202,105 +216,207 @@ export class BaseLLMVisionCard extends HTMLElement {
         return { bgColorRgba, iconColorRgba };
     }
 
-    showPopup({ event, summary, startTime, keyFrame, cameraName, icon, prefix }) {
+    showPopup({ event, summary, startTime, keyFrame, cameraName, icon, prefix, eventId }, hassArg) {
+        console.log('Showing popup for event:', eventId);
+
+        const hass = hassArg || this.hass;
         const formattedTime = this.formatDateTimeFull(startTime);
         const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
         const overlayClass = `${prefix}-overlay`;
         const contentClass = `${prefix}-content`;
         const closeBtnClass = `close-${prefix}`;
+        // New menu-related classes
+        const headerRowClass = `${prefix}-header-row`;
+        const titleRowClass = `${prefix}-title-row`;
+        const menuWrapperClass = `${prefix}-menu`;
+        const menuBtnClass = `${prefix}-menu-btn`;
+        const menuListClass = `${prefix}-menu-list`;
+        const menuItemClass = `${prefix}-menu-item`;
+        const menuDeleteClass = `${prefix}-menu-item-delete`;
+
         const htmlBlock = `
-            <div>
-                <div class="title-container">
-                    <ha-icon icon="${icon}"></ha-icon>
-                    <h2>${event}</h2>
-                    <button class="${closeBtnClass}" style="font-size:30"><ha-icon icon="mdi:close"></ha-icon></button>
+                <div>
+                    <div class="${headerRowClass}">
+                        <button class="${closeBtnClass}" title="Close" style="font-size:30px">
+                            <ha-icon icon="mdi:close"></ha-icon>
+                        </button>
+                        <div class="spacer"></div>
+                        ${eventId ? `
+                        <div class="${menuWrapperClass}">
+                            <button class="${menuBtnClass}" title="Menu" style="font-size:26px">
+                                <ha-icon icon="mdi:dots-vertical"></ha-icon>
+                            </button>
+                            <div class="${menuListClass}" hidden>
+                                <button class="${menuItemClass} ${menuDeleteClass}" title="Delete event">
+                                    <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+                                    <span>${translate('delete', this.language) || 'Delete'}</span>
+                                </button>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                    <div class="${titleRowClass}">
+                        <div class="${prefix}-title-main">
+                            <ha-icon icon="${icon}"></ha-icon>
+                            <h2>${event}</h2>
+                        </div>
+                        <div class="${prefix}-title-secondary">
+                            <p class="secondary"><span>${secondaryText}</span></p>
+                        </div>
+                    </div>
+                    <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
+                    <p class="summary">${summary}</p>
                 </div>
-                <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
-                <p class="secondary"><span>${secondaryText}</span></p>
-                <p class="summary">${summary}</p>
-            </div>
-        `;
+            `;
+
         const wrapper = document.createElement('div');
         wrapper.innerHTML = `
-            <div class="${overlayClass}">
-                <div class="${contentClass}">
-                    ${htmlBlock}
+                <div class="${overlayClass}">
+                    <div class="${contentClass}">
+                        ${htmlBlock}
+                    </div>
                 </div>
-            </div>
-            <style>
-                .${overlayClass} {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0,0,0,0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 1000;
-                    opacity: 0;
-                    transition: opacity 0.2s ease;
-                }
-                .${overlayClass}.show { opacity: 1; }
-                .${contentClass} {
-                    position: relative;
-                    background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
-                    color: var(--primary-text-color);
-                    padding: 20px;
-                    border-radius: var(--ha-card-border-radius, 25px);
-                    max-width: 500px;
-                    width: 100%;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                    transform: scale(0.9);
-                    transition: transform 0.2s ease;
-                }
-                .${overlayClass}.show .${contentClass} { transform: scale(1); }
-                .title-container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    margin-bottom: 5px;
-                }
-                .title-container ha-icon { margin-right: 10px; }
-                .title-container h2 {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    flex-grow: 1;
-                    font-family: var(--ha-font-family-heading, "Roboto");
-                }
-                .${contentClass} img {
-                    width: 100%;
-                    height: auto;
-                    border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
-                    margin-top: 10px;
-                }
-                .${contentClass} .secondary {
-                    font-weight: var(--ha-font-weight-medium, 500);
-                    color: var(--primary-text-color);
-                    font-family: var(--ha-font-family-body, "Roboto");
-                }
-                .${contentClass} .summary {
-                    color: var(--secondary-text-color);
-                    font-size: var(--ha-font-size-l, 16px);
-                    line-height: 22px;
-                    font-family: var(--ha-font-family-body, "Roboto");
-                }
-                .${closeBtnClass} {
-                    background:none;
-                    border:none;
-                    font-size:30px;
-                    cursor:pointer;
-                    color: var(--primary-text-color);
-                }
-                @media (max-width: 768px) {
-                    .${contentClass} {
-                        max-width: 100%;
-                        max-height: 100%;
-                        border-radius: 0;
-                        height: 100%;
+                <style>
+                    .${overlayClass} {
+                        position: fixed;
+                        inset: 0;
+                        background: rgba(0,0,0,0.5);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1000;
+                        opacity: 0;
+                        transition: opacity 0.2s ease;
                     }
-                }
-            </style>
-        `;
+                    .${overlayClass}.show { opacity: 1; }
+                    .${contentClass} {
+                        position: relative;
+                        background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
+                        color: var(--primary-text-color);
+                        padding: 20px;
+                        border-radius: var(--ha-card-border-radius, 25px);
+                        max-width: 500px;
+                        width: 100%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        transform: scale(0.9);
+                        transition: transform 0.2s ease;
+                    }
+                    .${overlayClass}.show .${contentClass} { transform: scale(1); }
+    
+                    /* Header row: close left, kebab right */
+                    .${headerRowClass} {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        margin-bottom: 4px;
+                    }
+                    .${headerRowClass} .spacer {
+                        flex: 1 1 auto;
+                    }
+    
+                    /* Title row: icon + title */
+                    .${titleRowClass} {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 6px;
+                        margin-bottom: 6px;
+                    }
+                    .${prefix}-title-main {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        justify-content: center;
+                    }
+                    .${prefix}-title-main h2 {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        margin: 0;
+                        font-family: var(--ha-font-family-heading, "Roboto");
+                        text-align: center;
+                    }
+                    .${prefix}-title-secondary {
+                        width: 100%;
+                        text-align: center;
+                    }
+                    .${prefix}-title-secondary .secondary {
+                        font-weight: var(--ha-font-weight-medium, 500);
+                        margin-top: 4px;
+                        color: var(--primary-text-color);
+                        font-family: var(--ha-font-family-body, "Roboto");
+                    }
+    
+                    /* Image and text */
+                    .${contentClass} img {
+                        width: 100%;
+                        height: auto;
+                        border-radius: calc(var(--ha-card-border-radius, 25px) - 10px);
+                        margin-top: 10px;
+                    }
+                    .${contentClass} .summary {
+                        color: var(--secondary-text-color);
+                        font-size: var(--ha-font-size-l, 16px);
+                        line-height: 22px;
+                        font-family: var(--ha-font-family-body, "Roboto");
+                    }
+    
+                    /* Buttons */
+                    .${closeBtnClass}, .${menuBtnClass} {
+                        background: none;
+                        border: none;
+                        cursor: pointer;
+                        color: var(--primary-text-color);
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+    
+                    /* Menu */
+                    .${menuWrapperClass} {
+                        position: relative;
+                    }
+                    .${menuListClass} {
+                        position: absolute;
+                        right: 0;
+                        top: calc(100% + 6px);
+                        background: var(--ha-card-background, var(--card-background-color, #f3f3f3));
+                        color: var(--primary-text-color);
+                        border-radius: 10px;
+                        box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+                        padding: 6px;
+                        min-width: 160px;
+                        z-index: 10;
+                    }
+                    .${menuItemClass} {
+                        width: 100%;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        background: none;
+                        border: none;
+                        color: inherit;
+                        cursor: pointer;
+                        padding: 8px 10px;
+                        border-radius: 8px;
+                    }
+                    .${menuItemClass}:hover {
+                        background: rgba(0,0,0,0.06);
+                    }
+                    .${menuDeleteClass} {
+                        color: var(--error-color, #d32f2f);
+                    }
+    
+                    @media (max-width: 768px) {
+                        .${contentClass} {
+                            max-width: 100%;
+                            max-height: 100%;
+                            border-radius: 0;
+                            height: 100%;
+                        }
+                    }
+                </style>
+            `;
 
         if (!history.state || !history.state.popupOpen) {
             history.pushState({ popupOpen: true }, '');
@@ -319,6 +435,44 @@ export class BaseLLMVisionCard extends HTMLElement {
         };
         document.addEventListener('keydown', escHandler);
         wrapper._escHandler = escHandler;
+
+        // Menu toggle and outside-click close
+        const menuBtn = wrapper.querySelector(`.${menuBtnClass}`);
+        const menuList = wrapper.querySelector(`.${menuListClass}`);
+        if (menuBtn && menuList) {
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuList.hidden = !menuList.hidden;
+            });
+            wrapper.addEventListener('click', (e) => {
+                if (!menuList.hidden && !e.target.closest(`.${menuWrapperClass}`)) {
+                    menuList.hidden = true;
+                }
+            });
+        }
+
+        // Wire up Delete inside menu
+        const deleteItem = wrapper.querySelector(`.${menuDeleteClass}`);
+        if (deleteItem && eventId) {
+            deleteItem.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (deleteItem.disabled) return;
+                const confirmMsg = translate('confirm_delete_event', this.language) || "Are you sure you want to delete this event?";
+                if (!confirm(confirmMsg)) {
+                    if (menuList) menuList.hidden = true;
+                    return;
+                }
+                deleteItem.disabled = true;
+                const success = await this.deleteEvent(hass, eventId);
+                if (success) {
+                    this.closePopup(wrapper, overlayClass, popstateHandler, escHandler);
+                } else {
+                    alert(translate('error_delete_event', this.language) || "Failed to delete the event. Please try again.");
+                    deleteItem.disabled = false;
+                    if (menuList) menuList.hidden = true;
+                }
+            });
+        }
 
         document.body.appendChild(wrapper);
         requestAnimationFrame(() => overlayEl.classList.add('show'));

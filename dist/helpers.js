@@ -1,18 +1,17 @@
-import { colors } from './colors.js?v=1.5.2';
-import { bg } from './bg.js?v=1.5.2';
-import { ca } from './ca.js?v=1.5.2';
-import { de } from './de.js?v=1.5.2';
-import { en } from './en.js?v=1.5.2';
-import { es } from './es.js?v=1.5.2';
-import { fr } from './fr.js?v=1.5.2';
-import { it } from './it.js?v=1.5.2';
-import { nl } from './nl.js?v=1.5.2';
-import { pl } from './pl.js?v=1.5.2';
-import { pt } from './pt.js?v=1.5.2';
-import { sk } from './sk.js?v=1.5.2';
-import { sv } from './sv.js?v=1.5.2';
-import { hu } from './hu.js?v=1.5.2';
-import { cs } from './cs.js?v=1.5.2';
+import { colors } from './colors.js?v=1.6.0';
+import { ca } from './ca.js?v=1.6.0';
+import { de } from './de.js?v=1.6.0';
+import { en } from './en.js?v=1.6.0';
+import { es } from './es.js?v=1.6.0';
+import { fr } from './fr.js?v=1.6.0';
+import { it } from './it.js?v=1.6.0';
+import { nl } from './nl.js?v=1.6.0';
+import { pl } from './pl.js?v=1.6.0';
+import { pt } from './pt.js?v=1.6.0';
+import { sk } from './sk.js?v=1.6.0';
+import { sv } from './sv.js?v=1.6.0';
+import { hu } from './hu.js?v=1.6.0';
+import { cs } from './cs.js?v=1.6.0';
 
 export function hexToRgba(hex, alpha = 1) {
     let c = hex.replace('#', '');
@@ -26,7 +25,7 @@ export function hexToRgba(hex, alpha = 1) {
     return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export function getIcon(title, lang = 'en') {
+export function getIcon(category) {
     let categories;
     let pluralRegex;
 

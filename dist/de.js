@@ -1,7 +1,7 @@
 export const de = {
     "text": {
         "noEvents": "Keine Ereignisse",
-        "noEventsHours": "Keine Ereignisse in den letzten {hours} Stunden",
+        "noEventsDays": "Keine Ereignisse in den letzten {days} Tagen",
         "noEventsCamera": "Keine Ereignisse für die ausgewählten Kameras gefunden.",
         "noEventsCategory": "Keine Ereignisse für die ausgewählte Kategorie gefunden.",
         "today": "Heute",

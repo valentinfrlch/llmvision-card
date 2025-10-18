@@ -9,10 +9,10 @@ class TimelineCardEditor extends LitElement {
     setConfig(config) { this._config = config || {}; }
     render() {
         if (!this._config) return html`<div>Please configure the card.</div>`;
-        const generalSchema = this._getSchema().slice(0, 2);
-        const filterSchema = this._getSchema().slice(2, 6);
-        const languageSchema = this._getSchema().slice(6, 7);
-        const customizeSchema = this._getSchema().slice(7);
+        const generalSchema = this._getSchema().slice(0, 3);
+        const filterSchema = this._getSchema().slice(3, 5);
+        const languageSchema = this._getSchema().slice(5, 6);
+        const customizeSchema = this._getSchema().slice(6);
         return html`
             <style>
                 .card-content{display:flex;flex-direction:column;gap:16px;}
@@ -65,20 +65,10 @@ class TimelineCardEditor extends LitElement {
     _getSchema() {
         const generalSchema = [
             { name: "header", description: "Header text for the card.", selector: { text: {} } },
-            {
-                name: "entity", description: "Select the LLM Vision timeline entity to display.",
-                selector: {
-                    select: {
-                        mode: "dropdown", options: Object.keys(this.hass.states)
-                            .filter(e => e.startsWith('calendar.'))
-                            .map(e => ({ value: e, label: this.hass.states[e].attributes.friendly_name || e }))
-                    }
-                }
-            }
+            { name: "number_of_events", description: "Number of most recent events to display. A maximum of 10 events can be displayed.", selector: { number: { min: 1, max: 100, step: 1 } } },
+            { name: "number_of_days", description: "Number of days to look back for events. Useful for filtering older events.", selector: { number: { min: 1, max: 365, step: 1 } } },
         ];
         const filterSchema = [
-            { name: "number_of_events", description: "Number of most recent events to display. A maximum of 10 events can be displayed.", selector: { number: { min: 1, max: 10, step: 1 } } },
-            { name: "number_of_hours", description: "Number of hours to look back for events. Useful for filtering older events.", selector: { number: { min: 1, max: 168, step: 1 } } },
             {
                 name: "category_filters", description: "Filter events by category (title). Only events matching selected categories will be shown.",
                 selector: { select: { multiple: true, options: Object.keys(colors.categories).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
@@ -133,7 +123,7 @@ class TimelineCardEditor extends LitElement {
     _computeLabel(s) {
         return ({
             header: "Header", entity: "Calendar Entity", number_of_events: "Number of Events",
-            number_of_hours: "Number of Hours", category_filters: "Category Filters",
+            number_of_days: "Number of Days", category_filters: "Category Filters",
             camera_filters: "Camera Filters", custom_colors: "Custom Colors", language: "Language",
             default_icon: "Default Icon", default_color: "Default Color"
         })[s.name] || s.name;
@@ -162,17 +152,42 @@ class LLMVisionCard extends BaseLLMVisionCard {
         this.setCommonConfig(config, { requireEventLimits: true });
     }
     static getConfigElement() { return document.createElement('timeline-card-editor'); }
-    static getStubConfig() { return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 3, language: 'en' }; }
+    static getStubConfig() { return { number_of_days: 7, number_of_events: 3, language: 'en' }; }
+
+    getCardSize() {
+        return 3;
+    }
+
+    // The rules for sizing your card in the grid in sections view
+    getGridOptions() {
+        return {
+            rows: 5,
+            columns: 9,
+            min_rows: 2,
+            max_rows: 8,
+            min_columns: 9,
+            max_columns: 24
+        };
+    }
 
     set hass(hass) {
         if (!this.content) {
+            // Adhere to the grid cell allocated to the card
+            this.style.display = 'block';
+            this.style.height = '100%';
+
             this.innerHTML = `
                 <ha-card style="padding:16px;">
                     ${this.header !== "" ? `<div class="card-header" style="font-size:1.3em;font-weight:600;padding:0 0 5px 0;">${this.header || "LLM Vision Events"}</div>` : ""}
                     <div class="card-content"></div>
                 </ha-card>
                 <style>
-                    .card-content{padding:0;}
+                    /* Stretch the card to the allocated grid cell */
+                    ha-card{height:100%;display:flex;flex-direction:column;box-sizing:border-box;}
+
+                    /* The scrollable content area inside the card */
+                    .card-content{padding:0;flex:1 1 auto;min-height:0;overflow:auto;}
+
                     .event-container{display:flex;align-items:center;justify-content:flex-start;height:75px;cursor:pointer;margin-bottom:8px;}
                     .event-container:last-child{margin-bottom:0;}
                     .event-container img{height:100%;aspect-ratio:1/1;margin-left:auto;border-radius:12px;object-fit:cover;}
@@ -192,37 +207,44 @@ class LLMVisionCard extends BaseLLMVisionCard {
             }
         }
 
-        const raw = this._readCalendarAttributes(hass);
-        if (!raw) return;
+        this._loadAndRender(hass);
+    }
+
+
+    async _loadAndRender(hass) {
+        let details = await this.fetchEvents(
+            hass,
+            this.number_of_events,
+            this.number_of_days,
+            this.camera_filters,
+            this.category_filters);
+        if (!details) return;
 
         const currentHash = this._hashState({
-            ...raw,
+            ...details,
             category_filters: this.category_filters,
             camera_filters: this.camera_filters,
             number_of_events: this.number_of_events,
-            number_of_hours: this.number_of_hours
+            number_of_days: this.number_of_days
         });
         if (currentHash === this._lastEventHash) return;
         this._lastEventHash = currentHash;
 
-        let details = this._buildEventDetails(hass, raw);
-        if (this.number_of_hours) details = this._filterByHours(details, this.number_of_hours);
-        details = this._applyAllFilters(details);
+        console.log('Fetched events:', details);
+
         if (!details.length) {
             this.content.innerHTML = '';
             let key;
             if (this.category_filters.length) key = 'noEventsCategory';
             else if (this.camera_filters.length) key = 'noEventsCamera';
-            else if (this.number_of_hours) key = 'noEventsHours';
+            else if (this.number_of_days) key = 'noEventsHours';
             else key = 'noEvents';
             let msg = translate(key, this.language) || "No events found.";
-            if (key === 'noEventsHours') msg = msg.replace('{hours}', this.number_of_hours);
+            if (key === 'noEventsHours') msg = msg.replace('{hours}', this.number_of_days);
             this.content.innerHTML = `<div class="event-container" style="display:flex;align-items:center;justify-content:center;height:100%;"><h3>${msg}</h3></div>`;
             return;
         }
-        details = this._sort(details);
-        details = this._limit(details);
-
+        console.log('Rendering events:', details);
         this._render(details, hass);
     }
 
@@ -240,7 +262,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
                 this.content.appendChild(header);
                 lastDate = dateLabel;
             }
-            const result = getIcon(d.event, this.language);
+            const result = getIcon(d.title, this.language);
             let { icon, color: defaultColor, category } = result;
             if (category === undefined && this.default_icon) {
                 icon = this.default_icon;
@@ -253,7 +275,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
                     <ha-icon icon="${icon}" style="color:${colorsComputed.iconColorRgba};"></ha-icon>
                 </div>
                 <div class="event-details">
-                    <h3>${d.event}</h3>
+                    <h3>${d.title}</h3>
                     <p>${d.cameraName ? `${timeStr} • ${d.cameraName}` : timeStr}</p>
                 </div>
                 <img alt="Key frame ${idx + 1}" style="display:none;" onerror="this.style.display='none'">
@@ -262,14 +284,15 @@ class LLMVisionCard extends BaseLLMVisionCard {
             container.addEventListener('click', () => {
                 this.resolveKeyFrame(hass, d.keyFrame).then(url => {
                     this.showPopup({
-                        event: d.event,
-                        summary: d.summary,
+                        event: d.title,
+                        summary: d.description,
                         startTime: d.startTime,
                         keyFrame: url,
                         cameraName: d.cameraName,
                         icon,
-                        prefix: 'popup'
-                    });
+                        prefix: 'popup',
+                        eventId: d.id
+                    }, hass);
                 });
             });
             this.content.appendChild(container);
@@ -282,7 +305,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
     }
 
     static getStubConfig() {
-        return { entity: 'calendar.llm_vision_timeline', number_of_hours: 24, number_of_events: 5, language: 'en' };
+        return { number_of_days: 24, number_of_events: 5, language: 'en' };
     }
 }
 
