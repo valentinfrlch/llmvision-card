@@ -30,7 +30,10 @@ export function getIcon(category) {
     let pluralRegex;
 
     try {
-        if (lang === 'ca') {
+        if (lang === 'bg') {
+            categories = bg.categories;
+            pluralRegex = bg.regex;
+        } else if (lang === 'ca') {
             categories = ca.categories;
             pluralRegex = ca.regex;
         } else if (lang === 'cs') {
@@ -133,6 +136,7 @@ export function getIcon(category) {
 }
 
 const translations = {
+    bg: bg.text,
     ca: ca.text,
     cs: cs.text,
     de: de.text,

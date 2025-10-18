@@ -22,7 +22,7 @@
     ·
     <a href="#setup">🚧 Setup</a>
     ·
-    <a href="#configuration">🔧 Configuration</a>    
+    <a href="#configuration">🔧 Configuration</a>
   </p>
 <p align="center">
   <a href="https://llmvision.org/card"> Visit Website →</a>
@@ -42,7 +42,7 @@
 Add the repository to HACS and install the LLM Vision card using this link:
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=valentinfrlch&repository=llmvision-card&category=plugin)
 
-Alternatively you can add the url of this repository to the custom respositories list in HACS.
+Alternatively you can add the url of this repository to the custom repositories list in HACS.
 
 ## Setup
 1. Install the card through HACS
@@ -65,7 +65,7 @@ Alternatively you can add the url of this repository to the custom respositories
 | category_filters  | Only show events matching one of the specified categories.                                                  | `[]`                         |
 | camera_filters    | Only show events matching one of the specified cameras.                                                     | `[]`                         |
 | custom_colors     | Custom colors for categories. Colors must be specified as a dictionary where keys are category names and values are lists of RGB values (e.g., `[255, 255, 0]`). See the example configuration below for details.    | `[]`                         |
-| language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`, `sk`)    | `en`                         |
+| language          | Language used for UI and generate icons (supports: `bg`, `ca`, `cs`, `de`, `en`, `es`, `fr`, `hu`, `it`, `nl`, `pl`, `pt`, `sk`, `sv`)    | `en`                         |
 
 ### Example Configuration
 ```yaml
@@ -97,7 +97,7 @@ custom_colors:
 | entity            | LLM Vision Timeline Entity (needs to be set up in LLM Vision Settings first)                                |`calendar.llm_vision_timeline`|
 | category_filters  | Only show events matching one of the specified categories.                                                  | `[]`                         |
 | camera_filters    | Only show events matching one of the specified cameras.                                                     | `[]`                         |
-| language          | Language used for UI and generate icons (supports: `de`, `en`, `es`, `fr`, `it`, `nl`, `pl`, `pt`, `sv`, `sk`)    | `en`                         |
+| language          | Language used for UI and generate icons (supports: `bg`, `ca`, `cs`, `de`, `en`, `es`, `fr`, `hu`, `it`, `nl`, `pl`, `pt`, `sk`, `sv`)    | `en`                         |
 
 ### Example Configuration
 ```yaml
@@ -111,6 +111,6 @@ camera_filters:
 ```
 
 ## Support
-You can support this project by starring this GitHub repository. If you want, you can also buy me a coffee here:  
+You can support this project by starring this GitHub repository. If you want, you can also buy me a coffee here:
 <br>
 <a href="https://www.buymeacoffee.com/valentinfrlch"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=valentinfrlch&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff" /></a>

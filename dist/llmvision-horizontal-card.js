@@ -202,6 +202,7 @@ export class TimelineHorizontalCardEditor extends LitElement {
                 selector: {
                     select: {
                         options: [
+                            { value: "bg", label: "Bulgarian" },
                             { value: "ca", label: "Catalan" },
                             { value: "cz", label: "Czech" },
                             { value: "nl", label: "Dutch" },
@@ -756,7 +757,7 @@ export class LLMVisionHorizontalCard extends HTMLElement {
                     cursor: pointer;
                     color: var(--primary-text-color);
                 }
-            
+
                 /* Mobile Layout */
                 @media (max-width: 768px) {
                     .popup-content {
