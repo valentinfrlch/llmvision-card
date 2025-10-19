@@ -1,4 +1,5 @@
 import { colors } from './colors.js?v=1.6.0';
+import { bg } from './bg.js?v=1.6.0';
 import { ca } from './ca.js?v=1.6.0';
 import { de } from './de.js?v=1.6.0';
 import { en } from './en.js?v=1.6.0';
