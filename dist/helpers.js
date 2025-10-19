@@ -26,7 +26,7 @@ export function hexToRgba(hex, alpha = 1) {
     return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export function getIcon(category) {
+export function getIcon(title, lang) {
     let categories;
     let pluralRegex;
 
