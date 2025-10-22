@@ -1,8 +1,8 @@
-import { getIcon, translate } from './helpers.js?v=1.5.2';
-import { colors } from './colors.js?v=1.5.2';
+import { getIcon, translate } from './helpers.js?v=1.6.0';
+import { labels } from './labels.js?v=1.6.0';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
-import { BaseLLMVisionCard } from './card-base.js?v=1.5.2';
-import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.5.2';
+import { BaseLLMVisionCard } from './card-base.js?v=1.6.0';
+import { LLMVisionPreviewCard } from './llmvision-preview-card.js?v=1.6.0';
 
 class TimelineCardEditor extends LitElement {
     static get properties() { return { _config: { type: Object } }; }
@@ -71,7 +71,7 @@ class TimelineCardEditor extends LitElement {
         const filterSchema = [
             {
                 name: "category_filters", description: "Filter events by category (title). Only events matching selected categories will be shown.",
-                selector: { select: { multiple: true, options: Object.keys(colors.categories).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
+                selector: { select: { multiple: true, options: Object.keys(labels).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
             },
             {
                 name: "camera_filters", description: "Filter events by camera entity. Only events from selected cameras will be shown.",
@@ -113,7 +113,7 @@ class TimelineCardEditor extends LitElement {
         const customizeSchema = [
             { name: "default_icon", description: "Icon when no category keyword matches.", selector: { icon: {} } },
             { name: "default_color", description: "Color for uncategorized events.", selector: { color_rgb: {} } },
-        ].concat(Object.keys(colors.categories).map(c => ({
+        ].concat(Object.keys(labels).map(c => ({
             name: `custom_colors.${c}`,
             description: `Color for ${c.charAt(0).toUpperCase() + c.slice(1)}`,
             selector: { color_rgb: {} }
@@ -230,8 +230,6 @@ class LLMVisionCard extends BaseLLMVisionCard {
         if (currentHash === this._lastEventHash) return;
         this._lastEventHash = currentHash;
 
-        console.log('Fetched events:', details);
-
         if (!details.length) {
             this.content.innerHTML = '';
             let key;
@@ -244,7 +242,6 @@ class LLMVisionCard extends BaseLLMVisionCard {
             this.content.innerHTML = `<div class="event-container" style="display:flex;align-items:center;justify-content:center;height:100%;"><h3>${msg}</h3></div>`;
             return;
         }
-        console.log('Rendering events:', details);
         this._render(details, hass);
     }
 
@@ -262,12 +259,12 @@ class LLMVisionCard extends BaseLLMVisionCard {
                 this.content.appendChild(header);
                 lastDate = dateLabel;
             }
-            const result = getIcon(d.title, this.language);
-            let { icon, color: defaultColor, category } = result;
-            if (category === undefined && this.default_icon) {
+            const result = getIcon(d.category, d.label);
+            let { icon, color: defaultColor } = result;
+            if ((d.category === undefined || d.category === '') && this.default_icon) {
                 icon = this.default_icon;
             }
-            const colorsComputed = this.computeColors(category, defaultColor);
+            const colorsComputed = this.computeColors(d.category, defaultColor);
             const container = document.createElement('div');
             container.classList.add('event-container');
             container.innerHTML = `

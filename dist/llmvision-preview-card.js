@@ -1,5 +1,5 @@
 import { getIcon, translate } from './helpers.js?v=1.5.2';
-import { colors } from './colors.js?v=1.5.2';
+import { labels } from './labels.js?v=1.5.2';
 import { LitElement, css, html } from "https://unpkg.com/lit-element@2.0.1/lit-element.js?module";
 import { BaseLLMVisionCard } from './card-base.js?v=1.5.2';
 
@@ -78,7 +78,7 @@ export class TimelinePreviewCardEditor extends LitElement {
             {
                 name: "category_filters",
                 description: "Filter events by category (title). Only events matching selected categories will be shown.",
-                selector: { select: { multiple: true, options: Object.keys(colors.categories).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
+                selector: { select: { multiple: true, options: Object.keys(labels).map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) } }
             },
             {
                 name: "camera_filters",
@@ -217,6 +217,9 @@ export class LLMVisionPreviewCard extends BaseLLMVisionCard {
         const container = document.createElement('div');
         const result = getIcon(event.title, this.language);
         let { icon, color: defaultColor, category } = result;
+        if ((event.category === undefined || event.category === '') && this.default_icon) {
+            icon = this.default_icon;
+        }
         let cameraName = event.cameraName;
         const dateObj = new Date(event.startTime);
         const dateLabel = this.formatDateLabel(dateObj);
