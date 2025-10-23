@@ -1,4 +1,4 @@
-import { getIcon, translate, hexToRgba } from './helpers.js?v=1.5.2';
+import { translate, hexToRgba } from './helpers.js?v=1.5.2';
 
 const __LLMVISION_VERSION = 'v1.6.0 alpha 1';
 function __logLLMVisionBadge(context) {
@@ -66,9 +66,10 @@ export class BaseLLMVisionCard extends HTMLElement {
                 const cameraEntity = cameraEntityId ? hass.states[cameraEntityId] : undefined;
                 const cameraFriendlyName = cameraEntity ? (cameraEntity.attributes?.friendly_name || cameraEntityId) : '';
                 return {
-                    title: item.summary || '',
+                    title: item.title || '',
                     description: item.description || '',
                     category: item.category || '',
+                    label: item.label || '',
                     keyFrame: (item.key_frame || ''),
                     cameraName: cameraFriendlyName,
                     startTime: item.start || null,
@@ -105,8 +106,8 @@ export class BaseLLMVisionCard extends HTMLElement {
     _filterByCategories(details) {
         if (!this.category_filters?.length) return details;
         return details.filter(d => {
-            const { category } = getIcon(d.event, this.language);
-            return this.category_filters.includes(category);
+            if (!d.category) return false;
+            return this.category_filters.includes(d.category);
         });
     }
 
