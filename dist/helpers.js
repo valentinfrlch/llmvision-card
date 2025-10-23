@@ -16,18 +16,15 @@ export function hexToRgba(hex, alpha = 1) {
 export function getIcon(category, label) {
     try {
         const categoryData = labels[category];
-        console.log('Looking for icon for category:', category, 'label:', label);
         if (categoryData) {
             const labelIcon = categoryData.labels[label];
             if (labelIcon) {
-                console.log('Found icon for category:', category, 'label:', label, 'icon:', labelIcon);
                 return { icon: labelIcon, color: categoryData.color };
             }
         }
     } catch (e) {
-        console.error('Error getting icon for category:', category, 'label:', label, e);
+        console.warning('Error getting icon for category:', category, 'label:', label, e);
     }
-    console.log('No icon found for category:', category, 'label:', label);
     return { icon: 'mdi:motion-sensor', color: '#757575' };
 }
 
