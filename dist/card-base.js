@@ -47,7 +47,6 @@ export class BaseLLMVisionCard extends HTMLElement {
     async fetchEvents(hass, limit = 10, days = 7, cameras = [], categories = []) {
         try {
             const params = new URLSearchParams();
-            // if (this.number_of_days) params.set('hours', this.number_of_days);
             if (limit) params.set('limit', limit);
             if (cameras?.length) {
                 params.set('cameras', cameras.join(','));
@@ -217,9 +216,7 @@ export class BaseLLMVisionCard extends HTMLElement {
         return { bgColorRgba, iconColorRgba };
     }
 
-    showPopup({ event, summary, startTime, keyFrame, cameraName, icon, prefix, eventId }, hassArg) {
-        console.log('Showing popup for event:', eventId);
-
+    showPopup({ event, summary, startTime, keyFrame, cameraName, category, label, icon, prefix, eventId }, hassArg) {
         const hass = hassArg || this.hass;
         const formattedTime = this.formatDateTimeFull(startTime);
         const secondaryText = cameraName ? `${formattedTime} • ${cameraName}` : formattedTime;
@@ -257,11 +254,24 @@ export class BaseLLMVisionCard extends HTMLElement {
                     </div>
                     <div class="${titleRowClass}">
                         <div class="${prefix}-title-main">
-                            <ha-icon icon="${icon}"></ha-icon>
                             <h2>${event}</h2>
                         </div>
                         <div class="${prefix}-title-secondary">
                             <p class="secondary"><span>${secondaryText}</span></p>
+                        </div>
+                        <div class="${prefix}-title-tertiary">
+                            <div class="${prefix}-badges-row">
+                                ${category ? `
+                                <span class="${prefix}-badge">
+                                    <ha-icon icon="mdi:label"></ha-icon>
+                                    <span class="text" style="text-transform: capitalize;">${category}</span>
+                                </span>` : ''}
+                                ${label ? `
+                                <span class="${prefix}-badge">
+                                    <ha-icon icon="${icon || 'mdi:tag-outline'}"></ha-icon>
+                                    <span class="text" style="text-transform: capitalize;">${label}</span>
+                                </span>` : ''}
+                            </div>
                         </div>
                     </div>
                     <img src="${keyFrame}" alt="Event Snapshot" onerror="this.style.display='none'">
@@ -304,7 +314,6 @@ export class BaseLLMVisionCard extends HTMLElement {
                     }
                     .${overlayClass}.show .${contentClass} { transform: scale(1); }
     
-                    /* Header row: close left, kebab right */
                     .${headerRowClass} {
                         display: flex;
                         align-items: center;
@@ -330,6 +339,7 @@ export class BaseLLMVisionCard extends HTMLElement {
                         justify-content: center;
                     }
                     .${prefix}-title-main h2 {
+                        max-width: 95%;
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
@@ -346,6 +356,33 @@ export class BaseLLMVisionCard extends HTMLElement {
                         margin-top: 4px;
                         color: var(--primary-text-color);
                         font-family: var(--ha-font-family-body, "Roboto");
+                    }
+                    .${prefix}-title-tertiary {
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                    }
+                    .${prefix}-badges-row {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        width: 100%;
+                    }
+                    .${prefix}-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 4px 10px;
+                        border-radius: 9px;
+                        background: var(--table-header-background-color, rgba(0,0,0,0.08));
+                        color: var(--primary-text-color);
+                        font-size: 0.9em;
+                        line-height: 1;
+                    }
+                    .${prefix}-badge ha-icon {
+                        --mdc-icon-size: 18px;
                     }
     
                     /* Image and text */
@@ -412,8 +449,21 @@ export class BaseLLMVisionCard extends HTMLElement {
                         .${contentClass} {
                             max-width: 100%;
                             max-height: 100%;
+                            padding: 15px;
                             border-radius: 0;
                             height: 100%;
+                        }
+                        .${headerRowClass} {
+                            padding-top: 10px;
+                        }
+                        .${prefix}-title-main h2 {
+                            max-width: 78%;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            margin: 0;
+                            font-family: var(--ha-font-family-heading, "Roboto");
+                            text-align: center;
                         }
                     }
                 </style>

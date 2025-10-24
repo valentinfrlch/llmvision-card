@@ -286,7 +286,9 @@ class LLMVisionCard extends BaseLLMVisionCard {
                         startTime: d.startTime,
                         keyFrame: url,
                         cameraName: d.cameraName,
-                        icon,
+                        category: d.category,
+                        label: d.label,
+                        icon: icon,
                         prefix: 'popup',
                         eventId: d.id
                     }, hass);
