@@ -138,3 +138,13 @@ export const sv = {
         "yesterday": "Igår"
     }
 }
+export const ro = {
+    "text": {
+        "noEvents": "Nicun eveniment",
+        "noEventsDays": "Niciun eveniment în ultimele {days} zile",
+        "noEventsCamera": "Niciun eveniment găsit pe camera(le) selectată(e).",
+        "noEventsCategory": "Niciun eveniment găsit în categoria selectată.",
+        "today": "Azi",
+        "yesterday": "Mâine"
+    }
+}
