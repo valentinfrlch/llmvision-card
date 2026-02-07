@@ -32,7 +32,7 @@ export const de = {
                 "suv": "mdi:car",
                 "fahrzeug": "mdi:car",
                 "lastwagen": "mdi:truck",
-                "strasse": "mdi:road-variant",
+                "straße": "mdi:road-variant",
                 "weg": "mdi:road-variant",
                 "einfahrt": "mdi:road-variant"
             }

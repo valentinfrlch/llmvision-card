@@ -27,7 +27,7 @@ export const pt = {
                 "bicicleta": "mdi:bike",
                 "moto": "mdi:motorbike",
                 "motocicleta": "mdi:motorbike",
-                "onibus": "mdi:bus",
+                "ônibus": "mdi:bus",
                 "carro": "mdi:car",
                 "van": "mdi:car",
                 "suv": "mdi:car",
