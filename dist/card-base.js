@@ -99,8 +99,8 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     _filterNoActivity(details) {
-        return details.filter((d) => (d?.title || '').trim().toLowerCase() !== 'no activity observed');
-    }    
+        return details.filter((d) => (d?.description || '').trim().toLowerCase() !== 'no activity observed.');
+    }
 
     _filterByHours(details, hours) {
         if (!hours) return details;
