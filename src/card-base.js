@@ -1,6 +1,6 @@
-import { translate, hexToRgba } from './helpers.js?v=1.7.0';
+import { translate, hexToRgba } from './helpers.js';
 
-const __LLMVISION_VERSION = 'v1.7.0 beta 3';
+const __LLMVISION_VERSION = 'v1.7.1 beta 1';
 function __logLLMVisionBadge(context) {
     if (!window.__LLMVISION_BADGE_LOGGED) {
         console.log(
@@ -16,6 +16,9 @@ function __logLLMVisionBadge(context) {
 export class BaseLLMVisionCard extends HTMLElement {
     imageCache = new Map();
     _lastEventHash = null;
+    _lastFetch = 0;
+    _fetchPromise = null;
+    _cachedEvents = null;
 
     connectedCallback() {
         if (!this._badgeLogged) {
@@ -36,6 +39,7 @@ export class BaseLLMVisionCard extends HTMLElement {
         this.default_color = config.default_color || '#929292';
         this.time_format = config.time_format || '24h';
         this.filter_false_positives = config.filter_false_positives !== false;
+        this.refresh_interval = Math.max(1, Number(config.refresh_interval || 15));
         if (requireEventLimits) {
             if (!this.number_of_events && !this.number_of_days) {
                 throw new Error('Either number_of_events or number_of_days needs to be set.');
@@ -47,6 +51,29 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     async fetchEvents(hass, {
+        limit = 10,
+        days = null,
+        hours = null,
+        cameras = [],
+        categories = [],
+        includeNoActivity = false
+    } = {}) {
+        const now = Date.now();
+        const refreshMs = (this.refresh_interval || 15) * 1000;
+        if (this._fetchPromise) return this._fetchPromise;
+        if (this._cachedEvents && now - this._lastFetch < refreshMs) return this._cachedEvents;
+
+        this._lastFetch = now;
+        this._fetchPromise = this._fetchEvents(hass, { limit, days, hours, cameras, categories, includeNoActivity });
+        try {
+            this._cachedEvents = await this._fetchPromise;
+            return this._cachedEvents;
+        } finally {
+            this._fetchPromise = null;
+        }
+    }
+
+    async _fetchEvents(hass, {
         limit = 10,
         days = null,
         hours = null,
