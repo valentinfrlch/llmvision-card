@@ -1,0 +1,1 @@
+export const VERSION = __LLMVISION_VERSION__;

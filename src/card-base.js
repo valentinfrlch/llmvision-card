@@ -1,10 +1,10 @@
+import { VERSION } from "./version.js";
 import { translate, hexToRgba } from './helpers.js';
 
-const __LLMVISION_VERSION = 'v1.7.1 beta 1';
 function __logLLMVisionBadge(context) {
     if (!window.__LLMVISION_BADGE_LOGGED) {
         console.log(
-            '%cLLM Vision Card%c%c' + __LLMVISION_VERSION,
+            `%cLLM Vision Card%c v${VERSION}`,
             'background:#0071FF;color:#fff;padding:2px 6px 2px 8px;border-radius:4px 0 0 4px;font-weight:600;',
             'background:#0058c7;color:#fff;padding:2px 4px;font-weight:500;',
             'background:#0058c7;color:#fff;padding:2px 8px 2px 6px;border-radius:0 4px 4px 0;font-weight:600;'
