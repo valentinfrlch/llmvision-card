@@ -1,9 +1,10 @@
 {
     "name": "llmvision-card",
-    "version": "1.7.0",
+    "version": "1.7.2",
     "description": "<p align=\"center\"> <picture>   <source media=\"(prefers-color-scheme: dark)\" srcset=\"./logos/dark_logo@2x.png\">   <img alt=\"LLM Vision Logo\" src=\"./logos/logo@2x.png\" width=\"512\"> </picture></p> <h1 align=center>Timeline Card</h1> <p align=center> <img src=https://img.shields.io/badge/HACS-Custom-orange.svg> <img src=https://img.shields.io/badge/version-1.7.0-blue> <img src=\"https://img.shields.io/maintenance/yes/2026.svg\"> <img alt=\"Issues\" src=\"https://img.shields.io/github/issues/valentinfrlch/llmvision-card?color=0088ff\"/> <img alt=\"Static Badge\" src=\"https://img.shields.io/badge/support-buymeacoffee?logo=buymeacoffee&logoColor=black&color=%23FFDD00&link=https%3A%2F%2Fbuymeacoffee.com%2Fvalentinfrlch\">     <p align=center style=\"font-weight:bold\">       Custom Card to display the LLM Vision Timeline on your Home Assistant Dashboard     </p> </p>",
     "main": "index.js",
     "scripts": {
+        "build": "vite build",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
