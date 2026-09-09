@@ -191,7 +191,7 @@ export const hu = {
         "today": "Ma",
         "yesterday": "Tegnap",
         "delete": "Törlés",
-        "confirm_delete_event": "Biztosan törölni szeretné ezt az eseményt?",
+        "confirm_delete_event": "Biztosan törölni szeretnéd ezt az eseményt?",
         "error_delete_event": "Hiba történt az esemény törlésekor.",
         "feedback_reason": "Válassz egy okot",
         "next": "Következő",
@@ -201,7 +201,7 @@ export const hu = {
         "correct_description": "Helyes leírás",
         "correct_category": "Helyes kategória",
         "correct_label": "Helyes címke",
-        "please_provide_details": "Kérem, adjon meg több részletet a következő oldalon.",
+        "please_provide_details": "Kérlek, adj meg több részletet a következő oldalon.",
         "thanks_for_feedback": "Köszönjük a visszajelzését!"
     }
 }
