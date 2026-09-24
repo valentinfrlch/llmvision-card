@@ -91,11 +91,14 @@ export class BaseLLMVisionCard extends HTMLElement {
     } = {}) {
         const now = Date.now();
         const refreshMs = (this.refresh_interval || 15) * 1000;
-        if (this._fetchPromise) return this._fetchPromise;
 
-        // An explicit window is part of the cache identity: switching to another
-        // day has to refetch immediately instead of waiting out refresh_interval.
+        // An explicit window is part of the request identity: switching to another
+        // day has to refetch immediately instead of waiting out refresh_interval,
+        // and an in-flight request may only be reused when it is for the same
+        // window -- otherwise changing day returns the previous day's promise.
         const windowKey = `${start || ''}|${end || ''}`;
+        if (this._fetchPromise && windowKey === this._fetchPromiseKey) return this._fetchPromise;
+
         if (windowKey !== this._lastWindowKey) {
             this._lastWindowKey = windowKey;
             this._cachedEvents = null;
@@ -104,6 +107,7 @@ export class BaseLLMVisionCard extends HTMLElement {
         }
 
         this._lastFetch = now;
+        this._fetchPromiseKey = windowKey;
         this._fetchPromise = this._fetchEvents(hass, { limit, days, hours, start, end, cameras, categories, includeNoActivity });
         try {
             this._cachedEvents = await this._fetchPromise;
