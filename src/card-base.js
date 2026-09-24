@@ -1,5 +1,5 @@
 import { VERSION } from "./version.js";
-import { translate, hexToRgba } from './helpers.js';
+import { translate, hexToRgba, toLocalIso } from './helpers.js';
 
 function __logLLMVisionBadge(context) {
     if (!window.__LLMVISION_BADGE_LOGGED) {
@@ -34,6 +34,8 @@ export class BaseLLMVisionCard extends HTMLElement {
         this.language = config.language;
         this.number_of_events = config.number_of_events;
         this.number_of_days = config.number_of_days;
+        this.date_entity = config.date_entity || null;
+        this.day_navigation = config.day_navigation === true;
         this.custom_colors = config.custom_colors || {};
         this.default_icon = config.default_icon || 'mdi:motion-sensor';
         this.default_color = config.default_color || '#929292';
@@ -41,8 +43,8 @@ export class BaseLLMVisionCard extends HTMLElement {
         this.filter_false_positives = config.filter_false_positives !== false;
         this.refresh_interval = Math.max(1, Number(config.refresh_interval || 15));
         if (requireEventLimits) {
-            if (!this.number_of_events && !this.number_of_days) {
-                throw new Error('Either number_of_events or number_of_days needs to be set.');
+            if (!this.number_of_events && !this.number_of_days && !this.date_entity && !this.day_navigation) {
+                throw new Error('Either number_of_events, number_of_days, date_entity or day_navigation needs to be set.');
             }
             if (this.number_of_events && this.number_of_events < 1) {
                 throw new Error('number_of_events must be greater than 0.');
@@ -50,21 +52,87 @@ export class BaseLLMVisionCard extends HTMLElement {
         }
     }
 
+    /**
+     * Resolve the configured date_entity into an absolute one-day window.
+     *
+     * Accepts anything whose state starts with an ISO date (a date-only
+     * input_datetime, a date entity, or a date+time input_datetime -- the time
+     * part is ignored, the whole calendar day is used).
+     *
+     * Returns null when no date_entity is configured or its state is not usable,
+     * so callers fall back to the rolling number_of_days behaviour.
+     */
+    /**
+     * The day currently being shown, as YYYY-MM-DD, or null when the card is in
+     * its normal rolling-window mode.
+     *
+     * A configured date_entity always wins, so the selection lives in Home
+     * Assistant, is shared between cards and survives a reload. Otherwise the
+     * card keeps it internally in _selectedDay.
+     */
+    currentDay(hass) {
+        if (this.date_entity) {
+            const raw = hass?.states?.[this.date_entity]?.state;
+            if (!raw || raw === 'unknown' || raw === 'unavailable') return null;
+            return String(raw).slice(0, 10);
+        }
+        return this.day_navigation ? (this._selectedDay || null) : null;
+    }
+
+    /**
+     * Build an absolute one-day window from an ISO date string.
+     *
+     * Accepts anything starting with an ISO date, so a date-only value, a
+     * date entity state, or a full datetime all work -- the time part is
+     * ignored and the whole calendar day is used. Returns null for missing or
+     * unparseable input so callers can fall back to their default behaviour.
+     */
+    dayWindowFrom(value) {
+        if (!value || value === 'unknown' || value === 'unavailable') return null;
+
+        const [year, month, day] = String(value).slice(0, 10).split('-').map(Number);
+        if (!year || !month || !day) return null;
+
+        // Local midnight to the next local midnight. Using the local Date
+        // constructor rolls month/year over and leaves DST handling to the
+        // platform; the offset is sent explicitly because the backend compares
+        // against timezone-aware timestamps.
+        return {
+            start: toLocalIso(new Date(year, month - 1, day)),
+            end: toLocalIso(new Date(year, month - 1, day + 1)),
+        };
+    }
+
     async fetchEvents(hass, {
         limit = 10,
         days = null,
         hours = null,
+        start = null,
+        end = null,
         cameras = [],
         categories = [],
         includeNoActivity = false
     } = {}) {
         const now = Date.now();
         const refreshMs = (this.refresh_interval || 15) * 1000;
-        if (this._fetchPromise) return this._fetchPromise;
-        if (this._cachedEvents && now - this._lastFetch < refreshMs) return this._cachedEvents;
+
+        // An explicit window is part of the request identity: switching to another
+        // day has to refetch immediately instead of waiting out refresh_interval,
+        // and an in-flight request may only be reused when it is for the same
+        // window -- otherwise changing day returns the previous day's promise.
+        const windowKey = `${start || ''}|${end || ''}`;
+        if (this._fetchPromise && windowKey === this._fetchPromiseKey) return this._fetchPromise;
+
+        if (windowKey !== this._lastWindowKey) {
+            this._lastWindowKey = windowKey;
+            this._cachedEvents = null;
+        } else if (this._cachedEvents && now - this._lastFetch < refreshMs) {
+            return this._cachedEvents;
+        }
 
         this._lastFetch = now;
-        this._fetchPromise = this._fetchEvents(hass, { limit, days, hours, cameras, categories, includeNoActivity });
+        this._fetchPromiseKey = windowKey;
+        this._fetchPromise = this._fetchEvents(hass, { limit, days, hours, start, end, cameras, categories, includeNoActivity });
         try {
             this._cachedEvents = await this._fetchPromise;
             return this._cachedEvents;
@@ -77,6 +145,8 @@ export class BaseLLMVisionCard extends HTMLElement {
         limit = 10,
         days = null,
         hours = null,
+        start = null,
+        end = null,
         cameras = [],
         categories = [],
         includeNoActivity = false
@@ -87,8 +157,15 @@ export class BaseLLMVisionCard extends HTMLElement {
             if (cameras?.length) {
                 params.set('cameras', cameras.join(','));
             }
-            if (days) params.set('days', days);
-            if (hours) params.set('hours', hours);
+            // start/end take precedence: the API ignores days/hours once both are
+            // given, so don't send a contradictory rolling window alongside them.
+            if (start && end) {
+                params.set('start', start);
+                params.set('end', end);
+            } else {
+                if (days) params.set('days', days);
+                if (hours) params.set('hours', hours);
+            }
             if (categories?.length) {
                 params.set('categories', categories.join(','));
             }
@@ -139,7 +216,7 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     _limit(details) {
-        if (this.number_of_days) {
+        if (this.number_of_days || this.date_entity || this.day_navigation) {
             // number_of_events acts as secondary limiter only after hours filter
             if (this.number_of_events) return details.slice(0, this.number_of_events);
             return details;
