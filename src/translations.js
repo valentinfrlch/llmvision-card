@@ -117,6 +117,7 @@ export const en = {
     "text": {
         "noEvents": "No events",
         "noEventsDays": "No events in the last {days} days",
+        "noEventsDay": "No events on the selected day.",
         "noEventsCamera": "No events found for the selected camera(s).",
         "noEventsCategory": "No events found for the selected category.",
         "today": "Today",

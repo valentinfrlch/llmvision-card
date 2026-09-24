@@ -10,10 +10,10 @@ class TimelineCardEditor extends LitElement {
     render() {
         if (!this._config) return html`<div>Please configure the card.</div>`;
         const schema = this._getSchema();
-        const generalSchema = schema.slice(0, 3);
-        const filterSchema = schema.slice(3, 6);
-        const localeSchema = schema.slice(6, 8);
-        const customizeSchema = schema.slice(8);
+        const generalSchema = schema.slice(0, 4);
+        const filterSchema = schema.slice(4, 7);
+        const localeSchema = schema.slice(7, 9);
+        const customizeSchema = schema.slice(9);
         return html`
             <style>
                 .card-content{display:flex;flex-direction:column;gap:16px;}
@@ -68,6 +68,11 @@ class TimelineCardEditor extends LitElement {
             { name: "header", description: "Header text for the card.", selector: { text: {} } },
             { name: "number_of_events", description: "Number of most recent events to display. A maximum of 10 events can be displayed.", selector: { number: { min: 1, max: 100, step: 1 } } },
             { name: "number_of_days", description: "Number of days to look back for events. Useful for filtering older events.", selector: { number: { min: 1, max: 365, step: 1 } } },
+            {
+                name: "date_entity",
+                description: "Optional. Show events of one specific day instead of the last number_of_days. Point this at a date entity or a date-only input_datetime to browse individual days.",
+                selector: { entity: { filter: [{ domain: "input_datetime" }, { domain: "date" }] } }
+            },
         ];
         const filterSchema = [
             {
@@ -142,7 +147,8 @@ class TimelineCardEditor extends LitElement {
     _computeLabel(s) {
         return ({
             header: "Header", number_of_events: "Number of Events",
-            number_of_days: "Number of Days", category_filters: "Category Filters",
+            number_of_days: "Number of Days", date_entity: "Date Entity (single day)",
+            category_filters: "Category Filters",
             camera_filters: "Camera Filters", filter_false_positives: "Filter False Positives",
             custom_colors: "Custom Colors", language: "Language",
             time_format: "Time Format",
@@ -238,11 +244,17 @@ class LLMVisionCard extends BaseLLMVisionCard {
 
 
     async _loadAndRender(hass) {
+        // When date_entity is set, query that exact calendar day instead of the
+        // rolling number_of_days window.
+        const dateWindow = this.resolveDateWindow(hass);
+
         let details = await this.fetchEvents(
             hass,
             {
                 limit: this.number_of_events,
-                days: this.number_of_days,
+                days: dateWindow ? null : this.number_of_days,
+                start: dateWindow?.start || null,
+                end: dateWindow?.end || null,
                 cameras: this.camera_filters,
                 categories: this.category_filters,
                 includeNoActivity: !this.filter_false_positives
@@ -256,6 +268,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
             camera_filters: this.camera_filters,
             number_of_events: this.number_of_events,
             number_of_days: this.number_of_days,
+            date_window: dateWindow?.start || null,
             time_format: this.time_format,
             filter_false_positives: this.filter_false_positives
         });
@@ -267,6 +280,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
             let key;
             if (this.category_filters.length) key = 'noEventsCategory';
             else if (this.camera_filters.length) key = 'noEventsCamera';
+            else if (dateWindow) key = 'noEventsDay';
             else if (this.number_of_days) key = 'noEventsHours';
             else key = 'noEvents';
             let msg = translate(key, this.language) || "No events found.";
