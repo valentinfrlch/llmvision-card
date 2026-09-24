@@ -35,6 +35,7 @@ export class BaseLLMVisionCard extends HTMLElement {
         this.number_of_events = config.number_of_events;
         this.number_of_days = config.number_of_days;
         this.date_entity = config.date_entity || null;
+        this.day_navigation = config.day_navigation === true;
         this.custom_colors = config.custom_colors || {};
         this.default_icon = config.default_icon || 'mdi:motion-sensor';
         this.default_color = config.default_color || '#929292';
@@ -42,8 +43,8 @@ export class BaseLLMVisionCard extends HTMLElement {
         this.filter_false_positives = config.filter_false_positives !== false;
         this.refresh_interval = Math.max(1, Number(config.refresh_interval || 15));
         if (requireEventLimits) {
-            if (!this.number_of_events && !this.number_of_days && !this.date_entity) {
-                throw new Error('Either number_of_events, number_of_days or date_entity needs to be set.');
+            if (!this.number_of_events && !this.number_of_days && !this.date_entity && !this.day_navigation) {
+                throw new Error('Either number_of_events, number_of_days, date_entity or day_navigation needs to be set.');
             }
             if (this.number_of_events && this.number_of_events < 1) {
                 throw new Error('number_of_events must be greater than 0.');
@@ -61,12 +62,35 @@ export class BaseLLMVisionCard extends HTMLElement {
      * Returns null when no date_entity is configured or its state is not usable,
      * so callers fall back to the rolling number_of_days behaviour.
      */
-    resolveDateWindow(hass) {
-        if (!this.date_entity) return null;
-        const raw = hass?.states?.[this.date_entity]?.state;
-        if (!raw || raw === 'unknown' || raw === 'unavailable') return null;
+    /**
+     * The day currently being shown, as YYYY-MM-DD, or null when the card is in
+     * its normal rolling-window mode.
+     *
+     * A configured date_entity always wins, so the selection lives in Home
+     * Assistant, is shared between cards and survives a reload. Otherwise the
+     * card keeps it internally in _selectedDay.
+     */
+    currentDay(hass) {
+        if (this.date_entity) {
+            const raw = hass?.states?.[this.date_entity]?.state;
+            if (!raw || raw === 'unknown' || raw === 'unavailable') return null;
+            return String(raw).slice(0, 10);
+        }
+        return this.day_navigation ? (this._selectedDay || null) : null;
+    }
 
-        const [year, month, day] = String(raw).slice(0, 10).split('-').map(Number);
+    /**
+     * Build an absolute one-day window from an ISO date string.
+     *
+     * Accepts anything starting with an ISO date, so a date-only value, a
+     * date entity state, or a full datetime all work -- the time part is
+     * ignored and the whole calendar day is used. Returns null for missing or
+     * unparseable input so callers can fall back to their default behaviour.
+     */
+    dayWindowFrom(value) {
+        if (!value || value === 'unknown' || value === 'unavailable') return null;
+
+        const [year, month, day] = String(value).slice(0, 10).split('-').map(Number);
         if (!year || !month || !day) return null;
 
         // Local midnight to the next local midnight. Using the local Date
@@ -192,7 +216,7 @@ export class BaseLLMVisionCard extends HTMLElement {
     }
 
     _limit(details) {
-        if (this.number_of_days || this.date_entity) {
+        if (this.number_of_days || this.date_entity || this.day_navigation) {
             // number_of_events acts as secondary limiter only after hours filter
             if (this.number_of_events) return details.slice(0, this.number_of_events);
             return details;

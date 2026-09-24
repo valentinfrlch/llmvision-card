@@ -18,6 +18,17 @@ export function toLocalIso(date) {
         + `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
 }
 
+/**
+ * Format a Date as a local YYYY-MM-DD string.
+ *
+ * Date.toISOString().slice(0, 10) would use UTC and can land on the wrong day
+ * either side of midnight, so the local parts are used instead.
+ */
+export function toIsoDate(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export function hexToRgba(hex, alpha = 1) {
     let c = hex.replace('#', '');
     if (c.length === 3) {

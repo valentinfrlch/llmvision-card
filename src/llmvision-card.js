@@ -1,4 +1,4 @@
-import { getIcon, translate } from './helpers.js';
+import { getIcon, translate, toIsoDate } from './helpers.js';
 import { labels } from './labels.js';
 import { LitElement, css, html } from "lit";
 import { BaseLLMVisionCard } from './card-base.js';
@@ -10,10 +10,10 @@ class TimelineCardEditor extends LitElement {
     render() {
         if (!this._config) return html`<div>Please configure the card.</div>`;
         const schema = this._getSchema();
-        const generalSchema = schema.slice(0, 4);
-        const filterSchema = schema.slice(4, 7);
-        const localeSchema = schema.slice(7, 9);
-        const customizeSchema = schema.slice(9);
+        const generalSchema = schema.slice(0, 5);
+        const filterSchema = schema.slice(5, 8);
+        const localeSchema = schema.slice(8, 10);
+        const customizeSchema = schema.slice(10);
         return html`
             <style>
                 .card-content{display:flex;flex-direction:column;gap:16px;}
@@ -69,8 +69,13 @@ class TimelineCardEditor extends LitElement {
             { name: "number_of_events", description: "Number of most recent events to display. A maximum of 10 events can be displayed.", selector: { number: { min: 1, max: 100, step: 1 } } },
             { name: "number_of_days", description: "Number of days to look back for events. Useful for filtering older events.", selector: { number: { min: 1, max: 365, step: 1 } } },
             {
+                name: "day_navigation",
+                description: "Show one day at a time with arrows and a date picker in the card header. Starts on today.",
+                selector: { boolean: {} }
+            },
+            {
                 name: "date_entity",
-                description: "Optional. Show events of one specific day instead of the last number_of_days. Point this at a date entity or a date-only input_datetime to browse individual days.",
+                description: "Optional. Bind the shown day to a date entity or date-only input_datetime, so the selection persists and can be set from automations. Works with or without day_navigation.",
                 selector: { entity: { filter: [{ domain: "input_datetime" }, { domain: "date" }] } }
             },
         ];
@@ -147,7 +152,8 @@ class TimelineCardEditor extends LitElement {
     _computeLabel(s) {
         return ({
             header: "Header", number_of_events: "Number of Events",
-            number_of_days: "Number of Days", date_entity: "Date Entity (single day)",
+            number_of_days: "Number of Days", day_navigation: "Day Navigation",
+            date_entity: "Date Entity (optional)",
             category_filters: "Category Filters",
             camera_filters: "Camera Filters", filter_false_positives: "Filter False Positives",
             custom_colors: "Custom Colors", language: "Language",
@@ -177,6 +183,90 @@ class LLMVisionCard extends BaseLLMVisionCard {
     setConfig(config) {
         this.header = config.header || '';
         this.setCommonConfig(config, { requireEventLimits: true });
+        // Day navigation starts on today unless an entity drives the selection.
+        if (this.day_navigation && !this.date_entity && !this._selectedDay) {
+            this._selectedDay = toIsoDate(new Date());
+        }
+    }
+
+    /** Move the selection by whole days. */
+    _shiftDay(offsetDays) {
+        const current = this.currentDay(this._hass) || toIsoDate(new Date());
+        const date = new Date(`${current}T00:00:00`);
+        date.setDate(date.getDate() + offsetDays);
+        this._setDay(toIsoDate(date));
+    }
+
+    _setDay(isoDate) {
+        if (this.date_entity) {
+            // Write back to the entity so the selection is shared and persisted.
+            // input_datetime and date use different service names for the same thing.
+            const domain = this.date_entity.split('.')[0];
+            const service = domain === 'input_datetime' ? 'set_datetime' : 'set_value';
+            this._hass?.callService(domain, service, {
+                entity_id: this.date_entity,
+                date: isoDate,
+            });
+            return;
+        }
+        this._selectedDay = isoDate;
+        if (this._hass) {
+            this._renderDayNav();
+            this._loadAndRender(this._hass);
+        }
+    }
+
+    /** Human label for the selected day, reusing the existing translations. */
+    _dayLabel(isoDate) {
+        if (!isoDate) return '';
+        const date = new Date(`${isoDate}T00:00:00`);
+        const todayIso = toIsoDate(new Date());
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (isoDate === todayIso) return translate('today', this.language) || 'Today';
+        if (isoDate === toIsoDate(yesterday)) return translate('yesterday', this.language) || 'Yesterday';
+        return date.toLocaleDateString(undefined, {
+            weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+    }
+
+    _renderDayNav() {
+        const nav = this.querySelector('.day-nav');
+        if (!nav) return;
+        const day = this.currentDay(this._hass);
+        const label = nav.querySelector('.day-nav-label');
+        const picker = nav.querySelector('.day-nav-picker');
+        if (label) label.textContent = this._dayLabel(day);
+        if (picker) {
+            picker.max = toIsoDate(new Date());
+            if (day && picker.value !== day) picker.value = day;
+        }
+        // Nothing to navigate forward to beyond today. toggleAttribute so the
+        // attribute selector in CSS matches as well as the element state.
+        nav.querySelector('.day-nav-next')
+            ?.toggleAttribute('disabled', !day || day >= toIsoDate(new Date()));
+    }
+
+    _wireDayNav() {
+        const nav = this.querySelector('.day-nav');
+        if (!nav || nav.dataset.wired) return;
+        nav.dataset.wired = '1';
+
+        nav.querySelector('.day-nav-prev')?.addEventListener('click', () => this._shiftDay(-1));
+        nav.querySelector('.day-nav-next')?.addEventListener('click', () => this._shiftDay(1));
+
+        const picker = nav.querySelector('.day-nav-picker');
+        // The label is the visible control; it opens the native date picker so
+        // there is no custom calendar to maintain and mobile gets its own UI.
+        nav.querySelector('.day-nav-current')?.addEventListener('click', () => {
+            if (!picker) return;
+            if (typeof picker.showPicker === 'function') picker.showPicker();
+            else picker.click();
+        });
+        picker?.addEventListener('change', () => {
+            if (picker.value) this._setDay(picker.value);
+        });
     }
     static getConfigElement() { return document.createElement('timeline-card-editor'); }
     static getStubConfig() { return { number_of_days: 7, number_of_events: 3, language: 'en', time_format: '24h', filter_false_positives: true }; }
@@ -209,12 +299,38 @@ class LLMVisionCard extends BaseLLMVisionCard {
             this.innerHTML = `
                 <ha-card style="padding:16px;">
                     ${this.header !== "" ? `<div class="card-header" style="font-size:1.3em;font-weight:600;padding:0 0 5px 0;">${this.header || "LLM Vision Events"}</div>` : ""}
+                    ${this.day_navigation ? `
+                    <div class="day-nav">
+                        <button class="day-nav-btn day-nav-prev" type="button" aria-label="Previous day">
+                            <ha-icon icon="mdi:chevron-left"></ha-icon>
+                        </button>
+                        <button class="day-nav-current" type="button">
+                            <ha-icon icon="mdi:calendar"></ha-icon>
+                            <span class="day-nav-label"></span>
+                            <input class="day-nav-picker" type="date" tabindex="-1" aria-hidden="true">
+                        </button>
+                        <button class="day-nav-btn day-nav-next" type="button" aria-label="Next day">
+                            <ha-icon icon="mdi:chevron-right"></ha-icon>
+                        </button>
+                    </div>` : ""}
                     <div class="card-content"></div>
                 </ha-card>
                 <style>
                     /* Stretch the card to the allocated grid cell */
                     :host{display:block;width:100%;max-width:100%;box-sizing:border-box;}
                     ha-card{height:100%;width:100%;max-width:100%;margin:0;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;}
+
+                    /* Day navigation */
+                    .day-nav{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 0 8px 0;flex:0 0 auto;}
+                    .day-nav-current{position:relative;flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:8px;background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:12px;font-family:inherit;font-size:var(--ha-font-size-m,14px);font-weight:var(--ha-font-weight-medium,500);color:var(--primary-text-color);min-width:0;}
+                    .day-nav-current:hover{background:var(--secondary-background-color,rgba(127,127,127,.12));}
+                    .day-nav-current ha-icon{color:var(--secondary-text-color);--mdc-icon-size:18px;flex-shrink:0;}
+                    .day-nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+                    /* The native input is the picker only; the button is the visible control. */
+                    .day-nav-picker{position:absolute;left:50%;bottom:0;width:1px;height:1px;opacity:0;border:none;padding:0;pointer-events:none;}
+                    .day-nav-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:none;border:none;cursor:pointer;color:var(--secondary-text-color);flex-shrink:0;padding:0;}
+                    .day-nav-btn:hover{background:var(--secondary-background-color,rgba(127,127,127,.12));}
+                    .day-nav-btn[disabled]{opacity:.35;pointer-events:none;}
 
                     /* The scrollable content area inside the card */
                     .card-content{padding:0;flex:1 1 auto;min-height:0;min-width:0;overflow:auto;overflow-x:hidden;}
@@ -231,6 +347,7 @@ class LLMVisionCard extends BaseLLMVisionCard {
                 </style>
             `;
             this.content = this.querySelector('.card-content');
+            this._wireDayNav();
         } else {
             const headerDiv = this.querySelector('.card-header');
             if (headerDiv) {
@@ -239,14 +356,16 @@ class LLMVisionCard extends BaseLLMVisionCard {
             }
         }
 
+        this._hass = hass;
+        this._renderDayNav();
         this._loadAndRender(hass);
     }
 
 
     async _loadAndRender(hass) {
-        // When date_entity is set, query that exact calendar day instead of the
-        // rolling number_of_days window.
-        const dateWindow = this.resolveDateWindow(hass);
+        // With day navigation or a date_entity, query that exact calendar day
+        // instead of the rolling number_of_days window.
+        const dateWindow = this.dayWindowFrom(this.currentDay(hass));
 
         let details = await this.fetchEvents(
             hass,
