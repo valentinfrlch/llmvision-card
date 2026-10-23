@@ -501,9 +501,13 @@ export class BaseLLMVisionCard extends HTMLElement {
     
                     @media (max-width: 768px) {
                         .${contentClass} {
+                            box-sizing: border-box;
                             max-width: 100%;
                             max-height: 100%;
                             padding: 15px;
+                            /* full screen in the iOS app, which draws under the status bar */
+                            padding-top: calc(15px + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+                            padding-bottom: calc(15px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
                             border-radius: 0;
                             height: 100%;
                         }
