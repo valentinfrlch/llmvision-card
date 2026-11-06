@@ -53,11 +53,14 @@ import{c as e,d as t,g as n,h as r,i,m as a,n as o,o as s,p as c,t as l,u}from".
                         <button class="day-nav-btn day-nav-prev" type="button" aria-label="Previous day">
                             <ha-icon icon="mdi:chevron-left"></ha-icon>
                         </button>
-                        <button class="day-nav-current" type="button">
-                            <ha-icon icon="mdi:calendar"></ha-icon>
-                            <span class="day-nav-label"></span>
-                            <input class="day-nav-picker" type="date" tabindex="-1" aria-hidden="true">
-                        </button>
+                        <div class="day-nav-current">
+                            <ha-icon icon="mdi:calendar" aria-hidden="true"></ha-icon>
+                            <span class="day-nav-label" aria-hidden="true"></span>
+                            <input
+                                class="day-nav-picker"
+                                type="date"
+                                aria-label="Choose day">
+                        </div>
                         <button class="day-nav-btn day-nav-next" type="button" aria-label="Next day">
                             <ha-icon icon="mdi:chevron-right"></ha-icon>
                         </button>
@@ -71,12 +74,45 @@ import{c as e,d as t,g as n,h as r,i,m as a,n as o,o as s,p as c,t as l,u}from".
 
                     /* Day navigation */
                     .day-nav{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 0 8px 0;flex:0 0 auto;}
-                    .day-nav-current{position:relative;flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:8px;background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:12px;font-family:inherit;font-size:var(--ha-font-size-m,14px);font-weight:var(--ha-font-weight-medium,500);color:var(--primary-text-color);min-width:0;}
+                    .day-nav-current {
+                        position: relative;
+                        flex: 1 1 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        min-width: 0;
+                        padding: 6px 8px;
+                        border-radius: 12px;
+                        color: var(--primary-text-color);
+                        font-size: var(--ha-font-size-m, 14px);
+                        font-weight: var(--ha-font-weight-medium, 500);
+                    }
                     .day-nav-current:hover{background:var(--secondary-background-color,rgba(127,127,127,.12));}
                     .day-nav-current ha-icon{color:var(--secondary-text-color);--mdc-icon-size:18px;flex-shrink:0;}
                     .day-nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
                     /* The native input is the picker only; the button is the visible control. */
-                    .day-nav-picker{position:absolute;left:50%;bottom:0;width:1px;height:1px;opacity:0;border:none;padding:0;pointer-events:none;}
+                    .day-nav-picker {
+                        position: absolute;
+                        inset: 0;
+                        width: 100%;
+                        height: 100%;
+                        opacity: 0;
+                        cursor: pointer;
+                    }
+
+                    .day-nav-picker::-webkit-calendar-picker-indicator {
+                        position: absolute;
+                        inset: 0;
+                        width: 100%;
+                        height: 100%;
+                        cursor: pointer;
+                    }
+
+                    .day-nav-current:focus-within {
+                        outline: 2px solid var(--primary-color);
+                        outline-offset: 2px;
+                    }
                     .day-nav-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:none;border:none;cursor:pointer;color:var(--secondary-text-color);flex-shrink:0;padding:0;}
                     .day-nav-btn:hover{background:var(--secondary-background-color,rgba(127,127,127,.12));}
                     .day-nav-btn[disabled]{opacity:.35;pointer-events:none;}
