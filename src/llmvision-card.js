@@ -226,9 +226,12 @@ class LLMVisionCard extends BaseLLMVisionCard {
 
         if (isoDate === todayIso) return translate('today', this.language) || 'Today';
         if (isoDate === toIsoDate(yesterday)) return translate('yesterday', this.language) || 'Yesterday';
-        return date.toLocaleDateString(undefined, {
-            weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
-        });
+        return new Intl.DateTimeFormat('en-GB', {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }).format(date);
     }
 
     _renderDayNav() {
