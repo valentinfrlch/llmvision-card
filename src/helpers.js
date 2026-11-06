@@ -1,6 +1,34 @@
 import { labels } from './labels.js';
 import { bg, ca, cs, da, de, en, es, fr, hu, it, nl, pl, pt, sk, sv, el } from './translations.js';
 
+/**
+ * Format a Date as an ISO 8601 string in local time, including the UTC offset
+ * (e.g. "2026-09-23T00:00:00+02:00").
+ *
+ * Date.toISOString() would convert to UTC and shift the day boundary, so it
+ * cannot be used to express "local midnight".
+ */
+export function toLocalIso(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    const offsetMinutes = -date.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const abs = Math.abs(offsetMinutes);
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+        + `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+        + `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+}
+
+/**
+ * Format a Date as a local YYYY-MM-DD string.
+ *
+ * Date.toISOString().slice(0, 10) would use UTC and can land on the wrong day
+ * either side of midnight, so the local parts are used instead.
+ */
+export function toIsoDate(date) {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export function hexToRgba(hex, alpha = 1) {
     let c = hex.replace('#', '');
     if (c.length === 3) {
